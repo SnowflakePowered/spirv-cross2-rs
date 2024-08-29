@@ -1,0 +1,3 @@
+[submodule "native/SPIRV-Cross"]
+	path = native/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross

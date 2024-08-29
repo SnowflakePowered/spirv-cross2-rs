@@ -1,0 +1,10 @@
+[package]
+name = "bindings_generator"
+edition = "2021"
+
+publish = false
+
+[dependencies]
+bindgen = "0.69.1"
+cmake = "0.1"
+cruet = "0.14.0"

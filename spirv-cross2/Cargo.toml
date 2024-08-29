@@ -1,0 +1,9 @@
+[package]
+name = "spirv-cross2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+spirv-cross-sys = { version = "0.1.0", path = "../spirv-cross-sys" }
+bytemuck = "1.17.1"
+thiserror = "1.0.63"

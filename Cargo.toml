@@ -1,0 +1,8 @@
+[workspace]
+
+members = [ 
+    "spirv-cross2",
+    "spirv-cross-sys", "bindings_generator",
+]
+
+resolver = "2"

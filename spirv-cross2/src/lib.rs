@@ -64,11 +64,6 @@ impl ContextRoot<'_> {
     }
 }
 
-pub struct CompilerCell<T> {
-    context: ManuallyDrop<SpirvCross>,
-    instances: Vec<Compiler<'static, T>>,
-}
-
 pub struct Module<'a>(&'a [SpvId]);
 
 impl<'a> Module<'a> {

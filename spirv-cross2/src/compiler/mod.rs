@@ -1,5 +1,5 @@
 use crate::error::Result;
-use crate::SpirvCross;
+use crate::{ContextRoot, SpirvCross};
 use spirv_cross_sys::{
     spvc_compiler_s, spvc_context_create_compiler, spvc_context_parse_spirv, spvc_context_s,
     spvc_resources_s, spvc_set, spvc_set_s, ContextRooted, SpirvCrossError, SpvId, VariableId,
@@ -12,7 +12,7 @@ use spirv_cross_sys as sys;
 pub mod hlsl;
 pub mod msl;
 pub mod resources;
-mod types;
+pub mod types;
 
 pub mod targets {
     use crate::compiler::Target;
@@ -38,24 +38,25 @@ pub trait Target {
 
 pub struct Compiler<'a, T>(
     pub(super) NonNull<spvc_compiler_s>,
-    pub(super) &'a SpirvCross,
+    pub(super) ContextRoot<'a>,
     pub(super) PhantomData<T>,
 );
 
 pub struct InterfaceVariableSet<'a>(spvc_set, PhantomData<&'a ()>);
+
 pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, &'a SpirvCross);
 
 impl<T> ContextRooted for &Compiler<'_, T> {
     #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
-        self.1 .0
+        self.1.ptr()
     }
 }
 
 impl<T> ContextRooted for &mut Compiler<'_, T> {
     #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
-        self.1 .0
+        self.1.ptr()
     }
 }
 
@@ -78,7 +79,7 @@ impl<T> Compiler<'_, T> {
 }
 
 // reflection
-impl<T> Compiler<'_, T> {
+impl<'a, T> Compiler<'a, T> {
     /// Returns a set of all global variables which are statically accessed
     /// by the control flow graph from the current entry point.
     /// Only variables which change the interface for a shader are returned, that is,
@@ -90,7 +91,7 @@ impl<T> Compiler<'_, T> {
     ///
     /// The return object is opaque to Rust, but its contents inspected by using [`InterfaceVariableSet::reflect`].
     /// There is no way to modify the contents or use your own `InterfaceVariableSet`.
-    pub fn active_interface_variables(&self) -> Result<InterfaceVariableSet> {
+    pub fn active_interface_variables(&self) -> Result<InterfaceVariableSet<'a>> {
         unsafe {
             let mut set = std::ptr::null();
             sys::spvc_compiler_get_active_interface_variables(self.0.as_ptr(), &mut set)
@@ -120,7 +121,7 @@ impl<T> Compiler<'_, T> {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
             };
 
-            Ok(ShaderResources(resources, self.1))
+            Ok(ShaderResources(resources, self.1.as_ref()))
         }
     }
 
@@ -144,13 +145,15 @@ impl<T> Compiler<'_, T> {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
             };
 
-            Ok(ShaderResources(resources, self.1))
+            Ok(ShaderResources(resources, self.1.as_ref()))
         }
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::rc::Rc;
+    use std::sync::Arc;
     use crate::compiler::{targets, Compiler};
     use crate::{Module, SpirvCross};
     use spirv_cross_sys::SpirvCrossError;
@@ -159,7 +162,7 @@ mod test {
 
     #[test]
     pub fn create_compiler() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let mut spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
@@ -168,12 +171,14 @@ mod test {
 
     #[test]
     pub fn reflect_interface_vars() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let mut spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let vars = compiler.active_interface_variables()?;
         assert_eq!(&[13, 9], &vars.reflect().as_slice());
+
+        compiler.set_enabled_interface_variables(vars)?;
         Ok(())
     }
 }

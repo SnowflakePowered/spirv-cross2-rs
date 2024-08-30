@@ -12,7 +12,6 @@ repository = "https://github.com/SnowflakePowered/spirv-cross2"
 keywords = ["spirv", "shaders"]
 
 [dependencies]
-thiserror = "1.0.63"
 bytemuck = "1.17.1"
 
 [build-dependencies]

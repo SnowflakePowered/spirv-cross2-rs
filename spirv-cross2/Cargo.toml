@@ -7,3 +7,7 @@ edition = "2021"
 spirv-cross-sys = { version = "0.1.0", path = "../spirv-cross-sys" }
 bytemuck = "1.17.1"
 thiserror = "1.0.63"
+self_cell = "1.0.4"
+
+[dev-dependencies]
+glslang = "0.4.0"

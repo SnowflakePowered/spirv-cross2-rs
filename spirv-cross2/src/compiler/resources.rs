@@ -1,8 +1,9 @@
 use crate::compiler::{InterfaceVariableSet, ShaderResources};
+use crate::error::{ContextRooted, ToContextError};
 use crate::{error, spirv, ToStatic};
 use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
-    BuiltinResourceType, ContextRooted, ResourceType, TypeId, VariableId,
+    BuiltinResourceType, ResourceType, TypeId, VariableId,
 };
 use std::borrow::{Borrow, Cow};
 use std::ffi::CStr;

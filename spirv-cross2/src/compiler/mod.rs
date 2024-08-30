@@ -1,8 +1,8 @@
-use crate::error::Result;
+use crate::error::{ContextRooted, Result, SpirvCrossError, ToContextError};
 use crate::{ContextRoot, SpirvCross};
 use spirv_cross_sys::{
     spvc_compiler_s, spvc_context_create_compiler, spvc_context_parse_spirv, spvc_context_s,
-    spvc_resources_s, spvc_set, spvc_set_s, ContextRooted, SpirvCrossError, SpvId, VariableId,
+    spvc_resources_s, spvc_set, spvc_set_s, SpvId, VariableId,
 };
 use std::marker::PhantomData;
 use std::ptr::NonNull;
@@ -152,11 +152,11 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
+    use crate::compiler::{targets, Compiler};
+    use crate::error::SpirvCrossError;
+    use crate::{Module, SpirvCross};
     use std::rc::Rc;
     use std::sync::Arc;
-    use crate::compiler::{targets, Compiler};
-    use crate::{Module, SpirvCross};
-    use spirv_cross_sys::SpirvCrossError;
 
     const BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 

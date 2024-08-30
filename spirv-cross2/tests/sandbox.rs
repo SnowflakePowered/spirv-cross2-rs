@@ -1,13 +1,14 @@
-use spirv_cross_sys::SpirvCrossError;
 use glslang;
-use glslang::{CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion};
 use glslang::SpirvVersion::{SPIRV1_0, SPIRV1_1};
+use glslang::{
+    CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion,
+};
 use spirv_cross2::Module;
+use spirv_cross_sys::SpirvCrossError;
 
 #[test]
 pub fn sandbox() -> Result<(), SpirvCrossError> {
-    const SHADER: &str =
-        r##"#version 450
+    const SHADER: &str = r##"#version 450
 
 layout (constant_id = 0) const int SSAO_KERNEL_SIZE = 2;
 
@@ -21,8 +22,8 @@ void main() {
 
     let glslang = glslang::Compiler::acquire().unwrap();
 
-    let src =ShaderSource::from(SHADER);
-    let mut opts =CompilerOptions::default();
+    let src = ShaderSource::from(SHADER);
+    let mut opts = CompilerOptions::default();
 
     opts.target = Target::Vulkan {
         version: VulkanVersion::Vulkan1_0,
@@ -33,7 +34,8 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let compiler =
+        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.stage_outputs[0];
@@ -45,8 +47,7 @@ void main() {
 
 #[test]
 pub fn atomic_counters() -> Result<(), SpirvCrossError> {
-    const SHADER: &str =
-        r##"#version 450
+    const SHADER: &str = r##"#version 450
 
 layout(binding = 0) uniform atomic_uint one;
 
@@ -59,8 +60,8 @@ void main() {
 
     let glslang = glslang::Compiler::acquire().unwrap();
 
-    let src =ShaderSource::from(SHADER);
-    let mut opts =CompilerOptions::default();
+    let src = ShaderSource::from(SHADER);
+    let mut opts = CompilerOptions::default();
 
     opts.target = Target::OpenGL {
         version: OpenGlVersion::OpenGL4_5,
@@ -71,7 +72,8 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let compiler =
+        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.atomic_counters[0];

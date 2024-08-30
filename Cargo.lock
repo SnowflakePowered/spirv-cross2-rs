@@ -316,6 +316,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "self_cell"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d369a96f978623eb3dc28807c4852d6cc617fed53da5d3c400feff1ef34a714a"
+
+[[package]]
 name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -329,7 +335,6 @@ dependencies = [
  "cc",
  "glob",
  "glslang",
- "thiserror",
 ]
 
 [[package]]
@@ -337,6 +342,8 @@ name = "spirv-cross2"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
+ "glslang",
+ "self_cell",
  "spirv-cross-sys",
  "thiserror",
 ]

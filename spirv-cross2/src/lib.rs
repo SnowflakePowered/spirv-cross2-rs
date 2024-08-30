@@ -1,8 +1,9 @@
 use crate::compiler::{Compiler, Target};
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_context_s, ContextRooted, SpirvCrossError, SpvId};
+use spirv_cross_sys::{spvc_context_s, SpvId};
 use std::borrow::Borrow;
 
+use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
 use std::ops::{Deref, Index};

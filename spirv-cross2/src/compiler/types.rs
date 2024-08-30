@@ -1,9 +1,10 @@
 use crate::compiler::Compiler;
 use crate::error;
-use spirv_cross_sys::{spvc_type, BaseType, SpirvCrossError, SpvId, TypeId, VariableId};
+use spirv_cross_sys::{spvc_type, BaseType, SpvId, TypeId, VariableId};
 use std::borrow::Cow;
 use std::ffi::CStr;
 
+use crate::error::{SpirvCrossError, ToContextError};
 use crate::spirv::{Decoration, StorageClass};
 use spirv_cross_sys as sys;
 
@@ -130,7 +131,7 @@ pub struct Struct<'a> {
 #[derive(Debug)]
 pub enum ArrayDimension {
     Literal(u32),
-    SpecializationConstant(VariableId)
+    SpecializationConstant(VariableId),
 }
 
 /// Enum with additional type information, depending on the kind of type.
@@ -159,7 +160,7 @@ pub enum TypeInner<'a> {
     Array {
         base: TypeId,
         storage: StorageClass,
-        dimensions: Vec<ArrayDimension>
+        dimensions: Vec<ArrayDimension>,
     },
 }
 
@@ -199,8 +200,13 @@ impl<T> Compiler<'_, T> {
                 let name = if name.is_empty() { None } else { Some(name) };
 
                 let mut size = 0;
-                sys::spvc_compiler_get_declared_struct_member_size(self.0.as_ptr(), ty, i, &mut size)
-                    .ok(self)?;
+                sys::spvc_compiler_get_declared_struct_member_size(
+                    self.0.as_ptr(),
+                    ty,
+                    i,
+                    &mut size,
+                )
+                .ok(self)?;
 
                 let mut offset = 0;
                 sys::spvc_compiler_type_struct_member_offset(self.0.as_ptr(), ty, i, &mut offset)
@@ -286,17 +292,20 @@ impl<T> Compiler<'_, T> {
             for i in 0..array_dim_len {
                 array_is_literal.push(sys::spvc_type_array_dimension_is_literal(ty, i))
             }
-            
+
             let storage_class = sys::spvc_type_get_storage_class(ty);
 
-            let array_dims = array_dims.into_iter().enumerate()
+            let array_dims = array_dims
+                .into_iter()
+                .enumerate()
                 .map(|(index, dim)| {
                     if array_is_literal[index] {
                         ArrayDimension::Literal(dim.0)
                     } else {
                         ArrayDimension::SpecializationConstant(VariableId(dim))
                     }
-                }).collect();
+                })
+                .collect();
 
             Ok(Type {
                 name,
@@ -304,7 +313,7 @@ impl<T> Compiler<'_, T> {
                 inner: TypeInner::Array {
                     base: base_type_id,
                     storage: storage_class,
-                    dimensions: array_dims
+                    dimensions: array_dims,
                 },
             })
         }
@@ -354,7 +363,6 @@ impl<T> Compiler<'_, T> {
                     },
                 });
             }
-
 
             let vec_size = sys::spvc_type_get_vector_size(ty);
             let columns = sys::spvc_type_get_columns(ty);
@@ -453,25 +461,25 @@ impl<T> Compiler<'_, T> {
 mod test {
     use crate::compiler::types::TypeInner;
     use crate::compiler::{targets, Compiler};
+    use crate::error::SpirvCrossError;
     use crate::{Module, SpirvCross};
-    use spirv_cross_sys::SpirvCrossError;
 
     macro_rules! include_transmute {
-    ($file:expr) => {{
-        #[repr(C)]
-        pub struct AlignedAs<Align, Bytes: ?Sized> {
-            pub _align: [Align; 0],
-            pub bytes: Bytes,
-        }
+        ($file:expr) => {{
+            #[repr(C)]
+            pub struct AlignedAs<Align, Bytes: ?Sized> {
+                pub _align: [Align; 0],
+                pub bytes: Bytes,
+            }
 
-        static ALIGNED: &AlignedAs::<&[u32], [u8]> = &AlignedAs {
-            _align: [],
-            bytes: *include_bytes!($file),
-        };
+            static ALIGNED: &AlignedAs<&[u32], [u8]> = &AlignedAs {
+                _align: [],
+                bytes: *include_bytes!($file),
+            };
 
-        &ALIGNED.bytes
-    }};
-}
+            &ALIGNED.bytes
+        }};
+    }
 
     static BASIC_SPV: &[u8] = include_transmute!("../../basic.spv");
 
@@ -497,5 +505,4 @@ mod test {
         // }
         Ok(())
     }
-
 }

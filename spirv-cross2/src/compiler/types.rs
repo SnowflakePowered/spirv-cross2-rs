@@ -1,8 +1,8 @@
 use crate::compiler::Compiler;
 use crate::{error, spirv};
+use spirv_cross_sys::BaseType;
 use std::borrow::Cow;
 use std::ffi::CStr;
-use spirv_cross_sys::BaseType;
 
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
@@ -554,6 +554,18 @@ impl<T> Compiler<'_, T> {
             };
             Ok(ty)
         }
+    }
+
+    /// Get the type of the specialization constant.
+    pub fn get_constant_type(&self, constant: Handle<ConstantId>) -> error::Result<Type> {
+        let constant = self.yield_id(constant)?;
+        let type_id = unsafe {
+            // SAFETY: yield_id ensures this is valid for the ID
+            let constant = sys::spvc_compiler_get_constant_handle(self.0.as_ptr(), constant);
+            self.create_handle(sys::spvc_constant_get_type(constant))
+        };
+
+        self.get_type(type_id)
     }
 
     /// Get the size of the struct with the specified runtime array size,

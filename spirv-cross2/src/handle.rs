@@ -1,10 +1,11 @@
 use crate::compiler::{Compiler, PhantomCompiler};
-use crate::error;
 use crate::error::SpirvCrossError;
+use crate::{error, sealed};
 use spirv_cross_sys::{spvc_compiler_s, SpvId};
 use std::fmt::{Debug, Formatter};
 use std::ptr::NonNull;
 
+use crate::sealed::Sealed;
 pub use spirv_cross_sys::{ConstantId, TypeId, VariableId};
 
 #[derive(Copy, Clone)]
@@ -39,23 +40,28 @@ pub struct Handle<T> {
 }
 
 /// Trait for SPIRV-Cross Ids.
-pub trait Id: Debug + 'static {
+pub trait Id: Sealed + Debug + 'static {
     /// Return the `u32` part of the Id.
     fn id(&self) -> u32;
 }
 
+impl Sealed for TypeId {}
 impl Id for TypeId {
     #[inline(always)]
     fn id(&self) -> u32 {
         self.0 .0
     }
 }
+
+impl Sealed for VariableId {}
 impl Id for VariableId {
     #[inline(always)]
     fn id(&self) -> u32 {
         self.0 .0
     }
 }
+
+impl Sealed for ConstantId {}
 impl Id for ConstantId {
     #[inline(always)]
     fn id(&self) -> u32 {
@@ -63,6 +69,7 @@ impl Id for ConstantId {
     }
 }
 
+impl Sealed for SpvId {}
 impl Id for SpvId {
     #[inline(always)]
     fn id(&self) -> u32 {
@@ -70,6 +77,7 @@ impl Id for SpvId {
     }
 }
 
+impl<T: Id> Sealed for Handle<T> {}
 impl<T: Id> Id for Handle<T> {
     #[inline(always)]
     fn id(&self) -> u32 {

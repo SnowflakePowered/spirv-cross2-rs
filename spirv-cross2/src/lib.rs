@@ -19,6 +19,10 @@ pub mod spirv;
 
 pub mod handle;
 
+pub(crate) mod sealed {
+    pub trait Sealed {}
+}
+
 /// The SPIRV-Cross context. All memory allocations originating from
 /// this context will have the same lifetime as the context.
 #[repr(transparent)]

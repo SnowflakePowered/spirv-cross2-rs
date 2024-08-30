@@ -7,7 +7,6 @@ use spirv_cross2::compiler::types::TypeInner;
 use spirv_cross2::error::SpirvCrossError;
 use spirv_cross2::Module;
 
-
 #[test]
 pub fn sandbox() -> Result<(), SpirvCrossError> {
     const SHADER: &str = r##"#version 450
@@ -45,10 +44,7 @@ void main() {
     let counter = &res.uniform_buffers[0];
 
     let ranges = compiler.active_buffer_ranges(counter.id)?;
-    eprintln!(
-        "{:?}",
-        ranges
-    );
+    eprintln!("{:?}", ranges);
 
     Ok(())
 }

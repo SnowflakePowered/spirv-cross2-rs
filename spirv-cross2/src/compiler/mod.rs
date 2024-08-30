@@ -7,6 +7,8 @@ use std::marker::PhantomData;
 use std::ptr::NonNull;
 
 pub mod buffers;
+mod combined_image_samplers;
+mod constants;
 pub mod hlsl;
 pub mod msl;
 pub mod resources;

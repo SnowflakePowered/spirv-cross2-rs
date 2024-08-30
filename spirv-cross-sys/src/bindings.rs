@@ -2566,6 +2566,7 @@ fn bindgen_test_layout_HlslVertexAttributeRemap() {
     );
 }
 #[repr(i32)]
+#[must_use]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum spvc_result {
     SPVC_SUCCESS = 0,
@@ -4056,6 +4057,7 @@ impl ::std::ops::BitAndAssign for spvc_compiler_option {
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct spvc_compiler_option(pub ::std::os::raw::c_int);
 extern "C" {
+    #[must_use]
     pub fn spvc_context_create(context: *mut spvc_context) -> spvc_result;
 }
 extern "C" {
@@ -4083,6 +4085,7 @@ extern "C" {
     );
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_context_parse_spirv(
         context: spvc_context,
         spirv: *const SpvId,
@@ -4091,6 +4094,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_context_create_compiler(
         context: spvc_context,
         backend: CompilerBackend,
@@ -4103,12 +4107,14 @@ extern "C" {
     pub fn spvc_compiler_get_current_id_bound(compiler: spvc_compiler) -> ::std::os::raw::c_uint;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_create_compiler_options(
         compiler: spvc_compiler,
         options: *mut spvc_compiler_options,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_options_set_bool(
         options: spvc_compiler_options,
         option: spvc_compiler_option,
@@ -4116,6 +4122,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_options_set_uint(
         options: spvc_compiler_options,
         option: spvc_compiler_option,
@@ -4123,24 +4130,28 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_install_compiler_options(
         compiler: spvc_compiler,
         options: spvc_compiler_options,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_compile(
         compiler: spvc_compiler,
         source: *mut *const ::std::os::raw::c_char,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_add_header_line(
         compiler: spvc_compiler,
         line: *const ::std::os::raw::c_char,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_require_extension(
         compiler: spvc_compiler,
         ext: *const ::std::os::raw::c_char,
@@ -4156,6 +4167,7 @@ extern "C" {
     ) -> *const ::std::os::raw::c_char;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_flatten_buffer_block(
         compiler: spvc_compiler,
         id: VariableId,
@@ -4168,6 +4180,7 @@ extern "C" {
     ) -> crate::spvc_bool;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_mask_stage_output_by_location(
         compiler: spvc_compiler,
         location: ::std::os::raw::c_uint,
@@ -4175,12 +4188,14 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_mask_stage_output_by_builtin(
         compiler: spvc_compiler,
         builtin: SpvBuiltIn,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_hlsl_set_root_constants_layout(
         compiler: spvc_compiler,
         constant_info: *const HlslRootConstants,
@@ -4188,6 +4203,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_hlsl_add_vertex_attribute_remap(
         compiler: spvc_compiler,
         remap: *const HlslVertexAttributeRemap,
@@ -4198,12 +4214,14 @@ extern "C" {
     pub fn spvc_compiler_hlsl_remap_num_workgroups_builtin(compiler: spvc_compiler) -> VariableId;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_hlsl_set_resource_binding_flags(
         compiler: spvc_compiler,
         flags: HlslBindingFlags,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_hlsl_add_resource_binding(
         compiler: spvc_compiler,
         binding: *const HlslResourceBinding,
@@ -4243,54 +4261,63 @@ extern "C" {
     ) -> crate::spvc_bool;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_vertex_attribute(
         compiler: spvc_compiler,
         attrs: *const MslVertexAttribute,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_resource_binding(
         compiler: spvc_compiler,
         binding: *const MslResourceBinding,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_resource_binding_2(
         compiler: spvc_compiler,
         binding: *const MslResourceBinding2,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_shader_input(
         compiler: spvc_compiler,
         input: *const MslShaderInterfaceVar,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_shader_input_2(
         compiler: spvc_compiler,
         input: *const MslShaderInterfaceVar2,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_shader_output(
         compiler: spvc_compiler,
         output: *const MslShaderInterfaceVar,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_shader_output_2(
         compiler: spvc_compiler,
         output: *const MslShaderInterfaceVar2,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_discrete_descriptor_set(
         compiler: spvc_compiler,
         desc_set: ::std::os::raw::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_set_argument_buffer_device_address_space(
         compiler: spvc_compiler,
         desc_set: ::std::os::raw::c_uint,
@@ -4324,6 +4351,7 @@ extern "C" {
     ) -> crate::spvc_bool;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_remap_constexpr_sampler(
         compiler: spvc_compiler,
         id: VariableId,
@@ -4331,6 +4359,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_remap_constexpr_sampler_by_binding(
         compiler: spvc_compiler,
         desc_set: ::std::os::raw::c_uint,
@@ -4339,6 +4368,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_remap_constexpr_sampler_ycbcr(
         compiler: spvc_compiler,
         id: VariableId,
@@ -4347,6 +4377,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_remap_constexpr_sampler_by_binding_ycbcr(
         compiler: spvc_compiler,
         desc_set: ::std::os::raw::c_uint,
@@ -4356,6 +4387,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_set_fragment_output_components(
         compiler: spvc_compiler,
         location: ::std::os::raw::c_uint,
@@ -4375,6 +4407,7 @@ extern "C" {
     ) -> ::std::os::raw::c_uint;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_dynamic_buffer(
         compiler: spvc_compiler,
         desc_set: ::std::os::raw::c_uint,
@@ -4383,6 +4416,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_add_inline_uniform_block(
         compiler: spvc_compiler,
         desc_set: ::std::os::raw::c_uint,
@@ -4390,6 +4424,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_msl_set_combined_sampler_suffix(
         compiler: spvc_compiler,
         suffix: *const ::std::os::raw::c_char,
@@ -4401,24 +4436,28 @@ extern "C" {
     ) -> *const ::std::os::raw::c_char;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_active_interface_variables(
         compiler: spvc_compiler,
         set: *mut spvc_set,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_set_enabled_interface_variables(
         compiler: spvc_compiler,
         set: spvc_set,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_create_shader_resources(
         compiler: spvc_compiler,
         resources: *mut spvc_resources,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_create_shader_resources_for_active_variables(
         compiler: spvc_compiler,
         resources: *mut spvc_resources,
@@ -4426,6 +4465,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_resources_get_resource_list_for_type(
         resources: spvc_resources,
         type_: ResourceType,
@@ -4434,6 +4474,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_resources_get_builtin_resource_list_for_type(
         resources: spvc_resources,
         type_: BuiltinResourceType,
@@ -4564,6 +4605,7 @@ extern "C" {
     ) -> *const ::std::os::raw::c_char;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_entry_points(
         compiler: spvc_compiler,
         entry_points: *mut *const spvc_entry_point,
@@ -4571,6 +4613,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_set_entry_point(
         compiler: spvc_compiler,
         name: *const ::std::os::raw::c_char,
@@ -4578,6 +4621,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_rename_entry_point(
         compiler: spvc_compiler,
         old_name: *const ::std::os::raw::c_char,
@@ -4608,6 +4652,7 @@ extern "C" {
     );
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_execution_modes(
         compiler: spvc_compiler,
         modes: *mut *const SpvExecutionMode,
@@ -4707,6 +4752,7 @@ extern "C" {
     pub fn spvc_type_get_image_access_qualifier(type_: spvc_type) -> SpvAccessQualifier;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_declared_struct_size(
         compiler: spvc_compiler,
         struct_type: spvc_type,
@@ -4714,6 +4760,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_declared_struct_size_runtime_array(
         compiler: spvc_compiler,
         struct_type: spvc_type,
@@ -4722,6 +4769,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_declared_struct_member_size(
         compiler: spvc_compiler,
         type_: spvc_type,
@@ -4730,6 +4778,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_type_struct_member_offset(
         compiler: spvc_compiler,
         type_: spvc_type,
@@ -4738,6 +4787,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_type_struct_member_array_stride(
         compiler: spvc_compiler,
         type_: spvc_type,
@@ -4746,6 +4796,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_type_struct_member_matrix_stride(
         compiler: spvc_compiler,
         type_: spvc_type,
@@ -4754,15 +4805,18 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_build_dummy_sampler_for_combined_images(
         compiler: spvc_compiler,
         id: *mut VariableId,
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_build_combined_image_samplers(compiler: spvc_compiler) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_combined_image_samplers(
         compiler: spvc_compiler,
         samplers: *mut *const CombinedImageSampler,
@@ -4770,6 +4824,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_specialization_constants(
         compiler: spvc_compiler,
         constants: *mut *const spvc_specialization_constant,
@@ -4791,6 +4846,7 @@ extern "C" {
     ) -> ConstantId;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_active_buffer_ranges(
         compiler: spvc_compiler,
         id: VariableId,
@@ -4995,6 +5051,7 @@ extern "C" {
     ) -> crate::spvc_bool;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_declared_capabilities(
         compiler: spvc_compiler,
         capabilities: *mut *const SpvCapability,
@@ -5002,6 +5059,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_declared_extensions(
         compiler: spvc_compiler,
         extensions: *mut *mut *const ::std::os::raw::c_char,
@@ -5015,6 +5073,7 @@ extern "C" {
     ) -> *const ::std::os::raw::c_char;
 }
 extern "C" {
+    #[must_use]
     pub fn spvc_compiler_get_buffer_block_decorations(
         compiler: spvc_compiler,
         id: VariableId,

@@ -92,6 +92,7 @@ fn main() {
         .new_type_alias("VariableId")
         .new_type_alias("TypeId")
         .new_type_alias("ConstantId")
+        .must_use_type("spvc_result")
         .clang_arg("-Ispirv-cross-sys/native/SPIRV-Cross/")
         .clang_arg("-DSPIRV_CROSS_CLI=OFF")
         .derive_debug(true)

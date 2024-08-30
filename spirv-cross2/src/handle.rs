@@ -1,9 +1,11 @@
 use crate::compiler::{Compiler, PhantomCompiler};
 use crate::error;
 use crate::error::SpirvCrossError;
-use spirv_cross_sys::{spvc_compiler_s, ConstantId, SpvId, TypeId, VariableId};
+use spirv_cross_sys::{spvc_compiler_s, SpvId};
 use std::fmt::{Debug, Formatter};
 use std::ptr::NonNull;
+
+pub use spirv_cross_sys::{ConstantId, TypeId, VariableId};
 
 #[derive(Copy, Clone)]
 struct PointerOnlyForComparison<T>(NonNull<T>);

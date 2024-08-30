@@ -6,6 +6,7 @@ use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, spvc_set, VariableId};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
+pub mod buffers;
 pub mod hlsl;
 pub mod msl;
 pub mod resources;

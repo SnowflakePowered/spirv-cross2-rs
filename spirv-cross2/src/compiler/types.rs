@@ -1,12 +1,13 @@
 use crate::compiler::Compiler;
 use crate::{error, spirv};
-use spirv_cross_sys::{spvc_type, BaseType, ConstantId, SpvId, TypeId, VariableId};
 use std::borrow::Cow;
 use std::ffi::CStr;
+use spirv_cross_sys::BaseType;
 
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
-use crate::spirv::{Decoration, StorageClass};
+use crate::handle::{ConstantId, TypeId};
+use crate::spirv::StorageClass;
 use spirv_cross_sys as sys;
 
 /// The kind of scalar

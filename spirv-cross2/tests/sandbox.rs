@@ -7,8 +7,54 @@ use spirv_cross2::compiler::types::TypeInner;
 use spirv_cross2::error::SpirvCrossError;
 use spirv_cross2::Module;
 
+
 #[test]
 pub fn sandbox() -> Result<(), SpirvCrossError> {
+    const SHADER: &str = r##"#version 450
+
+layout(binding = 0) uniform UBO
+{
+    float value;
+};
+
+layout(location = 0) out vec4 color;
+layout(binding = 1) uniform sampler2D tex;
+
+void main() {
+    color = texture(tex, vec2(value));
+}"##;
+
+    let glslang = glslang::Compiler::acquire().unwrap();
+
+    let src = ShaderSource::from(SHADER);
+    let mut opts = CompilerOptions::default();
+
+    opts.target = Target::Vulkan {
+        version: VulkanVersion::Vulkan1_0,
+        spirv_version: SPIRV1_0,
+    };
+
+    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
+    let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
+
+    let cross = spirv_cross2::SpirvCross::new()?;
+    let compiler =
+        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let res = compiler.shader_resources()?.all_resources()?;
+
+    let counter = &res.uniform_buffers[0];
+
+    let ranges = compiler.active_buffer_ranges(counter.id)?;
+    eprintln!(
+        "{:?}",
+        ranges
+    );
+
+    Ok(())
+}
+
+#[test]
+pub fn runtime_size_array() -> Result<(), SpirvCrossError> {
     const SHADER: &str = r##"#version 450
 
 layout(std430, binding = 0) buffer SSBO
@@ -47,7 +93,10 @@ void main() {
         panic!("unknown type")
     };
 
-    eprintln!("{:?}", compiler.declared_struct_size_with_runtime_array(struct_ty, 4));
+    eprintln!(
+        "{:?}",
+        compiler.declared_struct_size_with_runtime_array(struct_ty, 4)
+    );
 
     Ok(())
 }

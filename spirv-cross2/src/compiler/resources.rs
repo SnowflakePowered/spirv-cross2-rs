@@ -317,6 +317,7 @@ impl Clone for AllResources<'_> {
 }
 
 impl<'a> ShaderResources<'a> {
+    /// Get an iterator for all resources of the given type.
     pub fn resources_for_type(&self, ty: ResourceType) -> error::Result<ResourceIter<'a>> {
         let mut count = 0;
         let mut out = std::ptr::null();
@@ -335,6 +336,7 @@ impl<'a> ShaderResources<'a> {
         Ok(ResourceIter(self.1, slice.into_iter()))
     }
 
+    /// Get an iterator for all builtin resources of the given type.
     pub fn builtin_resources_for_type(
         &self,
         ty: BuiltinResourceType,

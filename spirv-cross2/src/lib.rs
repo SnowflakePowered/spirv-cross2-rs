@@ -4,6 +4,7 @@ use spirv_cross_sys::{spvc_context_s, SpvId};
 use std::borrow::Borrow;
 
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
+
 use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
 use std::ops::{Deref, Index};

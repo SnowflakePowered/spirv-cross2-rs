@@ -1,4 +1,3 @@
-pub use spirv_cross_sys::ConstantId;
 pub use spirv_cross_sys::SpvAccessQualifier as AccessQualifier;
 pub use spirv_cross_sys::SpvAddressingModel as AddressingModel;
 pub use spirv_cross_sys::SpvBuiltIn as BuiltIn;
@@ -18,7 +17,6 @@ pub use spirv_cross_sys::SpvFunctionControlMask as FunctionControlMask;
 pub use spirv_cross_sys::SpvFunctionControlShift as FunctionControlShift;
 pub use spirv_cross_sys::SpvFunctionParameterAttribute as FunctionParameterAttribute;
 pub use spirv_cross_sys::SpvGroupOperation as GroupOperation;
-pub use spirv_cross_sys::SpvId as Id;
 pub use spirv_cross_sys::SpvImageChannelDataType as ImageChannelDataType;
 pub use spirv_cross_sys::SpvImageChannelOrder as ImageChannelOrder;
 pub use spirv_cross_sys::SpvImageFormat as ImageFormat;
@@ -51,5 +49,3 @@ pub use spirv_cross_sys::SpvSelectionControlMask as SelectionControlMask;
 pub use spirv_cross_sys::SpvSelectionControlShift as SelectionControlShift;
 pub use spirv_cross_sys::SpvSourceLanguage as SourceLanguage;
 pub use spirv_cross_sys::SpvStorageClass as StorageClass;
-pub use spirv_cross_sys::TypeId;
-pub use spirv_cross_sys::VariableId;

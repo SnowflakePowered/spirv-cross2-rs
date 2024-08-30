@@ -13,6 +13,9 @@ pub mod hlsl;
 pub mod msl;
 pub mod resources;
 pub mod types;
+mod decorations;
+mod entry_points;
+mod misc;
 
 pub mod targets {
     use crate::compiler::Target;

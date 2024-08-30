@@ -1,3 +1,4 @@
+use crate::handle::{Handle, Id};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_context_s, spvc_result};
 use std::ffi::CStr;
@@ -8,13 +9,20 @@ pub type Result<T> = std::result::Result<T, SpirvCrossError>;
 #[derive(Debug, thiserror::Error)]
 pub enum SpirvCrossError {
     #[error("The SPIR-V is invalid: {0}.")]
+    /// The SPIR-V is invalid.
     InvalidSpirv(String),
     #[error("The SPIR-V operation is unsupported: {0}.")]
+    /// The SPIR-V operation is invalid.
     UnsupportedSpirv(String),
     #[error("Allocation failure: {0}.")]
+    /// Allocation failure.
     OutOfMemory(String),
     #[error("The argument is invalid: {0}.")]
+    /// The argument is invalid.
     InvalidArgument(String),
+    #[error("The tag of the handle does not match the compiler instance: {0:?}")]
+    /// The handle provided originated from a different compiler instance.
+    InvalidHandle(Handle<Box<dyn Id>>),
 }
 
 pub(crate) trait ContextRooted {

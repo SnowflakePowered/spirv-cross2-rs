@@ -1,13 +1,10 @@
-use crate::error::{ContextRooted, Result, SpirvCrossError, ToContextError};
-use crate::{ContextRoot, SpirvCross};
-use spirv_cross_sys::{
-    spvc_compiler_s, spvc_context_create_compiler, spvc_context_parse_spirv, spvc_context_s,
-    spvc_resources_s, spvc_set, spvc_set_s, SpvId, VariableId,
-};
+use crate::error::{ContextRooted, Result, ToContextError};
+use crate::handle::Handle;
+use crate::ContextRoot;
+use spirv_cross_sys as sys;
+use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, spvc_set, VariableId};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
-
-use spirv_cross_sys as sys;
 
 pub mod hlsl;
 pub mod msl;
@@ -44,8 +41,6 @@ pub struct Compiler<'a, T>(
 
 pub struct InterfaceVariableSet<'a>(spvc_set, PhantomData<&'a ()>);
 
-pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, &'a SpirvCross);
-
 impl<T> ContextRooted for &Compiler<'_, T> {
     #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
@@ -57,6 +52,40 @@ impl<T> ContextRooted for &mut Compiler<'_, T> {
     #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
         self.1.ptr()
+    }
+}
+
+/// Holds on to the pointer for a compiler instance,
+/// but type erased.
+///
+/// This is used so that child resources of a compiler track the
+/// lifetime of a compiler, or create handles attached with the
+/// compiler instance, without needing to refer to the typed
+/// output of a compiler.
+///
+/// The only thing a [`PhantomCompiler`] is able to do is create handles or
+/// refer to the root context. It's lifetime
+#[derive(Copy, Clone)]
+pub(crate) struct PhantomCompiler<'a> {
+    pub(crate) ptr: NonNull<spvc_compiler_s>,
+    ctx: NonNull<spvc_context_s>,
+    _pd: PhantomData<&'a ()>,
+}
+
+impl ContextRooted for PhantomCompiler<'_> {
+    fn context(&self) -> NonNull<spvc_context_s> {
+        self.ctx
+    }
+}
+
+impl<'a, T> Compiler<'a, T> {
+    /// Create a type erased phantom for lifetime tracking purposes.
+    pub(crate) fn phantom(&self) -> PhantomCompiler<'a> {
+        PhantomCompiler {
+            ptr: self.0,
+            ctx: self.context(),
+            _pd: PhantomData,
+        }
     }
 }
 
@@ -110,44 +139,6 @@ impl<'a, T> Compiler<'a, T> {
             Ok(())
         }
     }
-
-    /// Query shader resources, use ids with reflection interface to modify or query binding points, etc.
-    pub fn shader_resources(&self) -> Result<ShaderResources> {
-        unsafe {
-            let mut resources = std::ptr::null_mut();
-            sys::spvc_compiler_create_shader_resources(self.0.as_ptr(), &mut resources).ok(self)?;
-
-            let Some(resources) = NonNull::new(resources) else {
-                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
-            };
-
-            Ok(ShaderResources(resources, self.1.as_ref()))
-        }
-    }
-
-    /// Query shader resources, but only return the variables which are part of active_variables.
-    /// E.g.: get_shader_resources(get_active_variables()) to only return the variables which are statically
-    /// accessed.
-    pub fn shader_resources_for_active_variables(
-        &self,
-        set: InterfaceVariableSet,
-    ) -> Result<ShaderResources> {
-        unsafe {
-            let mut resources = std::ptr::null_mut();
-            sys::spvc_compiler_create_shader_resources_for_active_variables(
-                self.0.as_ptr(),
-                &mut resources,
-                set.0,
-            )
-            .ok(self)?;
-
-            let Some(resources) = NonNull::new(resources) else {
-                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
-            };
-
-            Ok(ShaderResources(resources, self.1.as_ref()))
-        }
-    }
 }
 
 #[cfg(test)]
@@ -155,9 +146,6 @@ mod test {
     use crate::compiler::{targets, Compiler};
     use crate::error::SpirvCrossError;
     use crate::{Module, SpirvCross};
-    use std::rc::Rc;
-    use std::sync::Arc;
-
     const BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]

@@ -1,22 +1,29 @@
 use crate::compiler::Compiler;
-use crate::error;
-use spirv_cross_sys::{spvc_type, BaseType, SpvId, TypeId, VariableId};
+use crate::{error, spirv};
+use spirv_cross_sys::{spvc_type, BaseType, ConstantId, SpvId, TypeId, VariableId};
 use std::borrow::Cow;
 use std::ffi::CStr;
 
 use crate::error::{SpirvCrossError, ToContextError};
+use crate::handle::Handle;
 use crate::spirv::{Decoration, StorageClass};
 use spirv_cross_sys as sys;
 
+/// The kind of scalar
 #[derive(Debug)]
 #[repr(u8)]
 pub enum ScalarKind {
+    /// Signed integer.
     Int = 0,
+    /// Unsigned integer.
     Uint = 1,
+    /// Floating point number.
     Float = 2,
+    /// Boolean.
     Bool = 3,
 }
 
+/// The bit width of a scalar.
 #[derive(Debug)]
 #[repr(u8)]
 pub enum BitWidth {
@@ -32,6 +39,7 @@ pub enum BitWidth {
     DoubleWord = 64,
 }
 
+/// A scalar type.
 #[derive(Debug)]
 pub struct Scalar {
     /// How the value’s bits are to be interpreted.
@@ -105,15 +113,15 @@ impl TryFrom<BaseType> for Scalar {
 
 #[derive(Debug)]
 pub struct Type<'a> {
-    name: Option<Cow<'a, str>>,
-    id: TypeId,
-    inner: TypeInner<'a>,
+    pub id: Handle<TypeId>,
+    pub name: Option<Cow<'a, str>>,
+    pub inner: TypeInner<'a>,
 }
 
 #[derive(Debug)]
 pub struct StructMember<'a> {
+    pub id: Handle<TypeId>,
     pub name: Option<Cow<'a, str>>,
-    pub id: TypeId,
     pub index: usize,
     pub offset: u32,
     pub size: usize,
@@ -122,8 +130,8 @@ pub struct StructMember<'a> {
 }
 
 #[derive(Debug)]
-pub struct Struct<'a> {
-    pub id: TypeId,
+pub struct StructType<'a> {
+    pub id: Handle<TypeId>,
     pub size: usize,
     pub members: Vec<StructMember<'a>>,
 }
@@ -131,7 +139,41 @@ pub struct Struct<'a> {
 #[derive(Debug)]
 pub enum ArrayDimension {
     Literal(u32),
-    SpecializationConstant(VariableId),
+    Constant(Handle<ConstantId>),
+}
+
+#[derive(Debug)]
+pub enum ImageClass {
+    /// Combined image samplers.
+    Sampled {
+        /// Whether this is a depth sampler (i.e. `samplerNDShadow`.)
+        depth: bool,
+        /// Whether this is a multisampled image.
+        multisampled: bool,
+        /// Whether or not this image is arrayed
+        arrayed: bool,
+    },
+    /// Separate image.
+    Texture {
+        /// Whether this is a multisampled image.
+        multisampled: bool,
+        /// Whether this image is arrayed
+        arrayed: bool,
+    },
+    /// Storage images.
+    LoadStore { format: spirv::ImageFormat },
+}
+
+#[derive(Debug)]
+pub struct ImageType {
+    /// The id of the type,
+    pub id: Handle<TypeId>,
+    /// The id of the type returned when the image is sampled or read from.
+    pub sampled_type: Handle<TypeId>,
+    /// The dimension of the image.
+    pub dimension: spirv::Dim,
+    /// The class of the image.
+    pub class: ImageClass,
 }
 
 /// Enum with additional type information, depending on the kind of type.
@@ -140,43 +182,77 @@ pub enum ArrayDimension {
 /// with some changes to fit SPIR-V.
 #[derive(Debug)]
 pub enum TypeInner<'a> {
+    /// Unknown type.
     Unknown,
+    /// The void type.
     Void,
+    /// A pointer to another type.
+    ///
+    /// Atomics are represented as [`TypeInner::Pointer`] with
+    /// the storage class [`StorageClass::AtomicCounter`].
     Pointer {
-        base: TypeId,
+        /// A handle to the base type this points to.
+        base: Handle<TypeId>,
+        /// The storage class of the pointer.
+        ///
+        /// Atomics are represented as [`TypeInner::Pointer`] with
+        /// the storage class [`StorageClass::AtomicCounter`].
         storage: StorageClass,
     },
-    Struct(Struct<'a>),
+    /// A struct type.
+    Struct(StructType<'a>),
+    /// A scalar type.
     Scalar(Scalar),
+    /// A vector type.
+    ///
+    /// For example, `vec4` would have a width of 4,
+    /// and a scalar type with [`ScalarKind::Float`] and bit-width 32.
     Vector {
-        size: u32,
+        /// The width of the vector.
+        width: u32,
+        /// The scalar type of the vector.
         scalar: Scalar,
     },
+    /// A matrix type.
+    ///
+    /// For example, `mat4` would have 4 columns, 4 rows,
+    /// and a scalar type with [`ScalarKind::Float`] and bit-width 32.
     Matrix {
+        /// The number of columns of the matrix type.
         columns: u32,
+        /// The number of rows of the matrix type.
         rows: u32,
+        /// The scalar type of the matrix.
         scalar: Scalar,
     },
+    /// An array type.
     Array {
-        base: TypeId,
+        /// The base type that the type is an array of.
+        base: Handle<TypeId>,
+        /// The storage class of the array.
         storage: StorageClass,
+        /// The dimensions of the array.
+        ///
+        /// Most of the time, these will be [`ArrayDimension::Linear`].
+        /// If an array dimension is specified as a specialization constant,
+        /// then the dimension will be [`ArrayDimension::Constant`].
+        ///
+        /// The order of dimensions follow SPIR-V semantics, i.e. backwards compared to C-style
+        /// declarations.
+        ///
+        /// i.e. `int a[4][6]` will return as `[Linear(6), Linear(4)]`.
         dimensions: Vec<ArrayDimension>,
     },
+    Image(ImageType),
+    /// An opaque acceleration structure.
+    AccelerationStructure,
+    /// An opaque sampler.
+    Sampler,
 }
 
-#[derive(Debug)]
-struct RawTypeData {
-    base_ty: BaseType,
-    bit_width: u32,
-    vec_size: u32,
-    columns: u32,
-    storage_class: crate::spirv::StorageClass,
-    array_dims: Vec<SpvId>,
-    array_is_literal: Vec<bool>,
-}
 /// Reflection of SPIR-V types.
 impl<T> Compiler<'_, T> {
-    fn process_struct(&self, struct_ty_id: TypeId) -> error::Result<Struct> {
+    fn process_struct(&self, struct_ty_id: TypeId) -> error::Result<StructType> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), struct_ty_id);
             let base_ty = sys::spvc_type_get_basetype(ty);
@@ -236,7 +312,7 @@ impl<T> Compiler<'_, T> {
 
                 members.push(StructMember {
                     name,
-                    id,
+                    id: self.create_handle(id),
                     offset,
                     size,
                     index: i as usize,
@@ -245,8 +321,8 @@ impl<T> Compiler<'_, T> {
                 })
             }
 
-            Ok(Struct {
-                id: struct_ty_id,
+            Ok(StructType {
+                id: self.create_handle(struct_ty_id),
                 size: struct_size,
                 members,
             })
@@ -258,7 +334,7 @@ impl<T> Compiler<'_, T> {
             let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
             let base_ty = sys::spvc_type_get_basetype(ty);
             Ok(TypeInner::Vector {
-                size: vec_width,
+                width: vec_width,
                 scalar: base_ty.try_into()?,
             })
         }
@@ -302,19 +378,55 @@ impl<T> Compiler<'_, T> {
                     if array_is_literal[index] {
                         ArrayDimension::Literal(dim.0)
                     } else {
-                        ArrayDimension::SpecializationConstant(VariableId(dim))
+                        ArrayDimension::Constant(self.create_handle(ConstantId(dim)))
                     }
                 })
                 .collect();
 
             Ok(Type {
                 name,
-                id,
+                id: self.create_handle(id),
                 inner: TypeInner::Array {
-                    base: base_type_id,
+                    base: self.create_handle(base_type_id),
                     storage: storage_class,
                     dimensions: array_dims,
                 },
+            })
+        }
+    }
+
+    fn process_image(&self, id: TypeId) -> error::Result<ImageType> {
+        unsafe {
+            let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
+            let base_ty = sys::spvc_type_get_basetype(ty);
+            let sampled_id = sys::spvc_type_get_image_sampled_type(ty);
+            let dimension = sys::spvc_type_get_image_dimension(ty);
+            let depth = sys::spvc_type_get_image_is_depth(ty);
+            let arrayed = sys::spvc_type_get_image_arrayed(ty);
+            let storage = sys::spvc_type_get_image_is_storage(ty);
+            let multisampled = sys::spvc_type_get_image_multisampled(ty);
+            let format = sys::spvc_type_get_image_storage_format(ty);
+
+            let class = if storage {
+                ImageClass::LoadStore { format }
+            } else if base_ty == BaseType::SampledImage {
+                ImageClass::Sampled {
+                    depth,
+                    multisampled,
+                    arrayed,
+                }
+            } else {
+                ImageClass::Texture {
+                    multisampled,
+                    arrayed,
+                }
+            };
+
+            Ok(ImageType {
+                id: self.create_handle(id),
+                sampled_type: self.create_handle(sampled_id),
+                dimension,
+                class,
             })
         }
     }
@@ -326,13 +438,8 @@ impl<T> Compiler<'_, T> {
     ///
     /// Atomics are represented as `TypeInner::Pointer { storage: StorageClass::AtomicCounter, ... }`,
     /// usually with a scalar base type.
-    pub fn get_type(&self, id: TypeId) -> error::Result<Type> {
-        // let raw = read_from_ptr::<br::ScType>(type_ptr);
-        // let member_types = read_into_vec_from_ptr(raw.member_types, raw.member_types_size);
-        // let array = read_into_vec_from_ptr(raw.array, raw.array_size);
-        // let array_size_literal = read_into_vec_from_ptr(raw.array_size_literal, raw.array_size);
-        // let image = raw.image;
-        // let result = Type::from_raw(raw.type_, raw.vecsize, raw.columns, member_types, array, array_size_literal, image)?;
+    pub fn get_type(&self, id: Handle<TypeId>) -> error::Result<Type> {
+        let id = self.yield_id(id)?;
 
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
@@ -356,9 +463,9 @@ impl<T> Compiler<'_, T> {
             if storage_class != StorageClass::Generic && base_type_id != id {
                 return Ok(Type {
                     name,
-                    id,
+                    id: self.create_handle(id),
                     inner: TypeInner::Pointer {
-                        base: base_type_id,
+                        base: self.create_handle(base_type_id),
                         storage: storage_class,
                     },
                 });
@@ -367,13 +474,14 @@ impl<T> Compiler<'_, T> {
             let vec_size = sys::spvc_type_get_vector_size(ty);
             let columns = sys::spvc_type_get_columns(ty);
 
-            let mut prep = None;
+            // Handle non-scalar case
+            let mut maybe_non_scalar = None;
             if vec_size > 1 && columns == 1 {
-                prep = Some(self.process_vector(id, vec_size)?);
+                maybe_non_scalar = Some(self.process_vector(id, vec_size)?);
             }
 
             if vec_size > 1 && columns > 1 {
-                prep = Some(self.process_matrix(id, vec_size, columns)?);
+                maybe_non_scalar = Some(self.process_matrix(id, vec_size, columns)?);
             }
 
             let inner = match base_ty {
@@ -382,10 +490,18 @@ impl<T> Compiler<'_, T> {
                     TypeInner::Struct(ty)
                 }
                 BaseType::Image | BaseType::SampledImage => {
-                    todo!("image")
+                    return Ok(Type {
+                        id: self.create_handle(id),
+                        name,
+                        inner: TypeInner::Image(self.process_image(id)?),
+                    });
                 }
                 BaseType::Sampler => {
-                    todo!("image")
+                    return Ok(Type {
+                        id: self.create_handle(id),
+                        name,
+                        inner: TypeInner::Sampler,
+                    });
                 }
                 BaseType::Boolean
                 | BaseType::Int8
@@ -399,7 +515,7 @@ impl<T> Compiler<'_, T> {
                 | BaseType::Fp16
                 | BaseType::Fp32
                 | BaseType::Fp64 => {
-                    if let Some(prep) = prep {
+                    if let Some(prep) = maybe_non_scalar {
                         prep
                     } else {
                         TypeInner::Scalar(base_ty.try_into()?)
@@ -412,46 +528,29 @@ impl<T> Compiler<'_, T> {
                 BaseType::AtomicCounter => {
                     // This should be covered by the pointer type above.
                     return Ok(Type {
+                        id: self.create_handle(id),
                         name,
-                        id,
                         inner: TypeInner::Pointer {
-                            base: base_type_id,
+                            base: self.create_handle(base_type_id),
                             storage: storage_class,
                         },
                     });
                 }
 
                 BaseType::AccelerationStructure => {
-                    panic!("unhandled")
+                    return Ok(Type {
+                        id: self.create_handle(id),
+                        name,
+                        inner: TypeInner::AccelerationStructure,
+                    })
                 }
             };
 
-            let bit_width = sys::spvc_type_get_bit_width(ty);
-
-            let array_dim_len = sys::spvc_type_get_num_array_dimensions(ty);
-
-            let mut array_dims = Vec::with_capacity(array_dim_len as usize);
-            for i in 0..array_dim_len {
-                array_dims.push(sys::spvc_type_get_array_dimension(ty, i))
-            }
-
-            let mut array_is_literal = Vec::with_capacity(array_dim_len as usize);
-            for i in 0..array_dim_len {
-                array_is_literal.push(sys::spvc_type_array_dimension_is_literal(ty, i))
-            }
-
-            let raw = RawTypeData {
-                base_ty,
-                bit_width,
-                vec_size,
-                columns,
-                storage_class,
-                array_dims,
-                array_is_literal,
+            let ty = Type {
+                name,
+                id: self.create_handle(id),
+                inner,
             };
-            eprintln!("{raw:#?}");
-
-            let ty = Type { name, id, inner };
             Ok(ty)
         }
     }

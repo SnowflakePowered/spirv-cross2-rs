@@ -1,6 +1,8 @@
-use crate::compiler::{InterfaceVariableSet, ShaderResources};
-use crate::error::{ContextRooted, ToContextError};
+use crate::compiler::{Compiler, InterfaceVariableSet, PhantomCompiler};
+use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
+use crate::handle::Handle;
 use crate::{error, spirv, ToStatic};
+use spirv_cross_sys as sys;
 use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
     BuiltinResourceType, ResourceType, TypeId, VariableId,
@@ -29,46 +31,109 @@ impl<'a> InterfaceVariableSet<'a> {
     }
 }
 
+pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, PhantomCompiler<'a>);
+
 impl ContextRooted for &ShaderResources<'_> {
     fn context(&self) -> NonNull<spvc_context_s> {
-        self.1 .0
+        self.1.ctx
+    }
+}
+
+impl<'a, T> Compiler<'a, T> {
+    /// Query shader resources, use ids with reflection interface to modify or query binding points, etc.
+    pub fn shader_resources(&self) -> crate::error::Result<ShaderResources> {
+        unsafe {
+            let mut resources = std::ptr::null_mut();
+            sys::spvc_compiler_create_shader_resources(self.0.as_ptr(), &mut resources).ok(self)?;
+
+            let Some(resources) = NonNull::new(resources) else {
+                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
+            };
+
+            Ok(ShaderResources(resources, self.phantom()))
+        }
+    }
+
+    /// Query shader resources, but only return the variables which are part of active_variables.
+    /// E.g.: get_shader_resources(get_active_variables()) to only return the variables which are statically
+    /// accessed.
+    pub fn shader_resources_for_active_variables(
+        &self,
+        set: InterfaceVariableSet,
+    ) -> crate::error::Result<ShaderResources> {
+        unsafe {
+            let mut resources = std::ptr::null_mut();
+            sys::spvc_compiler_create_shader_resources_for_active_variables(
+                self.0.as_ptr(),
+                &mut resources,
+                set.0,
+            )
+            .ok(self)?;
+
+            let Some(resources) = NonNull::new(resources) else {
+                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
+            };
+
+            Ok(ShaderResources(resources, self.phantom()))
+        }
     }
 }
 
 /// Iterator over reflected resources.
-pub struct ResourceIter<'a>(slice::Iter<'a, spvc_reflected_resource>);
+pub struct ResourceIter<'a>(
+    PhantomCompiler<'a>,
+    slice::Iter<'a, spvc_reflected_resource>,
+);
 
 impl<'a> Iterator for ResourceIter<'a> {
     type Item = Resource<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.next().map(Resource::from)
+        self.1.next().map(|o| Resource::from_raw(self.0, o))
     }
 }
 
 /// Iterator over reflected builtin resources
-pub struct BuiltinResourceIter<'a>(slice::Iter<'a, spvc_reflected_builtin_resource>);
+pub struct BuiltinResourceIter<'a>(
+    PhantomCompiler<'a>,
+    slice::Iter<'a, spvc_reflected_builtin_resource>,
+);
 
 impl<'a> Iterator for BuiltinResourceIter<'a> {
     type Item = BuiltinResource<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.next().map(BuiltinResource::from)
+        self.1.next().map(|o| BuiltinResource::from_raw(self.0, o))
     }
 }
 
 #[derive(Debug)]
 pub struct Resource<'a> {
-    pub id: VariableId,
-    pub base_type_id: TypeId,
-    pub type_id: TypeId,
+    pub id: Handle<VariableId>,
+    pub base_type_id: Handle<TypeId>,
+    pub type_id: Handle<TypeId>,
     pub name: Cow<'a, str>,
+}
+
+impl<'a> Resource<'a> {
+    fn from_raw(comp: PhantomCompiler<'a>, value: &'a spvc_reflected_resource) -> Self {
+        Self {
+            id: comp.create_handle(value.id),
+            base_type_id: comp.create_handle(value.base_type_id),
+            type_id: comp.create_handle(value.type_id),
+            // There should never be invalid UTF-8 in a shader.
+            // as per SPIR-V spec: The character set is Unicode in the UTF-8 encoding scheme.
+            // so this will be free 100% of the time.
+            name: unsafe { CStr::from_ptr(value.name) }.to_string_lossy(),
+        }
+    }
 }
 
 impl ToStatic for Resource<'_> {
     type Static<'a>
 
-    = Resource<'static>    where
+    = Resource<'static>
+    where
         'a: 'static;
 
     fn to_static(&self) -> Self::Static<'static> {
@@ -92,14 +157,25 @@ impl Clone for Resource<'_> {
 #[derive(Debug)]
 pub struct BuiltinResource<'a> {
     pub builtin: spirv::BuiltIn,
-    pub value_type_id: TypeId,
+    pub value_type_id: Handle<TypeId>,
     pub resource: Resource<'a>,
+}
+
+impl<'a> BuiltinResource<'a> {
+    fn from_raw(comp: PhantomCompiler<'a>, value: &'a spvc_reflected_builtin_resource) -> Self {
+        Self {
+            builtin: value.builtin,
+            value_type_id: comp.create_handle(value.value_type_id),
+            resource: Resource::from_raw(comp, &value.resource),
+        }
+    }
 }
 
 impl ToStatic for BuiltinResource<'_> {
     type Static<'a>
 
-    = BuiltinResource<'static>    where
+    = BuiltinResource<'static>
+    where
         'a: 'static;
 
     fn to_static(&self) -> Self::Static<'static> {
@@ -150,7 +226,8 @@ pub struct AllResources<'a> {
 impl ToStatic for AllResources<'_> {
     type Static<'a>
 
-    = AllResources<'static>     where
+    = AllResources<'static>
+    where
         'a: 'static;
 
     fn to_static(&self) -> Self::Static<'static> {
@@ -239,30 +316,6 @@ impl Clone for AllResources<'_> {
     }
 }
 
-impl<'a> From<&'a spvc_reflected_resource> for Resource<'a> {
-    fn from(value: &'a spvc_reflected_resource) -> Self {
-        Self {
-            id: value.id,
-            base_type_id: value.base_type_id,
-            type_id: value.type_id,
-            // There should never be invalid UTF-8 in a shader.
-            // as per SPIR-V spec: The character set is Unicode in the UTF-8 encoding scheme.
-            // so this will be free 100% of the time.
-            name: unsafe { CStr::from_ptr(value.name) }.to_string_lossy(),
-        }
-    }
-}
-
-impl<'a> From<&'a spvc_reflected_builtin_resource> for BuiltinResource<'a> {
-    fn from(value: &'a spvc_reflected_builtin_resource) -> Self {
-        Self {
-            builtin: value.builtin,
-            value_type_id: value.value_type_id,
-            resource: Resource::from(&value.resource),
-        }
-    }
-}
-
 impl<'a> ShaderResources<'a> {
     pub fn resources_for_type(&self, ty: ResourceType) -> error::Result<ResourceIter<'a>> {
         let mut count = 0;
@@ -279,7 +332,7 @@ impl<'a> ShaderResources<'a> {
 
         let slice = unsafe { std::slice::from_raw_parts(out, count) };
 
-        Ok(ResourceIter(slice.into_iter()))
+        Ok(ResourceIter(self.1, slice.into_iter()))
     }
 
     pub fn builtin_resources_for_type(
@@ -300,7 +353,7 @@ impl<'a> ShaderResources<'a> {
 
         let slice = unsafe { std::slice::from_raw_parts(out, count) };
 
-        Ok(BuiltinResourceIter(slice.into_iter()))
+        Ok(BuiltinResourceIter(self.1, slice.into_iter()))
     }
 
     /// Get all resources declared in the shader.

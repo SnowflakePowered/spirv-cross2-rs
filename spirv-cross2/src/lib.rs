@@ -11,8 +11,12 @@ use std::ptr::NonNull;
 use std::rc::Rc;
 
 pub mod compiler;
-mod error;
+pub mod error;
+
+/// SPIR-V types and definitions.
 pub mod spirv;
+
+pub mod handle;
 
 /// The SPIRV-Cross context. All memory allocations originating from
 /// this context will have the same lifetime as the context.

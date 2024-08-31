@@ -1,6 +1,6 @@
-use crate::error::{ContextRooted, Result, ToContextError};
+use crate::error::{ContextRooted, Result, SpirvCrossError, ToContextError};
 use crate::handle::Handle;
-use crate::ContextRoot;
+use crate::{ContextRoot, SpirvCross};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, spvc_set, VariableId};
 use std::marker::PhantomData;
@@ -9,55 +9,51 @@ use std::ptr::NonNull;
 pub mod buffers;
 mod combined_image_samplers;
 mod constants;
+pub mod decorations;
+mod entry_points;
 pub mod hlsl;
+mod misc;
 pub mod msl;
+mod names;
 pub mod resources;
 pub mod types;
-mod decorations;
-mod entry_points;
-mod misc;
 
-pub mod targets {
-    use crate::compiler::Target;
-    use spirv_cross_sys::CompilerBackend;
+pub struct Compiler<'a, T> {
+    pub(crate) ptr: NonNull<spvc_compiler_s>,
+    ctx: ContextRoot<'a>,
+    _pd: PhantomData<T>,
+}
 
-    pub struct None;
-    pub struct Glsl;
-    pub struct Msl;
-    pub struct Hlsl;
-    pub struct Json;
-
-    impl Target for None {
-        const BACKEND: CompilerBackend = CompilerBackend::None;
-    }
-    impl Target for Glsl {
-        const BACKEND: CompilerBackend = CompilerBackend::Glsl;
+impl<T> Compiler<'_, T> {
+    /// Create a new compiler instance.
+    ///
+    /// The pointer to the `spvc_compiler_s` must have the same lifetime as the context root.
+    pub(super) unsafe fn new_from_raw(
+        ptr: NonNull<spvc_compiler_s>,
+        ctx: ContextRoot,
+    ) -> Compiler<T> {
+        Compiler {
+            ptr,
+            ctx,
+            _pd: PhantomData,
+        }
     }
 }
 
-pub trait Target {
-    const BACKEND: sys::CompilerBackend;
-}
-
-pub struct Compiler<'a, T>(
-    pub(super) NonNull<spvc_compiler_s>,
-    pub(super) ContextRoot<'a>,
-    pub(super) PhantomData<T>,
-);
-
-pub struct InterfaceVariableSet<'a>(spvc_set, PhantomData<&'a ()>);
+/// A handle to a set of interface variables.
+pub struct InterfaceVariableSet<'a>(spvc_set, Handle<PhantomData<&'a ()>>, PhantomCompiler<'a>);
 
 impl<T> ContextRooted for &Compiler<'_, T> {
     #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
-        self.1.ptr()
+        self.ctx.ptr()
     }
 }
 
 impl<T> ContextRooted for &mut Compiler<'_, T> {
     #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
-        self.1.ptr()
+        self.ctx.ptr()
     }
 }
 
@@ -70,7 +66,8 @@ impl<T> ContextRooted for &mut Compiler<'_, T> {
 /// output of a compiler.
 ///
 /// The only thing a [`PhantomCompiler`] is able to do is create handles or
-/// refer to the root context. It's lifetime
+/// refer to the root context. It's lifetime should be the same as the lifetime
+/// of the compiler.
 #[derive(Copy, Clone)]
 pub(crate) struct PhantomCompiler<'a> {
     pub(crate) ptr: NonNull<spvc_compiler_s>,
@@ -86,9 +83,12 @@ impl ContextRooted for PhantomCompiler<'_> {
 
 impl<'a, T> Compiler<'a, T> {
     /// Create a type erased phantom for lifetime tracking purposes.
-    pub(crate) fn phantom(&self) -> PhantomCompiler<'a> {
+    ///
+    /// This function is unsafe because a [`PhantomCompiler`] can be used to
+    /// **safely** create handles originating from the compiler.
+    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'a> {
         PhantomCompiler {
-            ptr: self.0,
+            ptr: self.ptr,
             ctx: self.context(),
             _pd: PhantomData,
         }
@@ -98,17 +98,17 @@ impl<'a, T> Compiler<'a, T> {
 impl<T> Compiler<'_, T> {
     pub fn add_header_line(&mut self, line: &str) -> Result<()> {
         unsafe {
-            sys::spvc_compiler_add_header_line(self.0.as_ptr(), line.as_ptr().cast()).ok(self)
+            sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), line.as_ptr().cast()).ok(self)
         }
     }
 
     pub fn flatten_buffer_block(&mut self, block: VariableId) -> Result<()> {
-        unsafe { sys::spvc_compiler_flatten_buffer_block(self.0.as_ptr(), block).ok(self) }
+        unsafe { sys::spvc_compiler_flatten_buffer_block(self.ptr.as_ptr(), block).ok(self) }
     }
 
     pub fn require_extension(&mut self, ext: &str) -> Result<()> {
         unsafe {
-            sys::spvc_compiler_require_extension(self.0.as_ptr(), ext.as_ptr().cast()).ok(self)
+            sys::spvc_compiler_require_extension(self.ptr.as_ptr(), ext.as_ptr().cast()).ok(self)
         }
     }
 }
@@ -124,15 +124,19 @@ impl<'a, T> Compiler<'a, T> {
     /// To use the returned set as the filter for which variables are used during compilation,
     /// this set can be moved to set_enabled_interface_variables().
     ///
-    /// The return object is opaque to Rust, but its contents inspected by using [`InterfaceVariableSet::reflect`].
+    /// The return object is opaque to Rust, but its contents inspected by using [`InterfaceVariableSet::to_handles`].
     /// There is no way to modify the contents or use your own `InterfaceVariableSet`.
     pub fn active_interface_variables(&self) -> Result<InterfaceVariableSet<'a>> {
         unsafe {
             let mut set = std::ptr::null();
-            sys::spvc_compiler_get_active_interface_variables(self.0.as_ptr(), &mut set)
+            sys::spvc_compiler_get_active_interface_variables(self.ptr.as_ptr(), &mut set)
                 .ok(self)?;
 
-            Ok(InterfaceVariableSet(set, PhantomData))
+            Ok(InterfaceVariableSet(
+                set,
+                self.create_handle(PhantomData),
+                self.phantom(),
+            ))
         }
     }
 
@@ -140,8 +144,14 @@ impl<'a, T> Compiler<'a, T> {
     /// By default, all variables are used.
     /// Once set, [`Compiler::compile`] will only consider the set in active_variables.
     pub fn set_enabled_interface_variables(&mut self, set: InterfaceVariableSet) -> Result<()> {
+        if !self.handle_is_valid(&set.1) {
+            return Err(SpirvCrossError::InvalidOperation(String::from(
+                "The interface variable set is invalid for this compiler instance.",
+            )));
+        }
         unsafe {
-            sys::spvc_compiler_set_enabled_interface_variables(self.0.as_ptr(), set.0).ok(self)?;
+            sys::spvc_compiler_set_enabled_interface_variables(self.ptr.as_ptr(), set.0)
+                .ok(self)?;
             Ok(())
         }
     }
@@ -149,9 +159,11 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::{targets, Compiler};
+    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
+    use crate::targets;
     use crate::{Module, SpirvCross};
+
     const BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
@@ -170,7 +182,15 @@ mod test {
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let vars = compiler.active_interface_variables()?;
-        assert_eq!(&[13, 9], &vars.reflect().as_slice());
+        assert_eq!(
+            &[13, 9],
+            &vars
+                .to_handles()
+                .into_iter()
+                .map(|h| h.id())
+                .collect::<Vec<_>>()
+                .as_slice()
+        );
 
         compiler.set_enabled_interface_variables(vars)?;
         Ok(())

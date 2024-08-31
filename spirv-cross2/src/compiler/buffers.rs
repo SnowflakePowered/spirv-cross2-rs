@@ -25,7 +25,7 @@ impl<'a, T> Compiler<'a, T> {
             let mut ranges = std::ptr::null();
             let mut size = 0;
             sys::spvc_compiler_get_active_buffer_ranges(
-                self.0.as_ptr(),
+                self.ptr.as_ptr(),
                 handle,
                 &mut ranges,
                 &mut size,
@@ -39,10 +39,12 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::{targets, Compiler};
+    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
+    use crate::targets;
     use crate::{Module, SpirvCross};
     use spirv_cross_sys::ResourceType;
+
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]

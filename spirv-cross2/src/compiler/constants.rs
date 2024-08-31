@@ -103,7 +103,7 @@ impl<'a, T> Compiler<'a, T> {
         let constant = self.yield_id(handle)?;
         unsafe {
             // SAFETY: yield_id ensures safety.
-            let handle = sys::spvc_compiler_get_constant_handle(self.0.as_ptr(), constant);
+            let handle = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
             S::set(handle, column, row, value)
         }
         Ok(())
@@ -118,7 +118,7 @@ impl<'a, T> Compiler<'a, T> {
         let constant = self.yield_id(handle)?;
         unsafe {
             // SAFETY: yield_id ensures safety.
-            let handle = sys::spvc_compiler_get_constant_handle(self.0.as_ptr(), constant);
+            let handle = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
             Ok(S::get(handle, column, row))
         }
     }
@@ -128,7 +128,7 @@ impl<'a, T> Compiler<'a, T> {
             let mut constants = std::ptr::null();
             let mut size = 0;
             sys::spvc_compiler_get_specialization_constants(
-                self.0.as_ptr(),
+                self.ptr.as_ptr(),
                 &mut constants,
                 &mut size,
             )
@@ -148,7 +148,7 @@ impl<'a, T> Compiler<'a, T> {
     ) -> error::Result<Vec<Handle<ConstantId>>> {
         let id = self.yield_id(constant)?;
         unsafe {
-            let constant = sys::spvc_compiler_get_constant_handle(self.0.as_ptr(), id);
+            let constant = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), id);
             let mut constants = std::ptr::null();
             let mut size = 0;
             sys::spvc_constant_get_subconstants(constant, &mut constants, &mut size);
@@ -185,7 +185,7 @@ impl<'a, T> Compiler<'a, T> {
             let mut z = MaybeUninit::zeroed();
 
             let constant = sys::spvc_compiler_get_work_group_size_specialization_constants(
-                self.0.as_ptr(),
+                self.ptr.as_ptr(),
                 x.as_mut_ptr(),
                 y.as_mut_ptr(),
                 z.as_mut_ptr(),

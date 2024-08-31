@@ -13,6 +13,8 @@ keywords = ["spirv", "shaders"]
 
 [dependencies]
 bytemuck = "1.17.1"
+num-traits = "0.2"
+num-derive = "0.4.2"
 
 [build-dependencies]
 cc = "1.0"

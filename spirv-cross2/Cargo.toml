@@ -8,7 +8,6 @@ spirv-cross-sys = { version = "0.1.0", path = "../spirv-cross-sys" }
 bytemuck = "1.17.1"
 thiserror = "1.0.63"
 self_cell = "1.0.4"
-
 half = { version = "2.4.1", optional = true }
 
 [features]

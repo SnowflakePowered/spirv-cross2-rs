@@ -37,8 +37,9 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler =
-        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+        Module::from_words(&spv),
+    )?;
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.uniform_buffers[0];
@@ -79,8 +80,9 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler =
-        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+        Module::from_words(&spv),
+    )?;
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.storage_buffers[0];
@@ -132,8 +134,9 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler =
-        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+        Module::from_words(&spv),
+    )?;
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.sampled_images[1];
@@ -171,8 +174,9 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler =
-        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+        Module::from_words(&spv),
+    )?;
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.stage_outputs[0];
@@ -209,8 +213,9 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler =
-        cross.into_compiler::<spirv_cross2::compiler::targets::None>(Module::from_words(&spv))?;
+    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+        Module::from_words(&spv),
+    )?;
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.atomic_counters[0];

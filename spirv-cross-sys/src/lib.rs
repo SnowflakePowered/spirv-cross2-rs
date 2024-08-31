@@ -12,7 +12,8 @@ mod bindings;
 type spvc_bool = bool;
 
 pub use bindings::*;
-use bytemuck::{Pod, Zeroable};
+pub use bytemuck::{Pod, Zeroable};
+pub use num_traits::{FromPrimitive, ToPrimitive};
 
 unsafe impl Zeroable for SpvId {}
 unsafe impl Pod for SpvId {}

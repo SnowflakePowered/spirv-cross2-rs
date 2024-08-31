@@ -122,6 +122,7 @@ pub struct Type<'a> {
 #[derive(Debug)]
 pub struct StructMember<'a> {
     pub id: Handle<TypeId>,
+    pub struct_type: Handle<TypeId>,
     pub name: Option<Cow<'a, str>>,
     pub index: usize,
     pub offset: u32,
@@ -255,12 +256,12 @@ pub enum TypeInner<'a> {
 impl<T> Compiler<'_, T> {
     fn process_struct(&self, struct_ty_id: TypeId) -> error::Result<StructType> {
         unsafe {
-            let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), struct_ty_id);
+            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), struct_ty_id);
             let base_ty = sys::spvc_type_get_basetype(ty);
             assert_eq!(base_ty, BaseType::Struct);
 
             let mut struct_size = 0;
-            sys::spvc_compiler_get_declared_struct_size(self.0.as_ptr(), ty, &mut struct_size)
+            sys::spvc_compiler_get_declared_struct_size(self.ptr.as_ptr(), ty, &mut struct_size)
                 .ok(self)?;
 
             let member_type_len = sys::spvc_type_get_num_member_types(ty);
@@ -268,7 +269,7 @@ impl<T> Compiler<'_, T> {
             for i in 0..member_type_len {
                 let id = sys::spvc_type_get_member_type(ty, i);
                 let name = CStr::from_ptr(sys::spvc_compiler_get_member_name(
-                    self.0.as_ptr(),
+                    self.ptr.as_ptr(),
                     struct_ty_id,
                     i,
                 ))
@@ -278,7 +279,7 @@ impl<T> Compiler<'_, T> {
 
                 let mut size = 0;
                 sys::spvc_compiler_get_declared_struct_member_size(
-                    self.0.as_ptr(),
+                    self.ptr.as_ptr(),
                     ty,
                     i,
                     &mut size,
@@ -286,12 +287,12 @@ impl<T> Compiler<'_, T> {
                 .ok(self)?;
 
                 let mut offset = 0;
-                sys::spvc_compiler_type_struct_member_offset(self.0.as_ptr(), ty, i, &mut offset)
+                sys::spvc_compiler_type_struct_member_offset(self.ptr.as_ptr(), ty, i, &mut offset)
                     .ok(self)?;
 
                 let mut matrix_stride = 0;
                 let matrix_stride = sys::spvc_compiler_type_struct_member_matrix_stride(
-                    self.0.as_ptr(),
+                    self.ptr.as_ptr(),
                     ty,
                     i,
                     &mut matrix_stride,
@@ -302,7 +303,7 @@ impl<T> Compiler<'_, T> {
 
                 let mut array_stride = 0;
                 let array_stride = sys::spvc_compiler_type_struct_member_array_stride(
-                    self.0.as_ptr(),
+                    self.ptr.as_ptr(),
                     ty,
                     i,
                     &mut array_stride,
@@ -314,6 +315,7 @@ impl<T> Compiler<'_, T> {
                 members.push(StructMember {
                     name,
                     id: self.create_handle(id),
+                    struct_type: self.create_handle(struct_ty_id),
                     offset,
                     size,
                     index: i as usize,
@@ -332,7 +334,7 @@ impl<T> Compiler<'_, T> {
 
     fn process_vector(&self, id: TypeId, vec_width: u32) -> error::Result<TypeInner> {
         unsafe {
-            let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
+            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_ty = sys::spvc_type_get_basetype(ty);
             Ok(TypeInner::Vector {
                 width: vec_width,
@@ -343,7 +345,7 @@ impl<T> Compiler<'_, T> {
 
     fn process_matrix(&self, id: TypeId, rows: u32, columns: u32) -> error::Result<TypeInner> {
         unsafe {
-            let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
+            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_ty = sys::spvc_type_get_basetype(ty);
             Ok(TypeInner::Matrix {
                 rows,
@@ -355,7 +357,7 @@ impl<T> Compiler<'_, T> {
 
     fn process_array<'a>(&self, id: TypeId, name: Option<Cow<'a, str>>) -> error::Result<Type<'a>> {
         unsafe {
-            let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
+            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
 
             let array_dim_len = sys::spvc_type_get_num_array_dimensions(ty);
@@ -398,7 +400,7 @@ impl<T> Compiler<'_, T> {
 
     fn process_image(&self, id: TypeId) -> error::Result<ImageType> {
         unsafe {
-            let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
+            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_ty = sys::spvc_type_get_basetype(ty);
             let sampled_id = sys::spvc_type_get_image_sampled_type(ty);
             let dimension = sys::spvc_type_get_image_dimension(ty);
@@ -443,11 +445,11 @@ impl<T> Compiler<'_, T> {
         let id = self.yield_id(id)?;
 
         unsafe {
-            let ty = sys::spvc_compiler_get_type_handle(self.0.as_ptr(), id);
+            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
 
             let base_ty = sys::spvc_type_get_basetype(ty);
-            let name = CStr::from_ptr(sys::spvc_compiler_get_name(self.0.as_ptr(), id.0))
+            let name = CStr::from_ptr(sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0))
                 .to_string_lossy();
             let name = if name.is_empty() { None } else { Some(name) };
 
@@ -561,7 +563,7 @@ impl<T> Compiler<'_, T> {
         let constant = self.yield_id(constant)?;
         let type_id = unsafe {
             // SAFETY: yield_id ensures this is valid for the ID
-            let constant = sys::spvc_compiler_get_constant_handle(self.0.as_ptr(), constant);
+            let constant = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
             self.create_handle(sys::spvc_constant_get_type(constant))
         };
 
@@ -596,29 +598,11 @@ impl<T> Compiler<'_, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::types::TypeInner;
-    use crate::compiler::{targets, Compiler};
+    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
-    use crate::{Module, SpirvCross};
+    use crate::{targets, Module, SpirvCross};
 
-    macro_rules! include_transmute {
-        ($file:expr) => {{
-            #[repr(C)]
-            pub struct AlignedAs<Align, Bytes: ?Sized> {
-                pub _align: [Align; 0],
-                pub bytes: Bytes,
-            }
-
-            static ALIGNED: &AlignedAs<&[u32], [u8]> = &AlignedAs {
-                _align: [],
-                bytes: *include_bytes!($file),
-            };
-
-            &ALIGNED.bytes
-        }};
-    }
-
-    static BASIC_SPV: &[u8] = include_transmute!("../../basic.spv");
+    static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_stage_outputs() -> Result<(), SpirvCrossError> {

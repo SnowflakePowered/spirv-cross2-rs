@@ -1,11 +1,12 @@
 use crate::compiler::{Compiler, InterfaceVariableSet, PhantomCompiler};
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 use crate::handle::Handle;
+use crate::sealed::Sealed;
 use crate::{error, spirv, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
-    BuiltinResourceType, ResourceType, TypeId, VariableId,
+    BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId,
 };
 use std::borrow::{Borrow, Cow};
 use std::ffi::CStr;
@@ -15,8 +16,9 @@ use std::slice;
 impl<'a> InterfaceVariableSet<'a> {
     /// Get the SPIR-V IDs for the active interface variables.
     ///
-    /// This is only meant to be used for reflection.
-    pub fn reflect(&self) -> Vec<u32> {
+    /// This is only meant to be used for reflection. It is not possible
+    /// to modify the contents of an [`InterfaceVariableSet`].
+    pub fn to_handles(&self) -> Vec<Handle<VariableId>> {
         unsafe {
             // Get the length of allocation
             let mut length = 0;
@@ -26,7 +28,9 @@ impl<'a> InterfaceVariableSet<'a> {
             let mut vec = vec![0; length];
             spirv_cross_sys::spvc_rs_expose_set(self.0, vec.as_mut_ptr(), &mut length);
 
-            vec
+            vec.into_iter()
+                .map(|id| self.2.create_handle(VariableId(SpvId(id))))
+                .collect()
         }
     }
 }
@@ -44,7 +48,8 @@ impl<'a, T> Compiler<'a, T> {
     pub fn shader_resources(&self) -> crate::error::Result<ShaderResources> {
         unsafe {
             let mut resources = std::ptr::null_mut();
-            sys::spvc_compiler_create_shader_resources(self.0.as_ptr(), &mut resources).ok(self)?;
+            sys::spvc_compiler_create_shader_resources(self.ptr.as_ptr(), &mut resources)
+                .ok(self)?;
 
             let Some(resources) = NonNull::new(resources) else {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
@@ -64,7 +69,7 @@ impl<'a, T> Compiler<'a, T> {
         unsafe {
             let mut resources = std::ptr::null_mut();
             sys::spvc_compiler_create_shader_resources_for_active_variables(
-                self.0.as_ptr(),
+                self.ptr.as_ptr(),
                 &mut resources,
                 set.0,
             )
@@ -129,6 +134,7 @@ impl<'a> Resource<'a> {
     }
 }
 
+impl Sealed for Resource<'_> {}
 impl ToStatic for Resource<'_> {
     type Static<'a>
 
@@ -171,6 +177,7 @@ impl<'a> BuiltinResource<'a> {
     }
 }
 
+impl Sealed for BuiltinResource<'_> {}
 impl ToStatic for BuiltinResource<'_> {
     type Static<'a>
 
@@ -209,6 +216,7 @@ pub struct AllResources<'a> {
     pub acceleration_structures: Vec<Resource<'a>>,
 
     /// Currently unsupported.
+    #[deprecated = "Currently unsupported by the C API."]
     pub gl_plain_uniforms: Vec<Resource<'a>>,
 
     pub push_constant_buffers: Vec<Resource<'a>>,
@@ -223,6 +231,7 @@ pub struct AllResources<'a> {
     pub builtin_outputs: Vec<BuiltinResource<'a>>,
 }
 
+impl Sealed for AllResources<'_> {}
 impl ToStatic for AllResources<'_> {
     type Static<'a>
 

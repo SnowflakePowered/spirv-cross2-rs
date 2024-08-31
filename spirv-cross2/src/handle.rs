@@ -1,7 +1,7 @@
 use crate::compiler::{Compiler, PhantomCompiler};
 use crate::error::SpirvCrossError;
 use crate::{error, sealed};
-use spirv_cross_sys::{spvc_compiler_s, SpvId};
+use spirv_cross_sys::spvc_compiler_s;
 use std::fmt::{Debug, Formatter};
 use std::ptr::NonNull;
 
@@ -9,6 +9,7 @@ use crate::sealed::Sealed;
 pub use spirv_cross_sys::{ConstantId, TypeId, VariableId};
 
 #[derive(Copy, Clone)]
+#[repr(transparent)]
 struct PointerOnlyForComparison<T>(NonNull<T>);
 
 impl<T> PartialEq for PointerOnlyForComparison<T> {
@@ -33,10 +34,25 @@ impl<T> Debug for PointerOnlyForComparison<T> {
     }
 }
 
+/// A reference to an ID referring to an item in the compiler instance.
+///
+/// The usage of `Handle<T>` ensures that item IDs can not be forged from
+/// a different compiler instance or from a `u32`.
 #[derive(Debug, Copy, Clone)]
 pub struct Handle<T> {
     id: T,
     tag: PointerOnlyForComparison<spvc_compiler_s>,
+}
+
+impl<T: Id> Handle<T> {
+    /// Return the `u32` part of the Id.
+    ///
+    /// Note that [`Handle<T>`] **can not** implement [`Id`]
+    /// for safety reasons. Getting an `impl Id` out of a
+    /// [`Handle<T>`] requires using [`Compiler::yield_id`].
+    pub fn id(&self) -> u32 {
+        self.id.id()
+    }
 }
 
 /// Trait for SPIRV-Cross Ids.
@@ -69,22 +85,6 @@ impl Id for ConstantId {
     }
 }
 
-impl Sealed for SpvId {}
-impl Id for SpvId {
-    #[inline(always)]
-    fn id(&self) -> u32 {
-        self.0
-    }
-}
-
-impl<T: Id> Sealed for Handle<T> {}
-impl<T: Id> Id for Handle<T> {
-    #[inline(always)]
-    fn id(&self) -> u32 {
-        self.id.id()
-    }
-}
-
 impl<T: Id> Handle<T> {
     /// Erase the type of the handle, this is useful for errors
     /// but is otherwise useless.
@@ -107,13 +107,13 @@ impl<T> Compiler<'_, T> {
     pub unsafe fn create_handle<I>(&self, id: I) -> Handle<I> {
         Handle {
             id,
-            tag: PointerOnlyForComparison(self.0),
+            tag: PointerOnlyForComparison(self.ptr),
         }
     }
 
     /// Returns whether the given handle is valid for this compiler instance.
     pub fn handle_is_valid<I>(&self, handle: &Handle<I>) -> bool {
-        handle.tag == PointerOnlyForComparison(self.0)
+        handle.tag == PointerOnlyForComparison(self.ptr)
     }
 
     /// Yield the value of the handle, if it originated from the same context,

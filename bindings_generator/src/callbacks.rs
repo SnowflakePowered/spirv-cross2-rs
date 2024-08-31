@@ -1,4 +1,6 @@
-use bindgen::callbacks::{EnumVariantCustomBehavior, EnumVariantValue, ParseCallbacks};
+use bindgen::callbacks::{
+    DeriveInfo, EnumVariantCustomBehavior, EnumVariantValue, ParseCallbacks, TypeKind,
+};
 use cruet::Inflector;
 
 #[derive(Debug)]
@@ -74,9 +76,7 @@ impl ParseCallbacks for SpirvCrossCallbacks {
             "spvc_backend" => "CompilerBackend",
             "spvc_basetype" => "BaseType",
             "spvc_builtin_resource_type" => "BuiltinResourceType",
-            "spvc_capture_mode" => "CaptureMode",
             "spvc_resource_type" => "ResourceType",
-            "spvc_combined_image_sampler" => "CombinedImageSampler",
 
             // While `spvc_bool` is typedefed to `unsigned char`, it is always `stdbool`, which is ABI compatible with Rust's `bool`
             "spvc_bool" => "crate::spvc_bool",
@@ -152,5 +152,16 @@ impl ParseCallbacks for SpirvCrossCallbacks {
         };
 
         return None;
+    }
+
+    fn add_derives(&self, info: &DeriveInfo<'_>) -> Vec<String> {
+        if info.kind == TypeKind::Enum && info.name.starts_with("Spv") {
+            return vec![
+                String::from("num_derive::FromPrimitive"),
+                String::from("num_derive::ToPrimitive"),
+            ];
+        }
+
+        vec![]
     }
 }

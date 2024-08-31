@@ -1,3 +1,4 @@
+use crate::compiler::decorations::DecorationValue;
 use crate::handle::{Handle, Id};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_context_s, spvc_result};
@@ -23,6 +24,14 @@ pub enum SpirvCrossError {
     #[error("The tag of the handle does not match the compiler instance: {0:?}")]
     /// The handle provided originated from a different compiler instance.
     InvalidHandle(Handle<Box<dyn Id>>),
+    #[error("The operation is invalid: {0:?}")]
+    InvalidOperation(String),
+    #[error("The decoration value is invalid for the given decoration: {0:?} = {1}")]
+    InvalidDecorationOutput(crate::spirv::Decoration, u32),
+    #[error("The decoration value is invalid for the given decoration: {0:?} = {1:?}")]
+    InvalidDecorationInput(crate::spirv::Decoration, DecorationValue<'static>),
+    #[error("The name is invalid: {0:?}")]
+    InvalidName(String),
 }
 
 pub(crate) trait ContextRooted {

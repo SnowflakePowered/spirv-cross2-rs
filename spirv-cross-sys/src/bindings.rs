@@ -4,7 +4,9 @@
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct SpvId(pub ::std::os::raw::c_uint);
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvSourceLanguage {
     Unknown = 0,
     ESSL = 1,
@@ -34,7 +36,9 @@ impl SpvExecutionModel {
     pub const CallableNV: SpvExecutionModel = SpvExecutionModel::CallableKHR;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvExecutionModel {
     Vertex = 0,
     TessellationControl = 1,
@@ -59,7 +63,9 @@ impl SpvAddressingModel {
         SpvAddressingModel::PhysicalStorageBuffer64;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvAddressingModel {
     Logical = 0,
     Physical32 = 1,
@@ -70,7 +76,9 @@ impl SpvMemoryModel {
     pub const VulkanKHR: SpvMemoryModel = SpvMemoryModel::Vulkan;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvMemoryModel {
     Simple = 0,
     GLSL450 = 1,
@@ -87,7 +95,9 @@ impl SpvExecutionMode {
     pub const OutputTrianglesNV: SpvExecutionMode = SpvExecutionMode::OutputTrianglesEXT;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvExecutionMode {
     Invocations = 0,
     SpacingEqual = 1,
@@ -187,7 +197,9 @@ impl SpvStorageClass {
     pub const PhysicalStorageBufferEXT: SpvStorageClass = SpvStorageClass::PhysicalStorageBuffer;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvStorageClass {
     UniformConstant = 0,
     Input = 1,
@@ -215,7 +227,9 @@ pub enum SpvStorageClass {
     HostOnlyINTEL = 5937,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvDim {
     Dim1D = 0,
     Dim2D = 1,
@@ -226,7 +240,9 @@ pub enum SpvDim {
     DimSubpassData = 6,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvSamplerAddressingMode {
     None = 0,
     ClampToEdge = 1,
@@ -235,13 +251,17 @@ pub enum SpvSamplerAddressingMode {
     RepeatMirrored = 4,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvSamplerFilterMode {
     Nearest = 0,
     Linear = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvImageFormat {
     Unknown = 0,
     Rgba32f = 1,
@@ -287,7 +307,9 @@ pub enum SpvImageFormat {
     R64i = 41,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvImageChannelOrder {
     R = 0,
     A = 1,
@@ -311,7 +333,9 @@ pub enum SpvImageChannelOrder {
     ABGR = 19,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvImageChannelDataType {
     SnormInt8 = 0,
     SnormInt16 = 1,
@@ -348,7 +372,9 @@ impl SpvImageOperandsShift {
         SpvImageOperandsShift::SpvImageOperandsVolatileTexelShift;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvImageOperandsShift {
     SpvImageOperandsBiasShift = 0,
     SpvImageOperandsLodShift = 1,
@@ -384,7 +410,9 @@ impl SpvImageOperandsMask {
         SpvImageOperandsMask::SpvImageOperandsVolatileTexelMask;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvImageOperandsMask {
     None = 0,
     SpvImageOperandsBiasMask = 1,
@@ -405,7 +433,9 @@ pub enum SpvImageOperandsMask {
     SpvImageOperandsOffsetsMask = 65536,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFPFastMathModeShift {
     SpvFPFastMathModeNotNaNShift = 0,
     SpvFPFastMathModeNotInfShift = 1,
@@ -416,7 +446,9 @@ pub enum SpvFPFastMathModeShift {
     SpvFPFastMathModeAllowReassocINTELShift = 17,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFPFastMathModeMask {
     None = 0,
     SpvFPFastMathModeNotNaNMask = 1,
@@ -428,7 +460,9 @@ pub enum SpvFPFastMathModeMask {
     SpvFPFastMathModeAllowReassocINTELMask = 131072,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFPRoundingMode {
     RTE = 0,
     RTZ = 1,
@@ -436,21 +470,27 @@ pub enum SpvFPRoundingMode {
     RTN = 3,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvLinkageType {
     Export = 0,
     Import = 1,
     LinkOnceODR = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvAccessQualifier {
     ReadOnly = 0,
     WriteOnly = 1,
     ReadWrite = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFunctionParameterAttribute {
     Zext = 0,
     Sext = 1,
@@ -483,7 +523,9 @@ impl SpvDecoration {
     pub const UserSemantic: SpvDecoration = SpvDecoration::HlslSemanticGOOGLE;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvDecoration {
     RelaxedPrecision = 0,
     SpecId = 1,
@@ -660,7 +702,9 @@ impl SpvBuiltIn {
     pub const IncomingRayFlagsNV: SpvBuiltIn = SpvBuiltIn::IncomingRayFlagsKHR;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvBuiltIn {
     Position = 0,
     PointSize = 1,
@@ -768,20 +812,26 @@ pub enum SpvBuiltIn {
     CullMaskKHR = 6021,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvSelectionControlShift {
     SpvSelectionControlFlattenShift = 0,
     SpvSelectionControlDontFlattenShift = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvSelectionControlMask {
     None = 0,
     SpvSelectionControlFlattenMask = 1,
     SpvSelectionControlDontFlattenMask = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvLoopControlShift {
     SpvLoopControlUnrollShift = 0,
     SpvLoopControlDontUnrollShift = 1,
@@ -802,7 +852,9 @@ pub enum SpvLoopControlShift {
     SpvLoopControlNoFusionINTELShift = 23,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvLoopControlMask {
     None = 0,
     SpvLoopControlUnrollMask = 1,
@@ -824,7 +876,9 @@ pub enum SpvLoopControlMask {
     SpvLoopControlNoFusionINTELMask = 8388608,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFunctionControlShift {
     SpvFunctionControlInlineShift = 0,
     SpvFunctionControlDontInlineShift = 1,
@@ -833,7 +887,9 @@ pub enum SpvFunctionControlShift {
     SpvFunctionControlOptNoneINTELShift = 16,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFunctionControlMask {
     None = 0,
     SpvFunctionControlInlineMask = 1,
@@ -855,7 +911,9 @@ impl SpvMemorySemanticsShift {
         SpvMemorySemanticsShift::SpvMemorySemanticsMakeVisibleShift;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvMemorySemanticsShift {
     SpvMemorySemanticsAcquireShift = 1,
     SpvMemorySemanticsReleaseShift = 2,
@@ -885,7 +943,9 @@ impl SpvMemorySemanticsMask {
         SpvMemorySemanticsMask::SpvMemorySemanticsMakeVisibleMask;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvMemorySemanticsMask {
     None = 0,
     SpvMemorySemanticsAcquireMask = 2,
@@ -916,7 +976,9 @@ impl SpvMemoryAccessShift {
         SpvMemoryAccessShift::SpvMemoryAccessNonPrivatePointerShift;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvMemoryAccessShift {
     SpvMemoryAccessVolatileShift = 0,
     SpvMemoryAccessAlignedShift = 1,
@@ -940,7 +1002,9 @@ impl SpvMemoryAccessMask {
         SpvMemoryAccessMask::SpvMemoryAccessNonPrivatePointerMask;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvMemoryAccessMask {
     None = 0,
     SpvMemoryAccessVolatileMask = 1,
@@ -956,7 +1020,9 @@ impl SpvScope {
     pub const QueueFamilyKHR: SpvScope = SpvScope::QueueFamily;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvScope {
     CrossDevice = 0,
     Device = 1,
@@ -967,7 +1033,9 @@ pub enum SpvScope {
     ShaderCallKHR = 6,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvGroupOperation {
     Reduce = 0,
     InclusiveScan = 1,
@@ -978,19 +1046,25 @@ pub enum SpvGroupOperation {
     PartitionedExclusiveScanNV = 8,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvKernelEnqueueFlags {
     NoWait = 0,
     WaitKernel = 1,
     WaitWorkGroup = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvKernelProfilingInfoShift {
     SpvKernelProfilingInfoCmdExecTimeShift = 0,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvKernelProfilingInfoMask {
     None = 0,
     SpvKernelProfilingInfoCmdExecTimeMask = 1,
@@ -1085,7 +1159,9 @@ impl SpvCapability {
     pub const DotProductKHR: SpvCapability = SpvCapability::DotProduct;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvCapability {
     Matrix = 0,
     Shader = 1,
@@ -1292,7 +1368,9 @@ pub enum SpvCapability {
     GroupUniformArithmeticKHR = 6400,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvRayFlagsShift {
     SpvRayFlagsOpaqueKHRShift = 0,
     SpvRayFlagsNoOpaqueKHRShift = 1,
@@ -1306,7 +1384,9 @@ pub enum SpvRayFlagsShift {
     SpvRayFlagsSkipAABBsKHRShift = 9,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvRayFlagsMask {
     None = 0,
     SpvRayFlagsOpaqueKHRMask = 1,
@@ -1321,26 +1401,34 @@ pub enum SpvRayFlagsMask {
     SpvRayFlagsSkipAABBsKHRMask = 512,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvRayQueryIntersection {
     RayQueryCandidateIntersectionKHR = 0,
     RayQueryCommittedIntersectionKHR = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvRayQueryCommittedIntersectionType {
     RayQueryCommittedIntersectionNoneKHR = 0,
     RayQueryCommittedIntersectionTriangleKHR = 1,
     RayQueryCommittedIntersectionGeneratedKHR = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvRayQueryCandidateIntersectionType {
     RayQueryCandidateIntersectionTriangleKHR = 0,
     RayQueryCandidateIntersectionAABBKHR = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFragmentShadingRateShift {
     SpvFragmentShadingRateVertical2PixelsShift = 0,
     SpvFragmentShadingRateVertical4PixelsShift = 1,
@@ -1348,7 +1436,9 @@ pub enum SpvFragmentShadingRateShift {
     SpvFragmentShadingRateHorizontal4PixelsShift = 3,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFragmentShadingRateMask {
     None = 0,
     SpvFragmentShadingRateVertical2PixelsMask = 1,
@@ -1357,19 +1447,25 @@ pub enum SpvFragmentShadingRateMask {
     SpvFragmentShadingRateHorizontal4PixelsMask = 8,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFPDenormMode {
     Preserve = 0,
     FlushToZero = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvFPOperationMode {
     IEEE = 0,
     ALT = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvQuantizationModes {
     TRN = 0,
     TRN_ZERO = 1,
@@ -1381,7 +1477,9 @@ pub enum SpvQuantizationModes {
     RND_CONV_ODD = 7,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvOverflowModes {
     WRAP = 0,
     SAT = 1,
@@ -1393,7 +1491,9 @@ impl SpvPackedVectorFormat {
         SpvPackedVectorFormat::PackedVectorFormat4x8Bit;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvPackedVectorFormat {
     PackedVectorFormat4x8Bit = 0,
 }
@@ -1431,7 +1531,9 @@ impl SpvOp {
     pub const MemberDecorateStringGOOGLE: SpvOp = SpvOp::MemberDecorateString;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum SpvOp {
     Nop = 0,
     Undef = 1,
@@ -2316,31 +2418,32 @@ fn bindgen_test_layout_spvc_entry_point() {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct CombinedImageSampler {
+pub struct spvc_combined_image_sampler {
     pub combined_id: VariableId,
     pub image_id: VariableId,
     pub sampler_id: VariableId,
 }
 #[test]
-fn bindgen_test_layout_CombinedImageSampler() {
-    const UNINIT: ::std::mem::MaybeUninit<CombinedImageSampler> = ::std::mem::MaybeUninit::uninit();
+fn bindgen_test_layout_spvc_combined_image_sampler() {
+    const UNINIT: ::std::mem::MaybeUninit<spvc_combined_image_sampler> =
+        ::std::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        ::std::mem::size_of::<CombinedImageSampler>(),
+        ::std::mem::size_of::<spvc_combined_image_sampler>(),
         12usize,
-        concat!("Size of: ", stringify!(CombinedImageSampler))
+        concat!("Size of: ", stringify!(spvc_combined_image_sampler))
     );
     assert_eq!(
-        ::std::mem::align_of::<CombinedImageSampler>(),
+        ::std::mem::align_of::<spvc_combined_image_sampler>(),
         4usize,
-        concat!("Alignment of ", stringify!(CombinedImageSampler))
+        concat!("Alignment of ", stringify!(spvc_combined_image_sampler))
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).combined_id) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
-            stringify!(CombinedImageSampler),
+            stringify!(spvc_combined_image_sampler),
             "::",
             stringify!(combined_id)
         )
@@ -2350,7 +2453,7 @@ fn bindgen_test_layout_CombinedImageSampler() {
         4usize,
         concat!(
             "Offset of field: ",
-            stringify!(CombinedImageSampler),
+            stringify!(spvc_combined_image_sampler),
             "::",
             stringify!(image_id)
         )
@@ -2360,7 +2463,7 @@ fn bindgen_test_layout_CombinedImageSampler() {
         8usize,
         concat!(
             "Offset of field: ",
-            stringify!(CombinedImageSampler),
+            stringify!(spvc_combined_image_sampler),
             "::",
             stringify!(sampler_id)
         )
@@ -2577,7 +2680,7 @@ pub enum spvc_result {
 }
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum CaptureMode {
+pub enum spvc_capture_mode {
     Copy = 0,
     TakeOwnership = 1,
 }
@@ -4099,7 +4202,7 @@ extern "C" {
         context: spvc_context,
         backend: CompilerBackend,
         parsed_ir: spvc_parsed_ir,
-        mode: CaptureMode,
+        mode: spvc_capture_mode,
         compiler: *mut spvc_compiler,
     ) -> spvc_result;
 }
@@ -4819,7 +4922,7 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_get_combined_image_samplers(
         compiler: spvc_compiler,
-        samplers: *mut *const CombinedImageSampler,
+        samplers: *mut *const spvc_combined_image_sampler,
         num_samplers: *mut usize,
     ) -> spvc_result;
 }

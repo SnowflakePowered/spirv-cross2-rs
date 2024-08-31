@@ -1,12 +1,15 @@
-use crate::compiler::{Compiler, Target};
+extern crate core;
+
+use crate::compiler::Compiler;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_context_s, SpvId};
 use std::borrow::Borrow;
 
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 
+use crate::sealed::Sealed;
+use crate::targets::Target;
 use std::marker::PhantomData;
-use std::mem::ManuallyDrop;
 use std::ops::{Deref, Index};
 use std::ptr::NonNull;
 use std::rc::Rc;
@@ -18,6 +21,8 @@ pub mod error;
 pub mod spirv;
 
 pub mod handle;
+
+pub mod targets;
 
 pub(crate) mod sealed {
     pub trait Sealed {}
@@ -122,7 +127,7 @@ impl SpirvCross {
                 self.0.as_ptr(),
                 T::BACKEND,
                 ir,
-                spirv_cross_sys::CaptureMode::TakeOwnership,
+                spirv_cross_sys::spvc_capture_mode::TakeOwnership,
                 &mut compiler,
             )
             .ok(self)?;
@@ -131,10 +136,9 @@ impl SpirvCross {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
             };
 
-            Ok(Compiler(
+            Ok(Compiler::new_from_raw(
                 compiler,
                 ContextRoot::Borrowed(&self),
-                PhantomData,
             ))
         }
     }
@@ -163,7 +167,7 @@ impl SpirvCross {
                 self.0.as_ptr(),
                 T::BACKEND,
                 ir,
-                spirv_cross_sys::CaptureMode::TakeOwnership,
+                spirv_cross_sys::spvc_capture_mode::TakeOwnership,
                 &mut compiler,
             )
             .ok(&**self)?;
@@ -172,10 +176,9 @@ impl SpirvCross {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
             };
 
-            Ok(Compiler(
+            Ok(Compiler::new_from_raw(
                 compiler,
                 ContextRoot::RefCounted(Rc::clone(&self)),
-                PhantomData,
             ))
         }
     }
@@ -203,7 +206,7 @@ impl SpirvCross {
                 self.0.as_ptr(),
                 T::BACKEND,
                 ir,
-                spirv_cross_sys::CaptureMode::TakeOwnership,
+                spirv_cross_sys::spvc_capture_mode::TakeOwnership,
                 &mut compiler,
             )
             .ok(&self)?;
@@ -212,7 +215,7 @@ impl SpirvCross {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
             };
 
-            Ok(Compiler(compiler, ContextRoot::Owned(self), PhantomData))
+            Ok(Compiler::new_from_raw(compiler, ContextRoot::Owned(self)))
         }
     }
 }
@@ -229,10 +232,14 @@ impl ContextRooted for &SpirvCross {
     }
 }
 
-trait ToStatic {
+/// Helper trait to detach objects with lifetimes attached to
+/// a compiler or context.
+pub trait ToStatic: Sealed {
     type Static<'a>
     where
         'a: 'static;
+
+    /// Clone the object into an instance with `'static` lifetime.
     fn to_static(&self) -> Self::Static<'static>;
 }
 

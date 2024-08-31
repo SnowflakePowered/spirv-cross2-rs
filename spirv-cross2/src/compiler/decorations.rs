@@ -8,8 +8,7 @@ use crate::{error, spirv, ToStatic};
 use core::slice;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{ConstantId, FromPrimitive, SpvId, ToPrimitive, VariableId};
-use std::borrow::Cow;
-use std::ffi::{CStr, CString};
+use crate::string::MaybeCStr;
 
 #[derive(Debug)]
 pub enum DecorationValue<'a> {
@@ -35,7 +34,7 @@ pub enum DecorationValue<'a> {
     /// Only for decoration [`SpecId`](Decoration::SpecId).
     Constant(Handle<ConstantId>),
     /// Only for decoration [`HlslSemanticGOOGLE`](Decoration::HlslSemanticGOOGLE) and [`UserTypeGOOGLE`](Decoration::HlslSemanticGOOGLE).
-    String(Cow<'a, str>),
+    String(MaybeCStr<'a>),
     /// All other decorations to indicate the presence of a decoration.
     Present,
 }
@@ -54,8 +53,8 @@ impl ToStatic for DecorationValue<'_> {
             DecorationValue::RoundingMode(a) => DecorationValue::RoundingMode(*a),
             DecorationValue::Constant(a) => DecorationValue::Constant(*a),
             DecorationValue::String(c) => {
-                let owned = Cow::Owned(c.to_string());
-                DecorationValue::String(owned)
+                let owned = c.to_string();
+                DecorationValue::String(MaybeCStr::from_string(owned))
             }
             DecorationValue::Present => DecorationValue::Present,
         }
@@ -135,9 +134,7 @@ impl<'a, T> Compiler<'a, T> {
             if decoration_is_string(decoration) {
                 let str =
                     sys::spvc_compiler_get_decoration_string(self.ptr.as_ptr(), id, decoration);
-                let str = CStr::from_ptr(str);
-                let str = str.to_string_lossy();
-                return Ok(Some(DecorationValue::String(str)));
+                return Ok(Some(DecorationValue::String(MaybeCStr::from_ptr(str))));
             }
 
             let value = sys::spvc_compiler_get_decoration(self.ptr.as_ptr(), id, decoration);
@@ -173,9 +170,7 @@ impl<'a, T> Compiler<'a, T> {
                     index,
                     decoration,
                 );
-                let str = CStr::from_ptr(str);
-                let str = str.to_string_lossy();
-                return Ok(Some(DecorationValue::String(str)));
+                return Ok(Some(DecorationValue::String(MaybeCStr::from_ptr(str))));
             }
 
             let value = sys::spvc_compiler_get_member_decoration(
@@ -254,7 +249,7 @@ impl<'a, T> Compiler<'a, T> {
                     sys::spvc_compiler_set_decoration(self.ptr.as_ptr(), id, decoration, 1);
                 }
                 DecorationValue::String(ref string) => {
-                    let Ok(cstring) = CString::new(string.to_string()) else {
+                    let Ok(cstring) = string.to_cstring_ptr() else {
                         return Err(SpirvCrossError::InvalidDecorationInput(
                             decoration,
                             DecorationValue::to_static(&value),
@@ -371,7 +366,7 @@ impl<'a, T> Compiler<'a, T> {
                     );
                 }
                 DecorationValue::String(ref string) => {
-                    let Ok(cstring) = CString::new(string.to_string()) else {
+                    let Ok(cstring) = string.to_cstring_ptr() else {
                         return Err(SpirvCrossError::InvalidDecorationInput(
                             decoration,
                             DecorationValue::to_static(&value),

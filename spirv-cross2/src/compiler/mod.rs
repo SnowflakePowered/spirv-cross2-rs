@@ -1,11 +1,11 @@
 use crate::error::{ContextRooted, Result, ToContextError};
+use crate::handle::Handle;
+use crate::targets::CompilableTarget;
 use crate::{spirv, ContextRoot};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, VariableId};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
-use crate::handle::Handle;
-use crate::targets::CompilableTarget;
 
 pub mod buffers;
 pub mod combined_image_samplers;
@@ -119,15 +119,17 @@ impl<T: CompilableTarget> Compiler<'_, T> {
 
     pub fn mask_stage_output_by_builtin(&mut self, builtin: spirv::BuiltIn) -> Result<()> {
         unsafe {
-            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin)
-                .ok(&*self)
+            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin).ok(&*self)
         }
     }
 
     pub fn variable_is_depth_or_compare(&self, variable: Handle<VariableId>) -> Result<bool> {
         let id = self.yield_id(variable)?;
         unsafe {
-            Ok(sys::spvc_compiler_variable_is_depth_or_compare(self.ptr.as_ptr(), id))
+            Ok(sys::spvc_compiler_variable_is_depth_or_compare(
+                self.ptr.as_ptr(),
+                id,
+            ))
         }
     }
 }

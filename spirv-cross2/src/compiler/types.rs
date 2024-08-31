@@ -9,6 +9,7 @@ use crate::handle::Handle;
 use crate::handle::{ConstantId, TypeId};
 use crate::spirv::StorageClass;
 use spirv_cross_sys as sys;
+use crate::string::MaybeCStr;
 
 /// The kind of scalar
 #[derive(Debug)]
@@ -115,7 +116,7 @@ impl TryFrom<BaseType> for Scalar {
 #[derive(Debug)]
 pub struct Type<'a> {
     pub id: Handle<TypeId>,
-    pub name: Option<Cow<'a, str>>,
+    pub name: Option<MaybeCStr<'a>>,
     pub inner: TypeInner<'a>,
 }
 
@@ -123,7 +124,7 @@ pub struct Type<'a> {
 pub struct StructMember<'a> {
     pub id: Handle<TypeId>,
     pub struct_type: Handle<TypeId>,
-    pub name: Option<Cow<'a, str>>,
+    pub name: Option<MaybeCStr<'a>>,
     pub index: usize,
     pub offset: u32,
     pub size: usize,
@@ -268,14 +269,13 @@ impl<T> Compiler<'_, T> {
             let mut members = Vec::with_capacity(member_type_len as usize);
             for i in 0..member_type_len {
                 let id = sys::spvc_type_get_member_type(ty, i);
-                let name = CStr::from_ptr(sys::spvc_compiler_get_member_name(
+                let name = MaybeCStr::from_ptr(sys::spvc_compiler_get_member_name(
                     self.ptr.as_ptr(),
                     struct_ty_id,
                     i,
-                ))
-                .to_string_lossy();
+                ));
 
-                let name = if name.is_empty() { None } else { Some(name) };
+                let name = if name.as_ref().is_empty() { None } else { Some(name) };
 
                 let mut size = 0;
                 sys::spvc_compiler_get_declared_struct_member_size(
@@ -355,7 +355,7 @@ impl<T> Compiler<'_, T> {
         }
     }
 
-    fn process_array<'a>(&self, id: TypeId, name: Option<Cow<'a, str>>) -> error::Result<Type<'a>> {
+    fn process_array<'a>(&self, id: TypeId, name: Option<MaybeCStr<'a>>) -> error::Result<Type<'a>> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
@@ -449,9 +449,9 @@ impl<T> Compiler<'_, T> {
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
 
             let base_ty = sys::spvc_type_get_basetype(ty);
-            let name = CStr::from_ptr(sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0))
-                .to_string_lossy();
-            let name = if name.is_empty() { None } else { Some(name) };
+            let name = MaybeCStr::from_ptr(sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0));
+
+            let name = if name.as_ref().is_empty() { None } else { Some(name) };
 
             let array_dim_len = sys::spvc_type_get_num_array_dimensions(ty);
             if array_dim_len != 0 {

@@ -37,7 +37,7 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(
         Module::from_words(&spv),
     )?;
     let res = compiler.shader_resources()?.all_resources()?;
@@ -80,7 +80,7 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(
         Module::from_words(&spv),
     )?;
     let res = compiler.shader_resources()?.all_resources()?;
@@ -134,7 +134,7 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(
         Module::from_words(&spv),
     )?;
     let res = compiler.shader_resources()?.all_resources()?;
@@ -174,7 +174,7 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(
         Module::from_words(&spv),
     )?;
     let res = compiler.shader_resources()?.all_resources()?;
@@ -213,7 +213,7 @@ void main() {
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::compiler::targets::targets::None>(
+    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(
         Module::from_words(&spv),
     )?;
     let res = compiler.shader_resources()?.all_resources()?;

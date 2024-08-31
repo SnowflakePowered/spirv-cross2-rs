@@ -4,12 +4,16 @@ use crate::handle::Handle;
 use crate::sealed::Sealed;
 use crate::{error, spirv, ToStatic};
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s, spvc_set, BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId};
+use spirv_cross_sys::{
+    spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
+    spvc_set, BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId,
+};
 use std::borrow::{Borrow, Cow};
 use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
+use crate::string::MaybeCStr;
 
 pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, PhantomCompiler<'a>);
 
@@ -63,7 +67,6 @@ impl<'a, T> Compiler<'a, T> {
 /// A handle to a set of interface variables.
 pub struct InterfaceVariableSet<'a>(spvc_set, Handle<PhantomData<&'a ()>>, PhantomCompiler<'a>);
 
-
 impl<'a> InterfaceVariableSet<'a> {
     /// Get the SPIR-V IDs for the active interface variables.
     ///
@@ -116,7 +119,10 @@ impl<'a, T> Compiler<'a, T> {
     /// Sets the interface variables which are used during compilation.
     /// By default, all variables are used.
     /// Once set, [`Compiler::compile`] will only consider the set in active_variables.
-    pub fn set_enabled_interface_variables(&mut self, set: InterfaceVariableSet) -> error::Result<()> {
+    pub fn set_enabled_interface_variables(
+        &mut self,
+        set: InterfaceVariableSet,
+    ) -> error::Result<()> {
         if !self.handle_is_valid(&set.1) {
             return Err(SpirvCrossError::InvalidOperation(String::from(
                 "The interface variable set is invalid for this compiler instance.",
@@ -163,7 +169,7 @@ pub struct Resource<'a> {
     pub id: Handle<VariableId>,
     pub base_type_id: Handle<TypeId>,
     pub type_id: Handle<TypeId>,
-    pub name: Cow<'a, str>,
+    pub name: MaybeCStr<'a>,
 }
 
 impl<'a> Resource<'a> {
@@ -175,7 +181,7 @@ impl<'a> Resource<'a> {
             // There should never be invalid UTF-8 in a shader.
             // as per SPIR-V spec: The character set is Unicode in the UTF-8 encoding scheme.
             // so this will be free 100% of the time.
-            name: unsafe { CStr::from_ptr(value.name) }.to_string_lossy(),
+            name: unsafe { MaybeCStr::from_ptr(value.name) },
         }
     }
 }
@@ -193,7 +199,7 @@ impl ToStatic for Resource<'_> {
             id: self.id,
             base_type_id: self.base_type_id,
             type_id: self.type_id,
-            name: Cow::Owned(self.name.to_string()),
+            name: MaybeCStr::from_string(self.name.to_string()),
         }
     }
 }

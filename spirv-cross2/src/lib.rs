@@ -1,3 +1,5 @@
+extern crate core;
+
 use crate::compiler::Compiler;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_context_s, SpvId};
@@ -20,8 +22,8 @@ pub mod spirv;
 
 pub mod handle;
 
+pub mod string;
 pub mod targets;
-
 pub(crate) mod sealed {
     pub trait Sealed {}
 }

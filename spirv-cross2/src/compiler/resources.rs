@@ -1,39 +1,15 @@
-use crate::compiler::{Compiler, InterfaceVariableSet, PhantomCompiler};
+use crate::compiler::{Compiler, PhantomCompiler};
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::sealed::Sealed;
 use crate::{error, spirv, ToStatic};
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{
-    spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
-    BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId,
-};
+use spirv_cross_sys::{spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s, spvc_set, BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId};
 use std::borrow::{Borrow, Cow};
 use std::ffi::CStr;
+use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
-
-impl<'a> InterfaceVariableSet<'a> {
-    /// Get the SPIR-V IDs for the active interface variables.
-    ///
-    /// This is only meant to be used for reflection. It is not possible
-    /// to modify the contents of an [`InterfaceVariableSet`].
-    pub fn to_handles(&self) -> Vec<Handle<VariableId>> {
-        unsafe {
-            // Get the length of allocation
-            let mut length = 0;
-            spirv_cross_sys::spvc_rs_expose_set(self.0, std::ptr::null_mut(), &mut length);
-
-            // write into the vec
-            let mut vec = vec![0; length];
-            spirv_cross_sys::spvc_rs_expose_set(self.0, vec.as_mut_ptr(), &mut length);
-
-            vec.into_iter()
-                .map(|id| self.2.create_handle(VariableId(SpvId(id))))
-                .collect()
-        }
-    }
-}
 
 pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, PhantomCompiler<'a>);
 
@@ -80,6 +56,76 @@ impl<'a, T> Compiler<'a, T> {
             };
 
             Ok(ShaderResources(resources, self.phantom()))
+        }
+    }
+}
+
+/// A handle to a set of interface variables.
+pub struct InterfaceVariableSet<'a>(spvc_set, Handle<PhantomData<&'a ()>>, PhantomCompiler<'a>);
+
+
+impl<'a> InterfaceVariableSet<'a> {
+    /// Get the SPIR-V IDs for the active interface variables.
+    ///
+    /// This is only meant to be used for reflection. It is not possible
+    /// to modify the contents of an [`InterfaceVariableSet`].
+    pub fn to_handles(&self) -> Vec<Handle<VariableId>> {
+        unsafe {
+            // Get the length of allocation
+            let mut length = 0;
+            spirv_cross_sys::spvc_rs_expose_set(self.0, std::ptr::null_mut(), &mut length);
+
+            // write into the vec
+            let mut vec = vec![0; length];
+            spirv_cross_sys::spvc_rs_expose_set(self.0, vec.as_mut_ptr(), &mut length);
+
+            vec.into_iter()
+                .map(|id| self.2.create_handle(VariableId(SpvId(id))))
+                .collect()
+        }
+    }
+}
+
+// reflection
+impl<'a, T> Compiler<'a, T> {
+    /// Returns a set of all global variables which are statically accessed
+    /// by the control flow graph from the current entry point.
+    /// Only variables which change the interface for a shader are returned, that is,
+    /// variables with storage class of Input, Output, Uniform, UniformConstant, PushConstant and AtomicCounter
+    /// storage classes are returned.
+    ///
+    /// To use the returned set as the filter for which variables are used during compilation,
+    /// this set can be moved to set_enabled_interface_variables().
+    ///
+    /// The return object is opaque to Rust, but its contents inspected by using [`InterfaceVariableSet::to_handles`].
+    /// There is no way to modify the contents or use your own `InterfaceVariableSet`.
+    pub fn active_interface_variables(&self) -> error::Result<InterfaceVariableSet<'a>> {
+        unsafe {
+            let mut set = std::ptr::null();
+            sys::spvc_compiler_get_active_interface_variables(self.ptr.as_ptr(), &mut set)
+                .ok(self)?;
+
+            Ok(InterfaceVariableSet(
+                set,
+                self.create_handle(PhantomData),
+                self.phantom(),
+            ))
+        }
+    }
+
+    /// Sets the interface variables which are used during compilation.
+    /// By default, all variables are used.
+    /// Once set, [`Compiler::compile`] will only consider the set in active_variables.
+    pub fn set_enabled_interface_variables(&mut self, set: InterfaceVariableSet) -> error::Result<()> {
+        if !self.handle_is_valid(&set.1) {
+            return Err(SpirvCrossError::InvalidOperation(String::from(
+                "The interface variable set is invalid for this compiler instance.",
+            )));
+        }
+        unsafe {
+            sys::spvc_compiler_set_enabled_interface_variables(self.ptr.as_ptr(), set.0)
+                .ok(self)?;
+            Ok(())
         }
     }
 }

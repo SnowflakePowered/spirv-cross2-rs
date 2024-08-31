@@ -1,10 +1,11 @@
-use crate::error::{ContextRooted, Result, SpirvCrossError, ToContextError};
-use crate::handle::Handle;
-use crate::{ContextRoot, SpirvCross};
+use crate::error::{ContextRooted, Result, ToContextError};
+use crate::{spirv, ContextRoot};
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, spvc_set, VariableId};
+use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, VariableId};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
+use crate::handle::Handle;
+use crate::targets::CompilableTarget;
 
 pub mod buffers;
 pub mod combined_image_samplers;
@@ -38,9 +39,6 @@ impl<T> Compiler<'_, T> {
         }
     }
 }
-
-/// A handle to a set of interface variables.
-pub struct InterfaceVariableSet<'a>(spvc_set, Handle<PhantomData<&'a ()>>, PhantomCompiler<'a>);
 
 impl<T> ContextRooted for &Compiler<'_, T> {
     #[inline(always)]
@@ -94,7 +92,8 @@ impl<'a, T> Compiler<'a, T> {
     }
 }
 
-impl<T> Compiler<'_, T> {
+/// Cross-compilation related methods.
+impl<T: CompilableTarget> Compiler<'_, T> {
     pub fn add_header_line(&mut self, line: &str) -> Result<()> {
         unsafe {
             sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), line.as_ptr().cast()).ok(self)
@@ -110,48 +109,25 @@ impl<T> Compiler<'_, T> {
             sys::spvc_compiler_require_extension(self.ptr.as_ptr(), ext.as_ptr().cast()).ok(self)
         }
     }
-}
 
-// reflection
-impl<'a, T> Compiler<'a, T> {
-    /// Returns a set of all global variables which are statically accessed
-    /// by the control flow graph from the current entry point.
-    /// Only variables which change the interface for a shader are returned, that is,
-    /// variables with storage class of Input, Output, Uniform, UniformConstant, PushConstant and AtomicCounter
-    /// storage classes are returned.
-    ///
-    /// To use the returned set as the filter for which variables are used during compilation,
-    /// this set can be moved to set_enabled_interface_variables().
-    ///
-    /// The return object is opaque to Rust, but its contents inspected by using [`InterfaceVariableSet::to_handles`].
-    /// There is no way to modify the contents or use your own `InterfaceVariableSet`.
-    pub fn active_interface_variables(&self) -> Result<InterfaceVariableSet<'a>> {
+    pub fn mask_stage_output_by_location(&mut self, location: u32, component: u32) -> Result<()> {
         unsafe {
-            let mut set = std::ptr::null();
-            sys::spvc_compiler_get_active_interface_variables(self.ptr.as_ptr(), &mut set)
-                .ok(self)?;
-
-            Ok(InterfaceVariableSet(
-                set,
-                self.create_handle(PhantomData),
-                self.phantom(),
-            ))
+            sys::spvc_compiler_mask_stage_output_by_location(self.ptr.as_ptr(), location, component)
+                .ok(&*self)
         }
     }
 
-    /// Sets the interface variables which are used during compilation.
-    /// By default, all variables are used.
-    /// Once set, [`Compiler::compile`] will only consider the set in active_variables.
-    pub fn set_enabled_interface_variables(&mut self, set: InterfaceVariableSet) -> Result<()> {
-        if !self.handle_is_valid(&set.1) {
-            return Err(SpirvCrossError::InvalidOperation(String::from(
-                "The interface variable set is invalid for this compiler instance.",
-            )));
-        }
+    pub fn mask_stage_output_by_builtin(&mut self, builtin: spirv::BuiltIn) -> Result<()> {
         unsafe {
-            sys::spvc_compiler_set_enabled_interface_variables(self.ptr.as_ptr(), set.0)
-                .ok(self)?;
-            Ok(())
+            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin)
+                .ok(&*self)
+        }
+    }
+
+    pub fn variable_is_depth_or_compare(&self, variable: Handle<VariableId>) -> Result<bool> {
+        let id = self.yield_id(variable)?;
+        unsafe {
+            Ok(sys::spvc_compiler_variable_is_depth_or_compare(self.ptr.as_ptr(), id))
         }
     }
 }

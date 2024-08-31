@@ -8,6 +8,8 @@
 // const char *new_name, SpvExecutionModel model);
 // SPVC_PUBLIC_API const char *spvc_compiler_get_cleansed_entry_point_name(spvc_compiler compiler, const char *name,
 // SpvExecutionModel model);
+
+
 // SPVC_PUBLIC_API void spvc_compiler_set_execution_mode(spvc_compiler compiler, SpvExecutionMode mode);
 // SPVC_PUBLIC_API void spvc_compiler_unset_execution_mode(spvc_compiler compiler, SpvExecutionMode mode);
 // SPVC_PUBLIC_API void spvc_compiler_set_execution_mode_with_arguments(spvc_compiler compiler, SpvExecutionMode mode,
@@ -20,3 +22,18 @@
 // SPVC_PUBLIC_API SpvExecutionModel spvc_compiler_get_execution_model(spvc_compiler compiler);
 // SPVC_PUBLIC_API void spvc_compiler_update_active_builtins(spvc_compiler compiler);
 // SPVC_PUBLIC_API spvc_bool spvc_compiler_has_active_builtin(spvc_compiler compiler, SpvBuiltIn builtin, SpvStorageClass storage);
+
+
+// SPVC_PUBLIC_API spvc_result spvc_compiler_get_declared_capabilities(spvc_compiler compiler,
+// const SpvCapability **capabilities,
+// size_t *num_capabilities);
+// SPVC_PUBLIC_API spvc_result spvc_compiler_get_declared_extensions(spvc_compiler compiler, const char ***extensions,
+// size_t *num_extensions);
+//
+
+use crate::compiler::Compiler;
+
+impl <T> Compiler<'_, T> {
+
+
+}

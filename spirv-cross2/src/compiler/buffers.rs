@@ -2,7 +2,7 @@ use crate::compiler::Compiler;
 
 use crate::error;
 use crate::handle::Handle;
-use spirv_cross_sys::VariableId;
+use spirv_cross_sys::{SpvId, VariableId};
 
 use spirv_cross_sys as sys;
 
@@ -33,6 +33,25 @@ impl<'a, T> Compiler<'a, T> {
             .ok(self)?;
 
             Ok(std::slice::from_raw_parts(ranges, size))
+        }
+    }
+
+    /// Queries if a buffer object has a neighbor "counter" buffer.
+    /// If so, the ID of that counter buffer will be returned.
+    ///
+    /// If SPV_GOOGLE_hlsl_functionality1 is used, this can be used even with a stripped SPIR-V module.
+    /// Otherwise, this query is purely based on OpName identifiers as found in the SPIR-V module, and will
+    /// only return true if OpSource was reported HLSL.
+    /// To rely on this functionality, ensure that the SPIR-V module is not stripped.
+    pub fn hlsl_counter_buffer(&self, variable: Handle<VariableId>) -> error::Result<Option<Handle<VariableId>>> {
+        let id = self.yield_id(variable)?;
+        unsafe {
+            let mut counter = VariableId(SpvId(0));
+            if sys::spvc_compiler_buffer_get_hlsl_counter_buffer(self.ptr.as_ptr(), id, &mut counter) {
+                Ok(Some(self.create_handle(counter)))
+            } else {
+                Ok(None)
+            }
         }
     }
 }

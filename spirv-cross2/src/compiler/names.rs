@@ -101,8 +101,6 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
-    // SPVC_PUBLIC_API const char *spvc_compiler_get_remapped_declared_block_name(spvc_compiler compiler, spvc_variable_id id);
-
     pub fn remapped_declared_block_name(
         &self,
         handle: Handle<VariableId>,

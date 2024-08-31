@@ -7,14 +7,13 @@ use std::marker::PhantomData;
 use std::ptr::NonNull;
 
 pub mod buffers;
-mod combined_image_samplers;
-mod constants;
+pub mod combined_image_samplers;
+pub mod constants;
 pub mod decorations;
-mod entry_points;
+pub mod entry_points;
 pub mod hlsl;
-mod misc;
 pub mod msl;
-mod names;
+pub mod names;
 pub mod resources;
 pub mod types;
 

@@ -1,8 +1,8 @@
-use spirv_cross2_derive::CompilerOptions;
 use crate::compile::CompilerOptions;
 use crate::error::ContextRooted;
-use spirv_cross_sys::{spvc_compiler_options, CompilerBackend};
 use crate::sealed::Sealed;
+use spirv_cross2_derive::CompilerOptions;
+use spirv_cross_sys::{spvc_compiler_options, CompilerBackend};
 
 pub struct None;
 pub struct Glsl;

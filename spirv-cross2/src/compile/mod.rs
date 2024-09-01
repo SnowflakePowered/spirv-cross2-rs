@@ -1,17 +1,17 @@
-use std::ops::Deref;
 use crate::error::{ContextRooted, Result, ToContextError};
 use crate::handle::Handle;
 use crate::targets::CompilableTarget;
 use crate::{error, spirv, Compiler};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_options, VariableId};
+use std::ops::Deref;
 use std::ptr::NonNull;
 pub mod glsl;
 pub mod hlsl;
 pub mod msl;
 
 pub struct CompiledArtifact<'a, T> {
-    compiler: Compiler<'a, T>
+    compiler: Compiler<'a, T>,
 }
 
 impl<'a, T> Deref for CompiledArtifact<'a, T> {
@@ -73,8 +73,7 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
 
             options.apply(handle, &*self)?;
 
-            sys::spvc_compiler_install_compiler_options(self.ptr.as_ptr(), handle)
-                .ok(&*self)?;
+            sys::spvc_compiler_install_compiler_options(self.ptr.as_ptr(), handle).ok(&*self)?;
 
             Ok(())
         }
@@ -85,9 +84,7 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     pub fn compile(self) -> CompiledArtifact<'a, T> {
         // todo: actually do the compilation.
 
-        CompiledArtifact {
-            compiler: self
-        }
+        CompiledArtifact { compiler: self }
     }
 }
 

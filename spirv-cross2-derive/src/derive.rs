@@ -1,12 +1,13 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
+use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
-use syn::{Data, DeriveInput, Fields, Type};
+use syn::{Data, DeriveInput, Expr, Fields, Token, Type};
 
-#[derive(Debug)]
 struct CompilerOption {
     field_name: Ident,
-    path: TokenStream,
+    path: Expr,
+    default: Option<Expr>,
     is_bool: bool,
 }
 
@@ -29,7 +30,7 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
                 { Ok(()) }
             }
         };
-        return Ok(expanded)
+        return Ok(expanded);
     }
 
     let Fields::Named(fields) = data.fields else {
@@ -48,7 +49,7 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
                 return None;
             };
 
-            let Ok(name) = attr.meta.require_list() else {
+            let Ok(list) = attr.meta.require_list() else {
                 return None;
             };
 
@@ -57,34 +58,56 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
                 _ => false,
             };
 
+            let punctuated = list
+                .parse_args_with(Punctuated::<Expr, Token![,]>::parse_terminated)
+                .ok()?;
+
+            let path = punctuated.get(0)?;
+
+            let default = punctuated.get(1).cloned();
+
             Some(CompilerOption {
                 field_name: ident,
-                path: name.tokens.clone(),
+                path: path.clone(),
+                default,
                 is_bool,
             })
         })
         .collect();
 
     let mut setters = Vec::new();
+    let mut defaults: Vec<TokenStream> = Vec::new();
+
     for option in options {
         let path = option.path;
         let field = option.field_name;
+        let default = option.default;
 
         let setter = if option.is_bool {
             quote! {
-                ::spirv_cross_sys::spvc_compiler_options_set_bool(options, #path, self.#field)
+                ::spirv_cross_sys::spvc_compiler_options_set_bool(options, ::spirv_cross_sys::spvc_compiler_option::#path, self.#field)
                 .ok(root)?;
-
             }
         } else {
             quote! {
-                ::spirv_cross_sys::spvc_compiler_options_set_uint(options, #path,
+                ::spirv_cross_sys::spvc_compiler_options_set_uint(options, ::spirv_cross_sys::spvc_compiler_option::#path,
                     ::std::os::raw::c_uint::from(self.#field))
                 .ok(root)?;
             }
         };
 
+        let default_setter = if let Some(default) = default {
+            quote! {
+                #field: #default,
+            }
+        } else {
+            quote! {
+                #field: Default::default(),
+            }
+        };
+
         setters.push(setter);
+        defaults.push(default_setter);
     }
 
     let name = input.ident;
@@ -99,6 +122,14 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
                 }
 
                 Ok(())
+            }
+        }
+
+         impl ::std::default::Default for #name {
+            fn default() -> Self {
+                Self {
+                     #(#defaults)*
+                }
             }
         }
     };

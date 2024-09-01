@@ -1,58 +1,116 @@
-use super::CompilerOptions;
-use crate::error::SpirvCrossError;
+use super::{CommonCompileOptions, CompilerOptions};
 use crate::error::ToContextError;
 use crate::{targets, Compiler, ContextRooted, Module};
+use spirv_cross_sys as sys;
+use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options};
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
 pub struct CompileOptions {
     // common options
-    /// Debug option to always emit temporary variables for all expressions.
-    #[option(SPVC_COMPILER_OPTION_FORCE_TEMPORARY, false)]
-    pub force_temporary: bool,
+    #[expand]
+    /// Compile options common to GLSL, HLSL, and MSL.
+    pub common: CommonCompileOptions,
 
-    /// Flattens multidimensional arrays, e.g. float foo[a][b][c] into single-dimensional arrays,
-    /// e.g. float foo[a * b * c].
-    /// This function does not change the actual type of any object.
-    /// Only the generated code, including declarations of interface variables
-    /// are changed to be single array dimension.
-    #[option(SPVC_COMPILER_OPTION_FLATTEN_MULTIDIMENSIONAL_ARRAYS, false)]
-    pub flatten_multidimensional_arrays: bool,
+    #[expand]
+    /// The GLSL version to output. The default is #version 450.
+    pub version: GlslVersion,
+}
 
-    /// In vertex-like shaders, inverts gl_Position.y or equivalent.
-    #[option(SPVC_COMPILER_OPTION_FLIP_VERTEX_Y, false)]
-    pub flip_vertex_y: bool,
+/// GLSL language version.
+#[derive(Debug)]
+pub enum GlslVersion {
+    /// #version 110
+    Glsl110,
+    /// #version 120
+    Glsl120,
+    /// #version 130
+    Glsl130,
+    /// #version 140
+    Glsl140,
+    /// #version 150
+    Glsl150,
+    /// #version 330
+    Glsl330,
+    /// #version 400
+    Glsl400,
+    /// #version 410
+    Glsl410,
+    /// #version 420
+    Glsl420,
+    /// #version 430
+    Glsl430,
+    /// #version 440
+    Glsl440,
+    /// #version 450
+    Glsl450,
+    /// #version 460
+    Glsl460,
+    /// #version 100 es
+    Glsl100Es,
+    /// #version 300 es
+    Glsl300Es,
+    /// #version 310 es
+    Glsl310Es,
+    /// #version 320 es
+    Glsl320Es,
+}
 
-    /// GLSL: In vertex-like shaders, rewrite [0, w] depth (Vulkan/D3D style) to [-w, w] depth (GL style).
-    /// MSL: In vertex-like shaders, rewrite [-w, w] depth (GL style) to [0, w] depth.
-    /// HLSL: In vertex-like shaders, rewrite [-w, w] depth (GL style) to [0, w] depth.
-    #[option(SPVC_COMPILER_OPTION_FIXUP_DEPTH_CONVENTION, false)]
-    pub fixup_clipspace: bool,
+impl Default for GlslVersion {
+    fn default() -> Self {
+        GlslVersion::Glsl450
+    }
+}
 
-    /// Emit OpLine directives if present in the module.
-    /// May not correspond exactly to original source, but should be a good approximation.
-    #[option(SPVC_COMPILER_OPTION_EMIT_LINE_DIRECTIVES, false)]
-    pub emit_line_directives: bool,
+impl CompilerOptions for GlslVersion {
+    unsafe fn apply(
+        &self,
+        options: spvc_compiler_options,
+        root: impl ContextRooted + Copy,
+    ) -> crate::error::Result<()> {
+        let version = match self {
+            GlslVersion::Glsl110 => 110,
+            GlslVersion::Glsl120 => 120,
+            GlslVersion::Glsl130 => 130,
+            GlslVersion::Glsl140 => 140,
+            GlslVersion::Glsl150 => 150,
+            GlslVersion::Glsl330 => 330,
+            GlslVersion::Glsl400 => 400,
+            GlslVersion::Glsl410 => 410,
+            GlslVersion::Glsl420 => 420,
+            GlslVersion::Glsl430 => 430,
+            GlslVersion::Glsl440 => 440,
+            GlslVersion::Glsl450 => 450,
+            GlslVersion::Glsl460 => 460,
+            GlslVersion::Glsl100Es => 100,
+            GlslVersion::Glsl300Es => 300,
+            GlslVersion::Glsl310Es => 310,
+            GlslVersion::Glsl320Es => 320,
+        };
 
-    /// On some targets (WebGPU), uninitialized variables are banned.
-    /// If this is enabled, all variables (temporaries, Private, Function)
-    /// which would otherwise be uninitialized will now be initialized to 0 instead.
-    #[option(SPVC_COMPILER_OPTION_FORCE_ZERO_INITIALIZED_VARIABLES, false)]
-    pub force_zero_initialized_variables: bool,
+        let es = matches!(
+            self,
+            GlslVersion::Glsl100Es
+                | GlslVersion::Glsl300Es
+                | GlslVersion::Glsl310Es
+                | GlslVersion::Glsl320Es
+        );
 
-    /// In cases where readonly/writeonly decoration are not used at all,
-    /// we try to deduce which qualifier(s) we should actually used, since actually emitting
-    /// read-write decoration is very rare, and older glslang/HLSL compilers tend to just emit readwrite as a matter of fact.
-    /// The default (true) is to enable automatic deduction for these cases, but if you trust the decorations set
-    /// by the SPIR-V, it's recommended to set this to false.
-    #[option(SPVC_COMPILER_OPTION_ENABLE_STORAGE_IMAGE_QUALIFIER_DEDUCTION, true)]
-    pub enable_storage_image_qualifier_deduction: bool,
+        unsafe {
+            sys::spvc_compiler_options_set_uint(
+                options,
+                spvc_compiler_option::SPVC_COMPILER_OPTION_GLSL_VERSION,
+                version,
+            )
+            .ok(root)?;
+            sys::spvc_compiler_options_set_bool(
+                options,
+                spvc_compiler_option::SPVC_COMPILER_OPTION_GLSL_ES,
+                es,
+            )
+            .ok(root)?;
+        }
 
-    /// For opcodes where we have to perform explicit additional nan checks, very ugly code is generated.
-    /// If we opt-in, ignore these requirements.
-    /// In opcodes like NClamp/NMin/NMax and FP compare, ignore NaN behavior.
-    /// Use FClamp/FMin/FMax semantics for clamps and lets implementation choose ordered or unordered
-    /// compares.
-    #[option(SPVC_COMPILER_OPTION_RELAX_NAN_CHECKS, false)]
-    pub relax_nan_checks: bool,
+        Ok(())
+    }
 }
 
 #[cfg(test)]

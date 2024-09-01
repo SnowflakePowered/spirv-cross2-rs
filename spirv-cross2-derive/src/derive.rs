@@ -11,6 +11,10 @@ struct CompilerOption {
     is_bool: bool,
 }
 
+struct Expansions {
+    field_name: Ident,
+}
+
 pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
     let Data::Struct(data) = input.data else {
         return Err(syn::Error::new(
@@ -75,8 +79,22 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
         })
         .collect();
 
+    let expands: Vec<_> = fields
+        .named
+        .iter()
+        .filter_map(|field| {
+            let ident = field.ident.clone().unwrap();
+            let Some(_attr) = field.attrs.iter().find(|a| a.path().is_ident("expand")) else {
+                return None;
+            };
+
+            Some(Expansions { field_name: ident })
+        })
+        .collect();
+
     let mut setters = Vec::new();
     let mut defaults: Vec<TokenStream> = Vec::new();
+    let mut expanders: Vec<TokenStream> = Vec::new();
 
     for option in options {
         let path = option.path;
@@ -110,6 +128,19 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
         defaults.push(default_setter);
     }
 
+    for expands in expands {
+        let field = expands.field_name;
+        let expander = quote! {
+            CompilerOptions::apply(&self.#field, options, root)?;
+        };
+        let default_setter = quote! {
+             #field: Default::default(),
+        };
+
+        expanders.push(expander);
+        defaults.push(default_setter);
+    }
+
     let name = input.ident;
     // Build the output, possibly using quasi-quotation
     let expanded = quote! {
@@ -117,6 +148,10 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
             unsafe fn apply<'a>(&self, options: ::spirv_cross_sys::spvc_compiler_options, root: impl ContextRooted + Copy)
                 -> crate::error::Result<()>
             {
+                unsafe {
+                    #(#expanders)*;
+                }
+
                 unsafe {
                     #(#setters)*;
                 }

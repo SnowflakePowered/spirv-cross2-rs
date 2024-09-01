@@ -1,3 +1,4 @@
+use crate::compile::CommonCompileOptions;
 use crate::targets::Hlsl;
 use crate::Compiler;
 pub use spirv_cross_sys::HlslBindingFlagBits as BindingFlags;
@@ -5,7 +6,6 @@ pub use spirv_cross_sys::HlslBindingFlags;
 pub use spirv_cross_sys::HlslResourceBinding as ResourceBinding;
 pub use spirv_cross_sys::HlslResourceBindingMapping as ResourceBindingMapping;
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
-
 // SPVC_PUBLIC_API spvc_result spvc_compiler_hlsl_set_root_constants_layout(spvc_compiler compiler,
 // const spvc_hlsl_root_constants *constant_info,
 // size_t count);
@@ -23,5 +23,12 @@ pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 // SpvExecutionModel model,
 // unsigned set,
 // unsigned binding);
+use crate::compile::CompilerOptions;
+use crate::ContextRooted;
+#[derive(Debug, spirv_cross2_derive::CompilerOptions)]
+pub struct CompileOptions {
+    #[expand]
+    pub common: CommonCompileOptions,
+}
 
 impl<'a> Compiler<'a, Hlsl> {}

@@ -1,3 +1,4 @@
+use crate::compile;
 use crate::compile::CompilerOptions;
 use crate::error::ContextRooted;
 use crate::sealed::Sealed;
@@ -11,7 +12,7 @@ pub struct Hlsl;
 pub struct Cpp;
 pub struct Json;
 
-#[derive(Debug, CompilerOptions)]
+#[derive(Debug, Default, CompilerOptions)]
 pub struct NoOptions;
 
 impl Sealed for None {}
@@ -20,7 +21,7 @@ impl Target for None {
 }
 
 impl CompilableTarget for Glsl {
-    type Options = NoOptions;
+    type Options = compile::glsl::CompileOptions;
 }
 impl Sealed for Glsl {}
 impl Target for Glsl {
@@ -28,7 +29,7 @@ impl Target for Glsl {
 }
 
 impl CompilableTarget for Hlsl {
-    type Options = NoOptions;
+    type Options = compile::hlsl::CompileOptions;
 }
 impl Sealed for Hlsl {}
 impl Target for Hlsl {
@@ -36,7 +37,7 @@ impl Target for Hlsl {
 }
 
 impl CompilableTarget for Msl {
-    type Options = NoOptions;
+    type Options = compile::msl::CompileOptions;
 }
 impl Sealed for Msl {}
 impl Target for Msl {

@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 spirv-cross-sys = { version = "0.1.0", path = "../spirv-cross-sys" }
+spirv-cross2-derive = { version = "0.1.0", path = "../spirv-cross2-derive" }
+
 bytemuck = "1.17.1"
 thiserror = "1.0.63"
 self_cell = "1.0.4"

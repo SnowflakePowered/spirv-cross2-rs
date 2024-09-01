@@ -1,89 +1,13 @@
 use crate::error::{ContextRooted, Result, ToContextError};
 use crate::handle::Handle;
 use crate::targets::CompilableTarget;
-use crate::{spirv, ContextRoot};
+use crate::{error, spirv, Compiler};
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, VariableId};
-use std::marker::PhantomData;
+use spirv_cross_sys::{spvc_compiler_options, VariableId};
 use std::ptr::NonNull;
-
+pub mod glsl;
 pub mod hlsl;
 pub mod msl;
-
-pub struct Compiler<'a, T> {
-    pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: ContextRoot<'a>,
-    _pd: PhantomData<T>,
-}
-
-impl<T> Compiler<'_, T> {
-    /// Create a new compiler instance.
-    ///
-    /// The pointer to the `spvc_compiler_s` must have the same lifetime as the context root.
-    pub(super) unsafe fn new_from_raw(
-        ptr: NonNull<spvc_compiler_s>,
-        ctx: ContextRoot,
-    ) -> Compiler<T> {
-        Compiler {
-            ptr,
-            ctx,
-            _pd: PhantomData,
-        }
-    }
-}
-
-impl<T> ContextRooted for &Compiler<'_, T> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
-    }
-}
-
-impl<T> ContextRooted for &mut Compiler<'_, T> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
-    }
-}
-
-/// Holds on to the pointer for a compiler instance,
-/// but type erased.
-///
-/// This is used so that child resources of a compiler track the
-/// lifetime of a compiler, or create handles attached with the
-/// compiler instance, without needing to refer to the typed
-/// output of a compiler.
-///
-/// The only thing a [`PhantomCompiler`] is able to do is create handles or
-/// refer to the root context. It's lifetime should be the same as the lifetime
-/// of the compiler.
-#[derive(Copy, Clone)]
-pub(crate) struct PhantomCompiler<'a> {
-    pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: NonNull<spvc_context_s>,
-    _pd: PhantomData<&'a ()>,
-}
-
-impl ContextRooted for PhantomCompiler<'_> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx
-    }
-}
-
-impl<'a, T> Compiler<'a, T> {
-    /// Create a type erased phantom for lifetime tracking purposes.
-    ///
-    /// This function is unsafe because a [`PhantomCompiler`] can be used to
-    /// **safely** create handles originating from the compiler.
-    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'a> {
-        PhantomCompiler {
-            ptr: self.ptr,
-            ctx: self.context(),
-            _pd: PhantomData,
-        }
-    }
-}
 
 /// Cross-compilation related methods.
 impl<T: CompilableTarget> Compiler<'_, T> {
@@ -127,18 +51,26 @@ impl<T: CompilableTarget> Compiler<'_, T> {
     }
 }
 
+pub(crate) trait CompilerOptions {
+    unsafe fn apply(
+        &self,
+        options: spvc_compiler_options,
+        root: impl ContextRooted + Copy,
+    ) -> error::Result<()>;
+}
+
 #[cfg(test)]
 mod test {
-    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
     use crate::targets;
+    use crate::Compiler;
     use crate::{Module, SpirvCross};
 
     const BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn create_compiler() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
@@ -147,7 +79,7 @@ mod test {
 
     #[test]
     pub fn reflect_interface_vars() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;

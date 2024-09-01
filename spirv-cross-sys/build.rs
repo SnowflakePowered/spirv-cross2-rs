@@ -26,6 +26,11 @@ pub fn main() {
         .cpp(true)
         .std("c++14")
         .define("SPIRV_CROSS_CLI", "OFF")
+        .define("SPIRV_CROSS_C_API_GLSL", "1")
+        .define("SPIRV_CROSS_C_API_HLSL", "1")
+        .define("SPIRV_CROSS_C_API_MSL", "1")
+        .define("SPIRV_CROSS_C_API_CPP", "1")
+        .define("SPIRV_CROSS_C_API_REFLECT", "1")
         .file("native/spvc_set.cpp")
         .includes(&["native/SPIRV-Cross", "native/SPIRV-CROSS/include"]);
 

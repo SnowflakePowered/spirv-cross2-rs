@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/spirv-cross-sys/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/spirv-cross2/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/spirv-cross2/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/spirv-cross2-derive/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

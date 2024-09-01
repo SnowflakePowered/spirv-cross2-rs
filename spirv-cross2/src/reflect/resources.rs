@@ -1,15 +1,13 @@
-use crate::compiler::{Compiler, PhantomCompiler};
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::sealed::Sealed;
 use crate::string::MaybeCStr;
-use crate::{error, spirv, ToStatic};
+use crate::{error, spirv, Compiler, PhantomCompiler, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
     spvc_set, BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId,
 };
-use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
@@ -394,7 +392,7 @@ impl<'a> ShaderResources<'a> {
 
         let slice = unsafe { std::slice::from_raw_parts(out, count) };
 
-        Ok(ResourceIter(self.1, slice.into_iter()))
+        Ok(ResourceIter(self.1, slice.iter()))
     }
 
     /// Get an iterator for all builtin resources of the given type.
@@ -416,7 +414,7 @@ impl<'a> ShaderResources<'a> {
 
         let slice = unsafe { std::slice::from_raw_parts(out, count) };
 
-        Ok(BuiltinResourceIter(self.1, slice.into_iter()))
+        Ok(BuiltinResourceIter(self.1, slice.iter()))
     }
 
     /// Get all resources declared in the shader.

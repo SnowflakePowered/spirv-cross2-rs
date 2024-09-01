@@ -12,9 +12,9 @@
 // SPVC_PUBLIC_API const char *spvc_compiler_get_name(spvc_compiler compiler, SpvId id);
 // SPVC_PUBLIC_API const char *spvc_compiler_get_member_name(spvc_compiler compiler, SpvId id);
 
-use crate::compiler::Compiler;
 use crate::error;
 use crate::handle::{Handle, Id};
+use crate::Compiler;
 use std::borrow::Cow;
 use std::ffi::CStr;
 
@@ -120,7 +120,7 @@ impl<'a, T> Compiler<'a, T> {
     ///
     /// For other names like remapped names for variables, etc., it's generally enough to query the name of the variables
     /// after compiling, block names are an exception to this rule.
-    /// ID is the name of a variable from [`Resource::id`], and must be a variable with a Block-like type.
+    /// `handle` should be a handle to a variable with a Block-like type.
     ///
     /// This also applies to HLSL cbuffers.
     pub fn remapped_declared_block_name(

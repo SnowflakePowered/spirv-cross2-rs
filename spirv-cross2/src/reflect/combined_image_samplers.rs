@@ -5,10 +5,9 @@
 // const spvc_combined_image_sampler **samplers,
 // size_t *num_samplers);
 
-use crate::compiler::{Compiler, PhantomCompiler};
-use crate::error;
 use crate::error::{SpirvCrossError, ToContextError};
 pub use crate::handle::{Handle, VariableId};
+use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 use std::slice;
 
@@ -135,22 +134,22 @@ impl<'a, T> Compiler<'a, T> {
             )
             .ok(self)?;
             let slice = slice::from_raw_parts(samplers, size);
-            Ok(CombinedImageSamplerIter(self.phantom(), slice.into_iter()))
+            Ok(CombinedImageSamplerIter(self.phantom(), slice.iter()))
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
+    use crate::Compiler;
     use crate::{targets, Module, SpirvCross};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn test_combined_image_sampler_build() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;

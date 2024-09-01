@@ -1,4 +1,4 @@
-use crate::compiler::Compiler;
+use crate::Compiler;
 use crate::{error, spirv};
 use spirv_cross_sys::BaseType;
 
@@ -234,7 +234,7 @@ pub enum TypeInner<'a> {
         storage: StorageClass,
         /// The dimensions of the array.
         ///
-        /// Most of the time, these will be [`ArrayDimension::Linear`].
+        /// Most of the time, these will be [`ArrayDimension::Literal`].
         /// If an array dimension is specified as a specialization constant,
         /// then the dimension will be [`ArrayDimension::Constant`].
         ///
@@ -596,15 +596,15 @@ impl<T> Compiler<'_, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
+    use crate::Compiler;
     use crate::{targets, Module, SpirvCross};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_stage_outputs() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;

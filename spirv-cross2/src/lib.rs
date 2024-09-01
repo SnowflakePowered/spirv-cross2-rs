@@ -1,19 +1,19 @@
 extern crate core;
 
-use crate::compiler::Compiler;
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_context_s, SpvId};
+use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, SpvId};
 use std::borrow::Borrow;
 
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 
 use crate::sealed::Sealed;
 use crate::targets::Target;
+use std::marker::PhantomData;
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::rc::Rc;
 
-pub mod compiler;
+pub mod compile;
 pub mod error;
 
 /// SPIR-V types and definitions.
@@ -44,7 +44,7 @@ impl<'a> Borrow<SpirvCross> for ContextRoot<'a> {
     fn borrow(&self) -> &SpirvCross {
         match self {
             ContextRoot::Owned(a) => a,
-            ContextRoot::Borrowed(a) => *a,
+            ContextRoot::Borrowed(a) => a,
             ContextRoot::RefCounted(a) => a.deref(),
         }
     }
@@ -54,7 +54,7 @@ impl<'a> AsRef<SpirvCross> for ContextRoot<'a> {
     fn as_ref(&self) -> &SpirvCross {
         match self {
             ContextRoot::Owned(a) => a,
-            ContextRoot::Borrowed(a) => *a,
+            ContextRoot::Borrowed(a) => a,
             ContextRoot::RefCounted(a) => a.deref(),
         }
     }
@@ -139,7 +139,7 @@ impl SpirvCross {
 
             Ok(Compiler::new_from_raw(
                 compiler,
-                ContextRoot::Borrowed(&self),
+                ContextRoot::Borrowed(self),
             ))
         }
     }
@@ -179,7 +179,7 @@ impl SpirvCross {
 
             Ok(Compiler::new_from_raw(
                 compiler,
-                ContextRoot::RefCounted(Rc::clone(&self)),
+                ContextRoot::RefCounted(Rc::clone(self)),
             ))
         }
     }
@@ -251,5 +251,80 @@ mod test {
     #[test]
     pub fn init_context_test() {
         SpirvCross::new().unwrap();
+    }
+}
+
+pub struct Compiler<'a, T> {
+    pub(crate) ptr: NonNull<spvc_compiler_s>,
+    ctx: ContextRoot<'a>,
+    _pd: PhantomData<T>,
+}
+
+impl<T> Compiler<'_, T> {
+    /// Create a new compiler instance.
+    ///
+    /// The pointer to the `spvc_compiler_s` must have the same lifetime as the context root.
+    pub(crate) unsafe fn new_from_raw(
+        ptr: NonNull<spvc_compiler_s>,
+        ctx: ContextRoot,
+    ) -> Compiler<T> {
+        Compiler {
+            ptr,
+            ctx,
+            _pd: PhantomData,
+        }
+    }
+}
+
+impl<T> ContextRooted for &Compiler<'_, T> {
+    #[inline(always)]
+    fn context(&self) -> NonNull<spvc_context_s> {
+        self.ctx.ptr()
+    }
+}
+
+impl<T> ContextRooted for &mut Compiler<'_, T> {
+    #[inline(always)]
+    fn context(&self) -> NonNull<spvc_context_s> {
+        self.ctx.ptr()
+    }
+}
+
+/// Holds on to the pointer for a compiler instance,
+/// but type erased.
+///
+/// This is used so that child resources of a compiler track the
+/// lifetime of a compiler, or create handles attached with the
+/// compiler instance, without needing to refer to the typed
+/// output of a compiler.
+///
+/// The only thing a [`PhantomCompiler`] is able to do is create handles or
+/// refer to the root context. It's lifetime should be the same as the lifetime
+/// of the compiler.
+#[derive(Copy, Clone)]
+pub(crate) struct PhantomCompiler<'a> {
+    pub(crate) ptr: NonNull<spvc_compiler_s>,
+    ctx: NonNull<spvc_context_s>,
+    _pd: PhantomData<&'a ()>,
+}
+
+impl ContextRooted for PhantomCompiler<'_> {
+    #[inline(always)]
+    fn context(&self) -> NonNull<spvc_context_s> {
+        self.ctx
+    }
+}
+
+impl<'a, T> Compiler<'a, T> {
+    /// Create a type erased phantom for lifetime tracking purposes.
+    ///
+    /// This function is unsafe because a [`PhantomCompiler`] can be used to
+    /// **safely** create handles originating from the compiler.
+    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'a> {
+        PhantomCompiler {
+            ptr: self.ptr,
+            ctx: self.context(),
+            _pd: PhantomData,
+        }
     }
 }

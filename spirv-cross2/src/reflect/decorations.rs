@@ -1,10 +1,10 @@
-use crate::compiler::Compiler;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, Id};
 use crate::reflect::StructMember;
 use crate::sealed::Sealed;
 use crate::spirv::Decoration;
 use crate::string::MaybeCStr;
+use crate::Compiler;
 use crate::{error, spirv, ToStatic};
 use core::slice;
 use spirv_cross_sys as sys;
@@ -483,21 +483,19 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
-    use crate::reflect::DecorationValue;
-    use crate::spirv::Decoration;
+    use crate::Compiler;
+
     use crate::{targets, Module, SpirvCross};
-    use std::borrow::Cow;
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn set_decoration_test() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
-        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         // compiler.set_decoration(Decoration::HlslSemanticGOOGLE, DecorationValue::String(Cow::Borrowed("hello")));

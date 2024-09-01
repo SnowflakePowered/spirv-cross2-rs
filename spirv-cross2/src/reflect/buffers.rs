@@ -1,7 +1,7 @@
-use crate::compiler::Compiler;
 use crate::error;
 use crate::error::ToContextError;
 use crate::handle::Handle;
+use crate::Compiler;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{SpvId, VariableId};
 
@@ -63,9 +63,9 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
     use crate::targets;
+    use crate::Compiler;
     use crate::{Module, SpirvCross};
     use spirv_cross_sys::ResourceType;
 
@@ -73,10 +73,10 @@ mod test {
 
     #[test]
     pub fn get_active_buffer_ranges() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
-        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let ubo: Vec<_> = compiler
             .shader_resources()?
             .resources_for_type(ResourceType::UniformBuffer)?

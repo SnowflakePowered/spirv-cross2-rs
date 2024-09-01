@@ -109,6 +109,9 @@ impl ParseCallbacks for SpirvCrossCallbacks {
         };
 
         if let Some(enum_name) = enum_name.and_then(|n| n.strip_prefix("enum ")) {
+            if enum_name == "spvc_compiler_option" {
+                return None;
+            }
             // strip prefix
             if enum_name.starts_with("spvc_") {
                 // eprintln!("{original_variant_name}");
@@ -126,7 +129,7 @@ impl ParseCallbacks for SpirvCrossCallbacks {
             }
         };
 
-        return None;
+        None
     }
 
     fn enum_variant_behavior(

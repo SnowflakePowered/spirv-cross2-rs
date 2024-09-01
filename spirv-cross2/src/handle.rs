@@ -1,6 +1,5 @@
-use crate::compiler::{Compiler, PhantomCompiler};
-use crate::error;
 use crate::error::SpirvCrossError;
+use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys::spvc_compiler_s;
 use std::fmt::{Debug, Formatter};
 use std::ptr::NonNull;
@@ -134,7 +133,7 @@ impl<T> Compiler<'_, T> {
     }
 
     /// Yield the value of the handle, if it originated from the same context,
-    /// otherwise return [`SpirvCrossError::InvalidHandle`](crate::error::SpirvCrossError::InvalidHandle).
+    /// otherwise return [`SpirvCrossError::InvalidHandle`].
     pub fn yield_id<I: Id>(&self, handle: Handle<I>) -> error::Result<I> {
         if self.handle_is_valid(&handle) {
             Ok(handle.id)

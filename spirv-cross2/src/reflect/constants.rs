@@ -3,13 +3,12 @@ use spirv_cross_sys::{spvc_constant, spvc_specialization_constant, TypeId};
 use std::mem::MaybeUninit;
 use std::slice;
 
-use crate::compiler::{Compiler, PhantomCompiler};
-use crate::error;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{ConstantId, Handle};
+use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 
-pub trait Scalar: Sealed {
+trait ConstantScalar: Sealed {
     #[doc(hidden)]
     unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self;
 
@@ -20,7 +19,7 @@ pub trait Scalar: Sealed {
 macro_rules! impl_spvc_constant {
     ($get:ident  $set:ident $prim:ty) => {
         impl Sealed for $prim {}
-        impl Scalar for $prim {
+        impl ConstantScalar for $prim {
             unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self {
                 unsafe { ::spirv_cross_sys::$get(constant, column, row) as Self }
             }
@@ -49,7 +48,7 @@ impl_spvc_constant!(spvc_constant_get_scalar_fp64 spvc_constant_set_scalar_fp64 
 impl Sealed for half::f16 {}
 
 #[cfg(feature = "f16")]
-impl Scalar for half::f16 {
+impl ConstantScalar for half::f16 {
     unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self {
         let f32 = unsafe { sys::spvc_constant_get_scalar_fp16(constant, column, row) };
         half::f16::from_f32(f32)
@@ -114,7 +113,7 @@ impl<'a, T> Compiler<'a, T> {
         Ok(())
     }
 
-    pub fn set_specialization_constant_value<S: Scalar>(
+    pub fn set_specialization_constant_value<S: ConstantScalar>(
         &mut self,
         handle: Handle<ConstantId>,
         column: u32,
@@ -131,7 +130,7 @@ impl<'a, T> Compiler<'a, T> {
         Ok(())
     }
 
-    pub fn specialization_constant_value<S: Scalar>(
+    pub fn specialization_constant_value<S: ConstantScalar>(
         &self,
         handle: Handle<ConstantId>,
         column: u32,
@@ -159,10 +158,7 @@ impl<'a, T> Compiler<'a, T> {
             .ok(self)?;
 
             let slice = slice::from_raw_parts(constants, size);
-            Ok(SpecializationConstantIter(
-                self.phantom(),
-                slice.into_iter(),
-            ))
+            Ok(SpecializationConstantIter(self.phantom(), slice.iter()))
         }
     }
 

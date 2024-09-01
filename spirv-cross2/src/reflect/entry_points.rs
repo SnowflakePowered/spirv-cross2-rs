@@ -3,10 +3,10 @@ use spirv_cross_sys as sys;
 use spirv_cross_sys::spvc_entry_point;
 use std::ffi::c_char;
 
-use crate::compiler::Compiler;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::string::MaybeCStr;
+use crate::Compiler;
 use crate::{error, spirv};
 
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>);
@@ -47,7 +47,7 @@ impl<'a, T> Compiler<'a, T> {
 
             let ptr_slice = slice::from_raw_parts(caps, size);
 
-            Ok(ExtensionsIter(ptr_slice.into_iter()))
+            Ok(ExtensionsIter(ptr_slice.iter()))
         }
     }
 
@@ -143,7 +143,7 @@ impl<'a, T> Compiler<'a, T> {
                 .ok(self)?;
 
             Ok(EntryPointIter(
-                slice::from_raw_parts(entry_points, size).into_iter(),
+                slice::from_raw_parts(entry_points, size).iter(),
             ))
         }
     }
@@ -167,7 +167,7 @@ impl<'a, T> Compiler<'a, T> {
                 model,
             );
 
-            if name == std::ptr::null() {
+            if name.is_null() {
                 return Ok(None);
             }
             Ok(Some(MaybeCStr::from_ptr(name)))
@@ -221,15 +221,15 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
+    use crate::Compiler;
     use crate::{spirv, targets, Module, SpirvCross};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_entry_points() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;

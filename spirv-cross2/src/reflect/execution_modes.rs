@@ -1,6 +1,6 @@
-use crate::compiler::Compiler;
 use crate::error::ToContextError;
 use crate::handle::Handle;
+use crate::Compiler;
 use crate::{error, spirv};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::ConstantId;
@@ -155,15 +155,15 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
+    use crate::Compiler;
     use crate::{spirv, targets, Module, SpirvCross};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn execution_modes() -> Result<(), SpirvCrossError> {
-        let mut spv = SpirvCross::new()?;
+        let spv = SpirvCross::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;

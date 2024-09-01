@@ -94,7 +94,7 @@ impl<'a> MaybeCStr<'a> {
     /// * The memory pointed to by `ptr` must contain a valid nul terminator at the
     ///   end of the string.
     ///
-    /// * `ptr` must be [valid] for reads of bytes up to and including the nul terminator.
+    /// * `ptr` must be valid for reads of bytes up to and including the nul terminator.
     ///   This means in particular:
     ///
     ///     * The entire memory range of this `CStr` must be contained within a single allocated object!

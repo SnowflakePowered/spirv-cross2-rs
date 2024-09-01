@@ -8,7 +8,7 @@ use crate::handle::{ConstantId, Handle};
 use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 
-trait ConstantScalar: Sealed {
+pub trait ConstantScalar: Sealed {
     #[doc(hidden)]
     unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self;
 

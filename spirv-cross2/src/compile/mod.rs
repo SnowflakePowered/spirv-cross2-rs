@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use crate::error::{ContextRooted, Result, ToContextError};
 use crate::handle::Handle;
 use crate::targets::CompilableTarget;
@@ -9,8 +10,20 @@ pub mod glsl;
 pub mod hlsl;
 pub mod msl;
 
+pub struct CompiledArtifact<'a, T> {
+    compiler: Compiler<'a, T>
+}
+
+impl<'a, T> Deref for CompiledArtifact<'a, T> {
+    type Target = Compiler<'a, T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.compiler
+    }
+}
+
 /// Cross-compilation related methods.
-impl<T: CompilableTarget> Compiler<'_, T> {
+impl<'a, T: CompilableTarget> Compiler<'a, T> {
     pub fn add_header_line(&mut self, line: &str) -> Result<()> {
         unsafe {
             sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), line.as_ptr().cast()).ok(self)
@@ -47,6 +60,33 @@ impl<T: CompilableTarget> Compiler<'_, T> {
                 self.ptr.as_ptr(),
                 id,
             ))
+        }
+    }
+
+    /// Apply the set of compiler options to the compiler instance.
+    pub fn set_compiler_options(&mut self, options: &T::Options) -> error::Result<()> {
+        unsafe {
+            let mut handle = std::ptr::null_mut();
+
+            sys::spvc_compiler_create_compiler_options(self.ptr.as_ptr(), &mut handle)
+                .ok(&*self)?;
+
+            options.apply(handle, &*self)?;
+
+            sys::spvc_compiler_install_compiler_options(self.ptr.as_ptr(), handle)
+                .ok(&*self)?;
+
+            Ok(())
+        }
+    }
+
+    /// Consume the compilation instance, and compile source code to the
+    /// output target.
+    pub fn compile(self) -> CompiledArtifact<'a, T> {
+        // todo: actually do the compilation.
+
+        CompiledArtifact {
+            compiler: self
         }
     }
 }

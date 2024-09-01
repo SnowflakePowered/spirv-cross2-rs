@@ -18,6 +18,20 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
         ));
     };
 
+    // Special-case empty struct, otherwise we don't support tuple structs.
+    if data.fields.is_empty() {
+        let name = input.ident;
+        // Build the output, possibly using quasi-quotation
+        let expanded = quote! {
+        impl CompilerOptions for #name {
+            unsafe fn apply<'a>(&self, _options: ::spirv_cross_sys::spvc_compiler_options, _root: impl ContextRooted + Copy)
+                -> crate::error::Result<()>
+                { Ok(()) }
+            }
+        };
+        return Ok(expanded)
+    }
+
     let Fields::Named(fields) = data.fields else {
         return Err(syn::Error::new(
             data.fields.span(),

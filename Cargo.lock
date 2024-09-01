@@ -390,7 +390,18 @@ dependencies = [
  "half",
  "self_cell",
  "spirv-cross-sys",
+ "spirv-cross2-derive",
  "thiserror",
+]
+
+[[package]]
+name = "spirv-cross2-derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "spirv-cross-sys",
+ "syn",
 ]
 
 [[package]]

@@ -2,7 +2,7 @@
 
 members = [ 
     "spirv-cross2",
-    "spirv-cross-sys", "bindings_generator",
+    "spirv-cross-sys", "bindings_generator", "spirv-cross2-derive",
 ]
 
 resolver = "2"

@@ -12,6 +12,7 @@ pub mod combined_image_samplers;
 pub mod constants;
 pub mod decorations;
 pub mod entry_points;
+pub mod execution_modes;
 pub mod hlsl;
 pub mod msl;
 pub mod names;

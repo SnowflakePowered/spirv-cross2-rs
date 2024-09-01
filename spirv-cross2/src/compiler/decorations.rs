@@ -4,11 +4,11 @@ use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, Id};
 use crate::sealed::Sealed;
 use crate::spirv::Decoration;
+use crate::string::MaybeCStr;
 use crate::{error, spirv, ToStatic};
 use core::slice;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{ConstantId, FromPrimitive, SpvId, ToPrimitive, VariableId};
-use crate::string::MaybeCStr;
 
 #[derive(Debug)]
 pub enum DecorationValue<'a> {

@@ -20,9 +20,9 @@ use std::ffi::{CStr, CString};
 
 use crate::compiler::types::StructMember;
 use crate::error::SpirvCrossError;
+use crate::string::MaybeCStr;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{SpvId, VariableId};
-use crate::string::MaybeCStr;
 
 impl<'a, T> Compiler<'a, T> {
     pub fn name<I: Id>(&self, handle: Handle<I>) -> error::Result<Option<Cow<'a, str>>> {

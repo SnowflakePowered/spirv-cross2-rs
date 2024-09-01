@@ -1,5 +1,5 @@
 use crate::sealed::Sealed;
-use spirv_cross_sys::{spvc_constant, spvc_specialization_constant, SpvId};
+use spirv_cross_sys::{spvc_constant, spvc_specialization_constant, SpvId, TypeId};
 use std::mem::MaybeUninit;
 use std::slice;
 
@@ -68,10 +68,10 @@ pub struct SpecializationConstant {
 
 #[derive(Debug, Clone)]
 pub struct WorkgroupSizeSpecializationConstants {
-    pub x: SpecializationConstant,
-    pub y: SpecializationConstant,
-    pub z: SpecializationConstant,
-    pub builtin_workgroup_size_handle: Handle<ConstantId>,
+    pub x: Option<SpecializationConstant>,
+    pub y: Option<SpecializationConstant>,
+    pub z: Option<SpecializationConstant>,
+    pub builtin_workgroup_size_handle: Option<Handle<ConstantId>>,
 }
 
 /// An iterator over specialization constants.
@@ -93,7 +93,7 @@ impl Iterator for SpecializationConstantIter<'_> {
 
 /// Reflection of specialization constants.
 impl<'a, T> Compiler<'a, T> {
-    pub fn set_constant_value<S: Scalar>(
+    pub fn set_specialization_constant_value<S: Scalar>(
         &mut self,
         handle: Handle<ConstantId>,
         column: u32,
@@ -109,8 +109,8 @@ impl<'a, T> Compiler<'a, T> {
         Ok(())
     }
 
-    pub fn get_constant_value<S: Scalar>(
-        &mut self,
+    pub fn specialization_constant_value<S: Scalar>(
+        &self,
         handle: Handle<ConstantId>,
         column: u32,
         row: u32,
@@ -119,6 +119,8 @@ impl<'a, T> Compiler<'a, T> {
         unsafe {
             // SAFETY: yield_id ensures safety.
             let handle = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
+
+            
             Ok(S::get(handle, column, row))
         }
     }
@@ -191,26 +193,32 @@ impl<'a, T> Compiler<'a, T> {
                 z.as_mut_ptr(),
             );
 
-            let constant = self.create_handle(constant);
+            let constant = self.create_handle_if_not_zero(constant);
 
             let x = x.assume_init();
             let y = y.assume_init();
             let z = z.assume_init();
 
-            let x = SpecializationConstant {
-                id: self.create_handle(x.id),
-                constant_id: x.constant_id,
-            };
+            let x =  self.create_handle_if_not_zero(x.id).map(|id|
+                SpecializationConstant {
+                    id,
+                    constant_id: x.constant_id
+                }
+            );
 
-            let y = SpecializationConstant {
-                id: self.create_handle(y.id),
-                constant_id: y.constant_id,
-            };
+            let y =  self.create_handle_if_not_zero(y.id).map(|id|
+                SpecializationConstant {
+                    id,
+                    constant_id: y.constant_id
+                }
+            );
 
-            let z = SpecializationConstant {
-                id: self.create_handle(z.id),
-                constant_id: z.constant_id,
-            };
+            let z =  self.create_handle_if_not_zero(z.id).map(|id|
+                SpecializationConstant {
+                    id,
+                    constant_id: z.constant_id
+                }
+            );
 
             WorkgroupSizeSpecializationConstants {
                 x,
@@ -219,5 +227,17 @@ impl<'a, T> Compiler<'a, T> {
                 builtin_workgroup_size_handle: constant,
             }
         }
+    }
+
+    /// Get the type of the specialization constant.
+    pub fn specialization_constant_type(&self, constant: Handle<ConstantId>) -> error::Result<Handle<TypeId>> {
+        let constant = self.yield_id(constant)?;
+        let type_id = unsafe {
+            // SAFETY: yield_id ensures this is valid for the ID
+            let constant = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
+            self.create_handle(sys::spvc_constant_get_type(constant))
+        };
+
+        Ok(type_id)
     }
 }

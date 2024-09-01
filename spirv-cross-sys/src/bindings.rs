@@ -5187,3 +5187,11 @@ extern "C" {
 extern "C" {
     pub fn spvc_rs_expose_set(set: spvc_set, out: *mut u32, length: *mut usize);
 }
+extern "C" {
+    #[must_use]
+    pub fn spvc_compiler_set_entry_point_safe(
+        compiler: spvc_compiler,
+        name: *const ::std::os::raw::c_char,
+        model: SpvExecutionModel,
+    ) -> spvc_result;
+}

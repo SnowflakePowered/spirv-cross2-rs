@@ -27,7 +27,7 @@ impl<'a> Display for MaybeCStr<'a> {
     }
 }
 
-impl <'a> Debug for MaybeCStr<'a> {
+impl<'a> Debug for MaybeCStr<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.cow)
     }
@@ -114,7 +114,8 @@ impl<'a> MaybeCStr<'a> {
     /// such as by providing a helper function taking the lifetime of a host value for the slice,
     /// or by explicit annotation.
     pub unsafe fn from_ptr<'b>(ptr: *const c_char) -> MaybeCStr<'b>
-    where 'a: 'b
+    where
+        'a: 'b,
     {
         let cstr = CStr::from_ptr(ptr);
         let maybe = cstr.to_string_lossy();
@@ -182,9 +183,9 @@ impl<'a> MaybeCStr<'a> {
 
 #[cfg(test)]
 mod test {
+    use crate::string::MaybeCStr;
     use std::ffi::CString;
     use std::marker::PhantomData;
-    use crate::string::MaybeCStr;
 
     struct LifetimeTest<'a>(PhantomData<&'a ()>);
     impl<'a> LifetimeTest<'a> {

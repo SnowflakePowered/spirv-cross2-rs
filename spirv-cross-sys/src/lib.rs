@@ -35,5 +35,5 @@ macro_rules! from_u32 {
 }
 
 from_u32! {
-    VariableId ConstantId
+    TypeId VariableId ConstantId
 }

@@ -112,7 +112,7 @@ impl<'a, T> Compiler<'a, T> {
         // check for smuggling
         if !self.handle_is_valid(&proof.label) {
             return Err(SpirvCrossError::InvalidOperation(String::from(
-                "The provided proof of ",
+                "The provided proof of building combined image samplers is invalid",
             )));
         }
 

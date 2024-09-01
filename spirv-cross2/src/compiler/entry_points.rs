@@ -1,36 +1,13 @@
 use core::slice;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::spvc_entry_point;
-use std::ffi::{c_char, CStr};
-use std::panic::catch_unwind;
-// TODO:
-// SPVC_PUBLIC_API spvc_result spvc_compiler_get_entry_points(spvc_compiler compiler,
-// const spvc_entry_point **entry_points,
-// size_t *num_entry_points);
-// SPVC_PUBLIC_API spvc_result spvc_compiler_set_entry_point(spvc_compiler compiler, const char *name,
-// SpvExecutionModel model);
-// SPVC_PUBLIC_API spvc_result spvc_compiler_rename_entry_point(spvc_compiler compiler, const char *old_name,
-// const char *new_name, SpvExecutionModel model);
-// SPVC_PUBLIC_API const char *spvc_compiler_get_cleansed_entry_point_name(spvc_compiler compiler, const char *name,
-// SpvExecutionModel model);
+use std::ffi::c_char;
 
-// SPVC_PUBLIC_API void spvc_compiler_set_execution_mode(spvc_compiler compiler, SpvExecutionMode mode);
-// SPVC_PUBLIC_API void spvc_compiler_unset_execution_mode(spvc_compiler compiler, SpvExecutionMode mode);
-// SPVC_PUBLIC_API void spvc_compiler_set_execution_mode_with_arguments(spvc_compiler compiler, SpvExecutionMode mode,
-// unsigned arg0, unsigned arg1, unsigned arg2);
-// SPVC_PUBLIC_API spvc_result spvc_compiler_get_execution_modes(spvc_compiler compiler, const SpvExecutionMode **modes,
-// size_t *num_modes);
-// SPVC_PUBLIC_API unsigned spvc_compiler_get_execution_mode_argument(spvc_compiler compiler, SpvExecutionMode mode);
-// SPVC_PUBLIC_API unsigned spvc_compiler_get_execution_mode_argument_by_index(spvc_compiler compiler,
-// SpvExecutionMode mode, unsigned index);
-// SPVC_PUBLIC_API SpvExecutionModel spvc_compiler_get_execution_model(spvc_compiler compiler);
-// SPVC_PUBLIC_API void spvc_compiler_update_active_builtins(spvc_compiler compiler);
-// SPVC_PUBLIC_API spvc_bool spvc_compiler_has_active_builtin(spvc_compiler compiler, SpvBuiltIn builtin, SpvStorageClass storage);
-
-use crate::compiler::{Compiler, PhantomCompiler};
+use crate::compiler::Compiler;
 use crate::error::{SpirvCrossError, ToContextError};
-use crate::{error, spirv};
+use crate::handle::Handle;
 use crate::string::MaybeCStr;
+use crate::{error, spirv};
 
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>);
 
@@ -77,6 +54,42 @@ impl<'a, T> Compiler<'a, T> {
     /// Get the execution model of the module.
     pub fn execution_model(&self) -> spirv::ExecutionModel {
         unsafe { sys::spvc_compiler_get_execution_model(self.ptr.as_ptr()) }
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
+pub struct ActiveBuiltinsUpdatedProof(Handle<()>);
+
+/// Querying builtins in the SPIR-V module
+impl<'a, T> Compiler<'a, T> {
+    /// Gets the list of all SPIR-V Capabilities which were declared in the SPIR-V module.
+    pub fn update_active_builtins(&mut self) -> ActiveBuiltinsUpdatedProof {
+        unsafe {
+            sys::spvc_compiler_update_active_builtins(self.ptr.as_ptr());
+            ActiveBuiltinsUpdatedProof(self.create_handle(()))
+        }
+    }
+
+    // spvc_compiler_has_active_builtin
+    pub fn has_active_builtin(
+        &self,
+        builtin: spirv::BuiltIn,
+        storage_class: spirv::StorageClass,
+        proof: ActiveBuiltinsUpdatedProof,
+    ) -> error::Result<bool> {
+        if !self.handle_is_valid(&proof.0) {
+            return Err(SpirvCrossError::InvalidOperation(String::from(
+                "The provided proof of building active builtins is invalid",
+            )));
+        }
+
+        unsafe {
+            Ok(sys::spvc_compiler_has_active_builtin(
+                self.ptr.as_ptr(),
+                builtin,
+                storage_class,
+            ))
+        }
     }
 }
 
@@ -223,12 +236,14 @@ mod test {
         let entry_points: Vec<_> = compiler.entry_points()?.collect();
         let main = &entry_points[0];
 
-
         eprintln!("{entry_points:?}");
-        compiler.set_entry_point("not_main", spirv::ExecutionModel::Fragment)?;
+        compiler.rename_entry_point("main", "new_main", spirv::ExecutionModel::Fragment)?;
 
-        let new_name = compiler.cleansed_entry_point_name("main", spirv::ExecutionModel::Fragment)?;
+        let new_name =
+            compiler.cleansed_entry_point_name("main", spirv::ExecutionModel::Fragment)?;
 
+        let entry_points: Vec<_> = compiler.entry_points()?.collect();
+        let main = &entry_points[0];
         eprintln!("{:?}", new_name);
         eprintln!("{entry_points:?}");
         //
@@ -237,4 +252,3 @@ mod test {
         Ok(())
     }
 }
-

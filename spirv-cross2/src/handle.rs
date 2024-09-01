@@ -111,6 +111,23 @@ impl<T> Compiler<'_, T> {
         }
     }
 
+    #[inline(always)]
+    /// Create a handle for the given ID tagged with this compiler instance,
+    /// if the provided ID is not zero.
+    ///
+    /// # Safety
+    /// When creating a handle, the ID must be valid for the compilation.
+    pub unsafe fn create_handle_if_not_zero<I: Id>(&self, id: I) -> Option<Handle<I>> {
+        let raw = id.id();
+        if raw == 0 {
+            return None;
+        }
+        Some(Handle {
+            id,
+            tag: PointerOnlyForComparison(self.ptr),
+        })
+    }
+
     /// Returns whether the given handle is valid for this compiler instance.
     pub fn handle_is_valid<I>(&self, handle: &Handle<I>) -> bool {
         handle.tag == PointerOnlyForComparison(self.ptr)

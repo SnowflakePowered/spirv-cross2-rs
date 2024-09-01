@@ -29,3 +29,15 @@ extern "C" void spvc_rs_expose_set(spvc_set opaque_set, uint32_t* out, size_t* l
        out++;
     }
 }
+
+extern "C" spvc_result spvc_compiler_set_entry_point_safe(spvc_compiler compiler, const char *name, SpvExecutionModel model) {
+    // workaround until spvc_compiler_rename_entry_point is merged.
+    try {
+        spvc_compiler_set_entry_point(compiler, name, model);
+    } catch (const std::exception &e) {
+        // Hack to set the last error and trigger callbacks, as this should be the same.
+        spvc_compiler_rename_entry_point(compiler, name, name, model);
+        return SPVC_ERROR_INVALID_ARGUMENT;
+    }
+    return SPVC_SUCCESS;
+}

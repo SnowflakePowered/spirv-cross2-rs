@@ -9,7 +9,6 @@ use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 
 use crate::sealed::Sealed;
 use crate::targets::Target;
-use std::marker::PhantomData;
 use std::ops::{Deref, Index};
 use std::ptr::NonNull;
 use std::rc::Rc;

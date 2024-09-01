@@ -8,8 +8,8 @@ use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::handle::{ConstantId, TypeId};
 use crate::spirv::StorageClass;
-use spirv_cross_sys as sys;
 use crate::string::MaybeCStr;
+use spirv_cross_sys as sys;
 
 /// The kind of scalar
 #[derive(Debug)]
@@ -275,7 +275,11 @@ impl<T> Compiler<'_, T> {
                     i,
                 ));
 
-                let name = if name.as_ref().is_empty() { None } else { Some(name) };
+                let name = if name.as_ref().is_empty() {
+                    None
+                } else {
+                    Some(name)
+                };
 
                 let mut size = 0;
                 sys::spvc_compiler_get_declared_struct_member_size(
@@ -355,7 +359,11 @@ impl<T> Compiler<'_, T> {
         }
     }
 
-    fn process_array<'a>(&self, id: TypeId, name: Option<MaybeCStr<'a>>) -> error::Result<Type<'a>> {
+    fn process_array<'a>(
+        &self,
+        id: TypeId,
+        name: Option<MaybeCStr<'a>>,
+    ) -> error::Result<Type<'a>> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
@@ -441,7 +449,7 @@ impl<T> Compiler<'_, T> {
     ///
     /// Atomics are represented as `TypeInner::Pointer { storage: StorageClass::AtomicCounter, ... }`,
     /// usually with a scalar base type.
-    pub fn get_type(&self, id: Handle<TypeId>) -> error::Result<Type> {
+    pub fn type_description(&self, id: Handle<TypeId>) -> error::Result<Type> {
         let id = self.yield_id(id)?;
 
         unsafe {
@@ -451,7 +459,11 @@ impl<T> Compiler<'_, T> {
             let base_ty = sys::spvc_type_get_basetype(ty);
             let name = MaybeCStr::from_ptr(sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0));
 
-            let name = if name.as_ref().is_empty() { None } else { Some(name) };
+            let name = if name.as_ref().is_empty() {
+                None
+            } else {
+                Some(name)
+            };
 
             let array_dim_len = sys::spvc_type_get_num_array_dimensions(ty);
             if array_dim_len != 0 {
@@ -558,18 +570,6 @@ impl<T> Compiler<'_, T> {
         }
     }
 
-    /// Get the type of the specialization constant.
-    pub fn get_constant_type(&self, constant: Handle<ConstantId>) -> error::Result<Type> {
-        let constant = self.yield_id(constant)?;
-        let type_id = unsafe {
-            // SAFETY: yield_id ensures this is valid for the ID
-            let constant = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
-            self.create_handle(sys::spvc_constant_get_type(constant))
-        };
-
-        self.get_type(type_id)
-    }
-
     /// Get the size of the struct with the specified runtime array size,
     /// if the struct contains a runtime array.
     pub fn declared_struct_size_with_runtime_array(
@@ -584,7 +584,7 @@ impl<T> Compiler<'_, T> {
                 return Ok(size);
             };
 
-            let inner = self.get_type(last.id)?.inner;
+            let inner = self.type_description(last.id)?.inner;
             if let TypeInner::Array { dimensions, .. } = inner {
                 if let Some(ArrayDimension::Literal(0)) = dimensions.first() {
                     size += array_size * stride as usize
@@ -614,7 +614,7 @@ mod test {
 
         // println!("{:#?}", resources);
 
-        let ty = compiler.get_type(resources.uniform_buffers[0].base_type_id)?;
+        let ty = compiler.type_description(resources.uniform_buffers[0].base_type_id)?;
         eprintln!("{ty:?}");
 
         // match ty.inner {

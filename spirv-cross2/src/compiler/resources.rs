@@ -2,6 +2,7 @@ use crate::compiler::{Compiler, PhantomCompiler};
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::sealed::Sealed;
+use crate::string::MaybeCStr;
 use crate::{error, spirv, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
@@ -13,7 +14,6 @@ use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
-use crate::string::MaybeCStr;
 
 pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, PhantomCompiler<'a>);
 

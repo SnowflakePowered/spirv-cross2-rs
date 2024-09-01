@@ -9,7 +9,7 @@ use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 
 use crate::sealed::Sealed;
 use crate::targets::Target;
-use std::ops::{Deref, Index};
+use std::ops::Deref;
 use std::ptr::NonNull;
 use std::rc::Rc;
 
@@ -21,8 +21,10 @@ pub mod spirv;
 
 pub mod handle;
 
+pub mod reflect;
 pub mod string;
 pub mod targets;
+
 pub(crate) mod sealed {
     pub trait Sealed {}
 }

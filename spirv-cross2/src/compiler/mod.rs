@@ -7,17 +7,8 @@ use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, VariableId};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
-pub mod buffers;
-pub mod combined_image_samplers;
-pub mod constants;
-pub mod decorations;
-pub mod entry_points;
-pub mod execution_modes;
 pub mod hlsl;
 pub mod msl;
-pub mod names;
-pub mod resources;
-pub mod types;
 
 pub struct Compiler<'a, T> {
     pub(crate) ptr: NonNull<spvc_compiler_s>,
@@ -74,6 +65,7 @@ pub(crate) struct PhantomCompiler<'a> {
 }
 
 impl ContextRooted for PhantomCompiler<'_> {
+    #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
         self.ctx
     }

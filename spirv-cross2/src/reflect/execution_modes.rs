@@ -1,18 +1,25 @@
 use crate::compiler::Compiler;
 use crate::error::ToContextError;
+use crate::handle::Handle;
 use crate::{error, spirv};
 use spirv_cross_sys as sys;
+use spirv_cross_sys::ConstantId;
 use std::slice;
-use spirv_cross_sys::{ConstantId};
-use crate::handle::Handle;
 
 #[derive(Debug)]
 pub enum ExecutionModeArguments {
     None,
     Unit(u32),
-    LocalSize { x: u32, y: u32, z: u32 },
-    LocalSizeId { x: Handle<ConstantId>, y: Handle<ConstantId>, z: Handle<ConstantId> },
-
+    LocalSize {
+        x: u32,
+        y: u32,
+        z: u32,
+    },
+    LocalSizeId {
+        x: Handle<ConstantId>,
+        y: Handle<ConstantId>,
+        z: Handle<ConstantId>,
+    },
 }
 
 impl ExecutionModeArguments {
@@ -21,9 +28,7 @@ impl ExecutionModeArguments {
             ExecutionModeArguments::None => [0, 0, 0],
             ExecutionModeArguments::Unit(a) => [a, 0, 0],
             ExecutionModeArguments::LocalSize { x, y, z } => [x, y, z],
-            ExecutionModeArguments::LocalSizeId { x, y, z} => [
-                x.id(), y.id(), z.id()
-            ]
+            ExecutionModeArguments::LocalSizeId { x, y, z } => [x.id(), y.id(), z.id()],
         }
     }
 }
@@ -61,14 +66,16 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
-
     /// Get arguments used by the execution mode.
     ///
     /// If the execution mode is unused, returns `None`.
     ///
     /// LocalSizeId query returns an ID. If LocalSizeId execution mode is not used, it returns None.
     /// LocalSize always returns a literal. If execution mode is LocalSizeId, the literal (spec constant or not) is still returned.
-    pub fn execution_mode_arguments(&self, mode: spirv::ExecutionMode) -> error::Result<Option<ExecutionModeArguments>> {
+    pub fn execution_mode_arguments(
+        &self,
+        mode: spirv::ExecutionMode,
+    ) -> error::Result<Option<ExecutionModeArguments>> {
         Ok(match mode {
             spirv::ExecutionMode::LocalSize => unsafe {
                 let x = sys::spvc_compiler_get_execution_mode_argument_by_index(
@@ -117,10 +124,10 @@ impl<'a, T> Compiler<'a, T> {
                     Some(ExecutionModeArguments::LocalSizeId {
                         x: self.create_handle(ConstantId::from(x)),
                         y: self.create_handle(ConstantId::from(y)),
-                        z: self.create_handle(ConstantId::from(z))
+                        z: self.create_handle(ConstantId::from(z)),
                     })
                 }
-            }
+            },
             spirv::ExecutionMode::Invocations
             | spirv::ExecutionMode::OutputVertices
             | spirv::ExecutionMode::OutputPrimitivesEXT => unsafe {
@@ -141,7 +148,7 @@ impl<'a, T> Compiler<'a, T> {
                 };
 
                 Some(ExecutionModeArguments::None)
-            },
+            }
         })
     }
 }

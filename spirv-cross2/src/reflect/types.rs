@@ -1,8 +1,6 @@
 use crate::compiler::Compiler;
 use crate::{error, spirv};
 use spirv_cross_sys::BaseType;
-use std::borrow::Cow;
-use std::ffi::CStr;
 
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;

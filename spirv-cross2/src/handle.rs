@@ -1,6 +1,6 @@
 use crate::compiler::{Compiler, PhantomCompiler};
+use crate::error;
 use crate::error::SpirvCrossError;
-use crate::{error, sealed};
 use spirv_cross_sys::spvc_compiler_s;
 use std::fmt::{Debug, Formatter};
 use std::ptr::NonNull;

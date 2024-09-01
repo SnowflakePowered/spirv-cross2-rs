@@ -3,10 +3,10 @@ use glslang::SpirvVersion::{SPIRV1_0, SPIRV1_1, SPIRV1_3, SPIRV1_6};
 use glslang::{
     CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion,
 };
-use spirv_cross2::compiler::types::TypeInner;
 use spirv_cross2::error::SpirvCrossError;
+use spirv_cross2::reflect::ExecutionModeArguments;
+use spirv_cross2::reflect::TypeInner;
 use spirv_cross2::{spirv, Module};
-use spirv_cross2::compiler::execution_modes::ExecutionModeArguments;
 use spirv_cross_sys::{ConstantId, SpvId};
 
 #[test]
@@ -56,14 +56,13 @@ void main()
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let cross = spirv_cross2::SpirvCross::new()?;
-    let mut compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
-
+    let mut compiler =
+        cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
 
     let spec_workgroup = compiler.work_group_size_specialization_constants();
     eprintln!("{:?}", spec_workgroup);
 
-    let Some(args) =
-        compiler.execution_mode_arguments(spirv::ExecutionMode::LocalSize)? else {
+    let Some(args) = compiler.execution_mode_arguments(spirv::ExecutionMode::LocalSize)? else {
         panic!("unexpected")
     };
 
@@ -154,7 +153,8 @@ void main() {
 
     let counter = &res.storage_buffers[0];
 
-    let TypeInner::Struct(struct_ty) = compiler.type_description(counter.base_type_id)?.inner else {
+    let TypeInner::Struct(struct_ty) = compiler.type_description(counter.base_type_id)?.inner
+    else {
         panic!("unknown type")
     };
 

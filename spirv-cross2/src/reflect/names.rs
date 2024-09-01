@@ -16,10 +16,10 @@ use crate::compiler::Compiler;
 use crate::error;
 use crate::handle::{Handle, Id};
 use std::borrow::Cow;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 
-use crate::compiler::types::StructMember;
 use crate::error::SpirvCrossError;
+use crate::reflect::StructMember;
 use crate::string::MaybeCStr;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{SpvId, VariableId};

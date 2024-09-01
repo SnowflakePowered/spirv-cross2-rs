@@ -9,8 +9,7 @@ use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
     spvc_set, BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId,
 };
-use std::borrow::{Borrow, Cow};
-use std::ffi::CStr;
+use std::borrow::Borrow;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
@@ -18,8 +17,9 @@ use std::slice;
 pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, PhantomCompiler<'a>);
 
 impl ContextRooted for &ShaderResources<'_> {
+    #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
-        self.1.ctx
+        self.1.context()
     }
 }
 

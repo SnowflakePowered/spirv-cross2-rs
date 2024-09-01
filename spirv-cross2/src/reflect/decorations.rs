@@ -1,7 +1,7 @@
-use crate::compiler::types::StructMember;
 use crate::compiler::Compiler;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, Id};
+use crate::reflect::StructMember;
 use crate::sealed::Sealed;
 use crate::spirv::Decoration;
 use crate::string::MaybeCStr;
@@ -483,9 +483,9 @@ impl<'a, T> Compiler<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::compiler::decorations::DecorationValue;
     use crate::compiler::Compiler;
     use crate::error::SpirvCrossError;
+    use crate::reflect::DecorationValue;
     use crate::spirv::Decoration;
     use crate::{targets, Module, SpirvCross};
     use std::borrow::Cow;

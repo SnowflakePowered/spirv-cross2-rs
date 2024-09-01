@@ -1,12 +1,10 @@
 use crate::compiler::Compiler;
-
 use crate::error;
+use crate::error::ToContextError;
 use crate::handle::Handle;
+use spirv_cross_sys as sys;
 use spirv_cross_sys::{SpvId, VariableId};
 
-use spirv_cross_sys as sys;
-
-use crate::error::ToContextError;
 /// A range over a buffer.
 pub use spirv_cross_sys::BufferRange;
 

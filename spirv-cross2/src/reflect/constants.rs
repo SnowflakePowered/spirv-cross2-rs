@@ -1,5 +1,5 @@
 use crate::sealed::Sealed;
-use spirv_cross_sys::{spvc_constant, spvc_specialization_constant, SpvId, TypeId};
+use spirv_cross_sys::{spvc_constant, spvc_specialization_constant, TypeId};
 use std::mem::MaybeUninit;
 use std::slice;
 
@@ -8,7 +8,6 @@ use crate::error;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{ConstantId, Handle};
 use spirv_cross_sys as sys;
-use crate::compiler::types::{Type, TypeInner};
 
 pub trait Scalar: Sealed {
     #[doc(hidden)]
@@ -95,17 +94,21 @@ impl Iterator for SpecializationConstantIter<'_> {
 /// Reflection of specialization constants.
 impl<'a, T> Compiler<'a, T> {
     // check bounds of the constant, otherwise you can write to arbitrary memory.
-    unsafe fn bounds_check_constant(handle: spvc_constant, column: u32, row: u32) -> error::Result<()> {
+    unsafe fn bounds_check_constant(
+        handle: spvc_constant,
+        column: u32,
+        row: u32,
+    ) -> error::Result<()> {
         // SPIRConstant is at most mat4, so anything above that is OOB.
         if column >= 4 || row >= 4 {
-            return Err(SpirvCrossError::IndexOutOfBounds { row, column })
+            return Err(SpirvCrossError::IndexOutOfBounds { row, column });
         }
 
         let colsize = sys::spvc_rs_constant_get_matrix_colsize(handle);
         let vecsize = sys::spvc_rs_constant_get_vecsize(handle);
 
         if column >= colsize || row >= vecsize {
-            return Err(SpirvCrossError::IndexOutOfBounds { row, column })
+            return Err(SpirvCrossError::IndexOutOfBounds { row, column });
         }
 
         Ok(())
@@ -218,26 +221,26 @@ impl<'a, T> Compiler<'a, T> {
             let y = y.assume_init();
             let z = z.assume_init();
 
-            let x =  self.create_handle_if_not_zero(x.id).map(|id|
-                SpecializationConstant {
+            let x = self
+                .create_handle_if_not_zero(x.id)
+                .map(|id| SpecializationConstant {
                     id,
-                    constant_id: x.constant_id
-                }
-            );
+                    constant_id: x.constant_id,
+                });
 
-            let y =  self.create_handle_if_not_zero(y.id).map(|id|
-                SpecializationConstant {
+            let y = self
+                .create_handle_if_not_zero(y.id)
+                .map(|id| SpecializationConstant {
                     id,
-                    constant_id: y.constant_id
-                }
-            );
+                    constant_id: y.constant_id,
+                });
 
-            let z =  self.create_handle_if_not_zero(z.id).map(|id|
-                SpecializationConstant {
+            let z = self
+                .create_handle_if_not_zero(z.id)
+                .map(|id| SpecializationConstant {
                     id,
-                    constant_id: z.constant_id
-                }
-            );
+                    constant_id: z.constant_id,
+                });
 
             WorkgroupSizeSpecializationConstants {
                 x,
@@ -249,7 +252,10 @@ impl<'a, T> Compiler<'a, T> {
     }
 
     /// Get the type of the specialization constant.
-    pub fn specialization_constant_type(&self, constant: Handle<ConstantId>) -> error::Result<Handle<TypeId>> {
+    pub fn specialization_constant_type(
+        &self,
+        constant: Handle<ConstantId>,
+    ) -> error::Result<Handle<TypeId>> {
         let constant = self.yield_id(constant)?;
         let type_id = unsafe {
             // SAFETY: yield_id ensures this is valid for the ID

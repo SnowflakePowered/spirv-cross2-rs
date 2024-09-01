@@ -24,6 +24,15 @@ impl From<u32> for SpvId {
     }
 }
 
+impl From<crate::bindings::MslPlatform> for u32 {
+    fn from(value: crate::bindings::MslPlatform) -> Self {
+        match value {
+            MslPlatform::Ios => 0,
+            MslPlatform::Macos => 1,
+        }
+    }
+}
+
 macro_rules! from_u32 {
     ($($id:ty)*) => {
         $(impl From<u32> for $id {

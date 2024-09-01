@@ -2670,7 +2670,9 @@ fn bindgen_test_layout_HlslVertexAttributeRemap() {
 }
 #[repr(i32)]
 #[must_use]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum spvc_result {
     SPVC_SUCCESS = 0,
     SPVC_ERROR_INVALID_SPIRV = -1,
@@ -2679,13 +2681,17 @@ pub enum spvc_result {
     SPVC_ERROR_INVALID_ARGUMENT = -4,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum spvc_capture_mode {
     Copy = 0,
     TakeOwnership = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum CompilerBackend {
     None = 0,
     Glsl = 1,
@@ -2695,7 +2701,9 @@ pub enum CompilerBackend {
     Json = 5,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum ResourceType {
     Unknown = 0,
     UniformBuffer = 1,
@@ -2714,14 +2722,18 @@ pub enum ResourceType {
     ShaderRecordBuffer = 14,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum BuiltinResourceType {
     Unknown = 0,
     StageInput = 1,
     StageOutput = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum BaseType {
     Unknown = 0,
     Void = 1,
@@ -2745,13 +2757,17 @@ pub enum BaseType {
     AccelerationStructure = 19,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslPlatform {
     Ios = 0,
     Macos = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslIndexType {
     None = 0,
     Uint16 = 1,
@@ -2790,7 +2806,9 @@ impl MslShaderVariableFormat {
         MslShaderVariableFormat::Any32;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslShaderVariableFormat {
     Other = 0,
     Uint8 = 1,
@@ -2970,7 +2988,9 @@ extern "C" {
     pub fn spvc_msl_shader_input_init(input: *mut MslShaderInput);
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslShaderVariableRate {
     PerVertex = 0,
     PerPrimitive = 1,
@@ -3245,26 +3265,34 @@ extern "C" {
     pub fn spvc_msl_get_aux_buffer_struct_version() -> ::std::os::raw::c_uint;
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerCoord {
     Normalized = 0,
     Pixel = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerFilter {
     Nearest = 0,
     Linear = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerMipFilter {
     None = 0,
     Nearest = 1,
     Linear = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerAddress {
     ClampToZero = 0,
     ClampToEdge = 1,
@@ -3273,7 +3301,9 @@ pub enum MslSamplerAddress {
     MirroredRepeat = 4,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerCompareFunc {
     Never = 0,
     Less = 1,
@@ -3285,27 +3315,35 @@ pub enum MslSamplerCompareFunc {
     Always = 7,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerBorderColor {
     TransparentBlack = 0,
     OpaqueBlack = 1,
     OpaqueWhite = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslFormatResolution {
     FormatResolution444 = 0,
     FormatResolution422 = 1,
     FormatResolution420 = 2,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslChromaLocation {
     CositedEven = 0,
     Midpoint = 1,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslComponentSwizzle {
     Identity = 0,
     Zero = 1,
@@ -3316,7 +3354,9 @@ pub enum MslComponentSwizzle {
     A = 6,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerYcbcrModelConversion {
     RgbIdentity = 0,
     YcbcrIdentity = 1,
@@ -3325,7 +3365,9 @@ pub enum MslSamplerYcbcrModelConversion {
     YcbcrBt2020 = 4,
 }
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
 pub enum MslSamplerYcbcrRange {
     ItuFull = 0,
     ItuNarrow = 1,
@@ -3687,8 +3729,10 @@ impl ::std::ops::BitAndAssign for HlslBindingFlagBits {
     }
 }
 #[repr(transparent)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct HlslBindingFlagBits(pub ::std::os::raw::c_int);
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub struct HlslBindingFlagBits(pub i32);
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslBindingFlags(pub ::std::os::raw::c_uint);
@@ -4230,8 +4274,10 @@ impl ::std::ops::BitAndAssign for spvc_compiler_option {
     }
 }
 #[repr(transparent)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct spvc_compiler_option(pub ::std::os::raw::c_int);
+#[derive(
+    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+)]
+pub struct spvc_compiler_option(pub i32);
 extern "C" {
     #[must_use]
     pub fn spvc_context_create(context: *mut spvc_context) -> spvc_result;

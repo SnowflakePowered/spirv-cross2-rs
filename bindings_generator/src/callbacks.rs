@@ -158,7 +158,7 @@ impl ParseCallbacks for SpirvCrossCallbacks {
     }
 
     fn add_derives(&self, info: &DeriveInfo<'_>) -> Vec<String> {
-        if info.kind == TypeKind::Enum && info.name.starts_with("Spv") {
+        if info.kind == TypeKind::Enum {
             return vec![
                 String::from("num_derive::FromPrimitive"),
                 String::from("num_derive::ToPrimitive"),

@@ -1,22 +1,87 @@
 use super::{CommonCompileOptions, CompilerOptions};
 use crate::error::ToContextError;
-use crate::{targets, Compiler, ContextRooted, Module};
+use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options};
+
+/// GLSL compiler options.
+#[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
 pub struct CompileOptions {
-    // common options
-    #[expand]
     /// Compile options common to GLSL, HLSL, and MSL.
+    #[expand]
     pub common: CommonCompileOptions,
 
-    #[expand]
     /// The GLSL version to output. The default is #version 450.
+    #[expand]
     pub version: GlslVersion,
+
+    /// If true, Vulkan GLSL features are used instead of GL-compatible features.
+    /// Mostly useful for debugging SPIR-V files.
+    #[option(SPVC_COMPILER_OPTION_GLSL_VULKAN_SEMANTICS, false)]
+    pub vulkan_semantics: bool,
+
+    /// If true, gl_PerVertex is explicitly redeclared in vertex, geometry and tessellation shaders.
+    /// The members of gl_PerVertex is determined by which built-ins are declared by the shader.
+    /// This option is ignored in ES versions, as redeclaration in ES is not required, and it depends on a different extension
+    /// (EXT_shader_io_blocks) which makes things a bit more fuzzy.
+    #[option(SPVC_COMPILER_OPTION_GLSL_SEPARATE_SHADER_OBJECTS, false)]
+    pub seperate_shader_objects: bool,
+
+    /// For older desktop GLSL targets than version 420, the
+    /// GL_ARB_shading_language_420pack extensions is used to be able to support
+    /// layout(binding) on UBOs and samplers.
+    /// If disabled on older targets, binding decorations will be stripped.
+    ///
+    /// The default is true.
+    #[option(SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION, true)]
+    pub enable_420pack_extension: bool,
+
+    /// If true, the backend will assume that InstanceIndex will need to apply
+    /// a base instance offset. Set to false if you know you will never use base instance
+    /// functionality as it might remove some internal uniforms.
+    #[option(SPVC_COMPILER_OPTION_GLSL_SUPPORT_NONZERO_BASE_INSTANCE, true)]
+    pub support_nonzero_base_instance: bool,
+
+    /// If true, sets the default float precision in ES targets to highp,
+    /// otherwise the default is mediump.
+    #[option(SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_FLOAT_PRECISION_HIGHP, false)]
+    pub es_default_float_precision_highp: bool,
+
+    /// If false, sets the default float precision in ES targets to mediump,
+    /// otherwise the default is highp.
+    #[option(SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_INT_PRECISION_HIGHP, true)]
+    pub es_default_int_precision_highp: bool,
+
+    /// In non-Vulkan GLSL, emit push constant blocks as UBOs rather than plain uniforms.
+    #[option(SPVC_COMPILER_OPTION_GLSL_EMIT_PUSH_CONSTANT_AS_UNIFORM_BUFFER, false)]
+    pub emit_push_constant_as_uniform_buffer: bool,
+
+    /// Always emit uniform blocks as plain uniforms, regardless of the GLSL version, even when UBOs are supported.
+    /// Does not apply to shader storage or push constant blocks.
+    #[option(SPVC_COMPILER_OPTION_GLSL_EMIT_UNIFORM_BUFFER_AS_PLAIN_UNIFORMS, false)]
+    pub emit_uniform_buffer_as_plain_uniforms: bool,
+
+    /// In GLSL, force use of I/O block flattening, similar to
+    /// what happens on legacy GLSL targets for blocks and structs.
+    #[option(SPVC_COMPILER_OPTION_GLSL_FORCE_FLATTENED_IO_BLOCKS, false)]
+    pub force_flattened_io_blocks: bool,
+
+    /// Loading row-major matrices from UBOs on older AMD Windows OpenGL drivers is problematic.
+    /// To load these types correctly, we must generate a wrapper. them in a dummy function which only purpose is to
+    /// ensure row_major decoration is actually respected.
+    /// This workaround may cause significant performance degeneration on some Android devices.
+    #[option(SPVC_COMPILER_OPTION_GLSL_ENABLE_ROW_MAJOR_LOAD_WORKAROUND, true)]
+    pub enable_row_major_load_workaround: bool,
+
+    /// If non-zero, controls `layout(num_views = N) in;` in GL_OVR_multiview2.
+    #[option(SPVC_COMPILER_OPTION_GLSL_OVR_MULTIVIEW_VIEW_COUNT, 0)]
+    pub ovr_multiview_view_count: u32,
 }
 
 /// GLSL language version.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum GlslVersion {
     /// #version 110
     Glsl110,

@@ -5,7 +5,6 @@ use crate::{error, spirv, Compiler};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_options, VariableId};
 use std::ops::Deref;
-use std::ptr::NonNull;
 pub mod glsl;
 pub mod hlsl;
 pub mod msl;

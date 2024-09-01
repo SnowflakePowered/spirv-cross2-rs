@@ -32,6 +32,9 @@ pub enum SpirvCrossError {
     InvalidDecorationInput(crate::spirv::Decoration, DecorationValue<'static>),
     #[error("The name is invalid: {0:?}")]
     InvalidName(String),
+    #[error("The provided index was out of bounds for the resource: ({row}, {column}).")]
+    /// The index is out of bounds
+    IndexOutOfBounds { row: u32, column: u32 },
 }
 
 pub(crate) trait ContextRooted {

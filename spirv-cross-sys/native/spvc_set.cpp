@@ -1,4 +1,5 @@
 #include "spirv_cross_c.h"
+#include "spirv_cross.hpp"
 #include <cstdint>
 #include <unordered_set>
 
@@ -11,6 +12,10 @@ struct __Internal_ScratchMemoryAllocation
 struct __internal_spvc_set_s : __Internal_ScratchMemoryAllocation
 {
 	std::unordered_set<uint32_t> set;
+};
+
+struct spvc_constant_s : spirv_cross::SPIRConstant
+{
 };
 
 extern "C" void spvc_rs_expose_set(spvc_set opaque_set, uint32_t* out, size_t* length) {
@@ -30,7 +35,7 @@ extern "C" void spvc_rs_expose_set(spvc_set opaque_set, uint32_t* out, size_t* l
     }
 }
 
-extern "C" spvc_result spvc_compiler_set_entry_point_safe(spvc_compiler compiler, const char *name, SpvExecutionModel model) {
+extern "C" spvc_result spvc_rs_compiler_set_entry_point_safe(spvc_compiler compiler, const char *name, SpvExecutionModel model) {
     // workaround until spvc_compiler_rename_entry_point is merged.
     try {
         spvc_compiler_set_entry_point(compiler, name, model);
@@ -40,4 +45,16 @@ extern "C" spvc_result spvc_compiler_set_entry_point_safe(spvc_compiler compiler
         return SPVC_ERROR_INVALID_ARGUMENT;
     }
     return SPVC_SUCCESS;
+}
+
+extern "C" spvc_bool spvc_rs_constant_is_scalar(spvc_constant constant) {
+    return constant->m.columns == 1 && constant->m.c[0].vecsize == 1;
+}
+
+extern "C" uint32_t spvc_rs_constant_get_vecsize(spvc_constant constant) {
+    return constant->m.c[0].vecsize;
+}
+
+extern "C" uint32_t spvc_rs_constant_get_matrix_colsize(spvc_constant constant) {
+    return constant->m.columns;
 }

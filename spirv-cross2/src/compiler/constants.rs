@@ -5,9 +5,10 @@ use std::slice;
 
 use crate::compiler::{Compiler, PhantomCompiler};
 use crate::error;
-use crate::error::ToContextError;
+use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{ConstantId, Handle};
 use spirv_cross_sys as sys;
+use crate::compiler::types::{Type, TypeInner};
 
 pub trait Scalar: Sealed {
     #[doc(hidden)]
@@ -93,6 +94,23 @@ impl Iterator for SpecializationConstantIter<'_> {
 
 /// Reflection of specialization constants.
 impl<'a, T> Compiler<'a, T> {
+    // check bounds of the constant, otherwise you can write to arbitrary memory.
+    unsafe fn bounds_check_constant(handle: spvc_constant, column: u32, row: u32) -> error::Result<()> {
+        // SPIRConstant is at most mat4, so anything above that is OOB.
+        if column >= 4 || row >= 4 {
+            return Err(SpirvCrossError::IndexOutOfBounds { row, column })
+        }
+
+        let colsize = sys::spvc_rs_constant_get_matrix_colsize(handle);
+        let vecsize = sys::spvc_rs_constant_get_vecsize(handle);
+
+        if column >= colsize || row >= vecsize {
+            return Err(SpirvCrossError::IndexOutOfBounds { row, column })
+        }
+
+        Ok(())
+    }
+
     pub fn set_specialization_constant_value<S: Scalar>(
         &mut self,
         handle: Handle<ConstantId>,
@@ -104,6 +122,7 @@ impl<'a, T> Compiler<'a, T> {
         unsafe {
             // SAFETY: yield_id ensures safety.
             let handle = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
+            Self::bounds_check_constant(handle, column, row)?;
             S::set(handle, column, row, value)
         }
         Ok(())
@@ -119,8 +138,8 @@ impl<'a, T> Compiler<'a, T> {
         unsafe {
             // SAFETY: yield_id ensures safety.
             let handle = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
+            Self::bounds_check_constant(handle, column, row)?;
 
-            
             Ok(S::get(handle, column, row))
         }
     }

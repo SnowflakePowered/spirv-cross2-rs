@@ -15,6 +15,7 @@ pub fn workgroup_size() -> Result<(), SpirvCrossError> {
 
 layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
 
+
 layout(set = 0, binding = 0) uniform Config{
     mat4 transform;
     int matrixCount;
@@ -69,7 +70,7 @@ void main()
     let id = spec_workgroup.x.unwrap().id;
 
     // compiler.set_specialization_constant_value::<u32>(id, 100, 100, 10)?;
-    let id = compiler.specialization_constant_value::<u32>(id, 100, 100)?;
+    let id = compiler.specialization_constant_value::<u32>(id, 0, 0)?;
 
     eprintln!("{:?}", args);
     eprintln!("{:?}", id);

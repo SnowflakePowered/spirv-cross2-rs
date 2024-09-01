@@ -5189,9 +5189,18 @@ extern "C" {
 }
 extern "C" {
     #[must_use]
-    pub fn spvc_compiler_set_entry_point_safe(
+    pub fn spvc_rs_compiler_set_entry_point_safe(
         compiler: spvc_compiler,
         name: *const ::std::os::raw::c_char,
         model: SpvExecutionModel,
     ) -> spvc_result;
+}
+extern "C" {
+    pub fn spvc_rs_constant_is_scalar(constant: spvc_constant) -> crate::spvc_bool;
+}
+extern "C" {
+    pub fn spvc_rs_constant_get_vecsize(constant: spvc_constant) -> u32;
+}
+extern "C" {
+    pub fn spvc_rs_constant_get_matrix_colsize(constant: spvc_constant) -> u32;
 }

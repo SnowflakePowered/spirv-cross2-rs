@@ -1,35 +1,19 @@
-use crate::compile::CommonCompileOptions;
+use crate::compile::{CommonCompileOptions, CompiledArtifact};
 use crate::targets::Hlsl;
-use crate::Compiler;
-use spirv_cross_sys as sys;
+use crate::{error, spirv, Compiler};
 
 pub use spirv_cross_sys::HlslBindingFlagBits as BindingFlags;
-pub use spirv_cross_sys::HlslBindingFlags;
 pub use spirv_cross_sys::HlslResourceBinding as ResourceBinding;
 pub use spirv_cross_sys::HlslResourceBindingMapping as ResourceBindingMapping;
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
-use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options};
 
-// SPVC_PUBLIC_API spvc_result spvc_compiler_hlsl_set_root_constants_layout(spvc_compiler compiler,
-// const spvc_hlsl_root_constants *constant_info,
-// size_t count);
-// SPVC_PUBLIC_API spvc_result spvc_compiler_hlsl_add_vertex_attribute_remap(spvc_compiler compiler,
-// const spvc_hlsl_vertex_attribute_remap *remap,
-// size_t remaps);
-// SPVC_PUBLIC_API spvc_variable_id spvc_compiler_hlsl_remap_num_workgroups_builtin(spvc_compiler compiler);
-//
-// SPVC_PUBLIC_API spvc_result spvc_compiler_hlsl_set_resource_binding_flags(spvc_compiler compiler,
-// spvc_hlsl_binding_flags flags);
-//
-// SPVC_PUBLIC_API spvc_result spvc_compiler_hlsl_add_resource_binding(spvc_compiler compiler,
-// const spvc_hlsl_resource_binding *binding);
-// SPVC_PUBLIC_API spvc_bool spvc_compiler_hlsl_is_resource_used(spvc_compiler compiler,
-// SpvExecutionModel model,
-// unsigned set,
-// unsigned binding);
 use crate::compile::CompilerOptions;
-use crate::error::ToContextError;
+use crate::error::{SpirvCrossError, ToContextError};
+use crate::handle::{Handle, VariableId};
+use crate::string::MaybeCStr;
 use crate::ContextRooted;
+use spirv_cross_sys as sys;
+use spirv_cross_sys::{HlslBindingFlags, HlslVertexAttributeRemap};
 
 /// HLSL compiler options
 #[non_exhaustive]
@@ -162,7 +146,104 @@ impl Default for HlslShaderModel {
     }
 }
 
-impl<'a> Compiler<'a, Hlsl> {}
+/// HLSL specific APIs.
+impl<'a> Compiler<'a, Hlsl> {
+    pub fn add_resource_binding<'str>(
+        &mut self,
+        binding: ResourceBinding,
+    ) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), &binding)
+                .ok(&*self)
+        }
+    }
+
+    pub fn remap_vertex_attribute<'str>(
+        &mut self,
+        location: u32,
+        semantic: impl Into<MaybeCStr<'str>>,
+    ) -> error::Result<()> {
+        let str = semantic.into();
+        let Ok(semantic) = str.to_cstring_ptr() else {
+            return Err(SpirvCrossError::InvalidName(String::from(str.as_ref())));
+        };
+
+        let remap = HlslVertexAttributeRemap {
+            location,
+            semantic: semantic.as_ptr(),
+        };
+
+        unsafe {
+            sys::spvc_compiler_hlsl_add_vertex_attribute_remap(self.ptr.as_ptr(), &remap, 1)
+                .ok(&*self)
+        }
+    }
+
+    pub fn set_root_constant_layout(
+        &mut self,
+        constant_info: &[RootConstants],
+    ) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_hlsl_set_root_constants_layout(
+                self.ptr.as_ptr(),
+                constant_info.as_ptr(),
+                constant_info.len(),
+            )
+            .ok(&*self)
+        }
+    }
+
+    pub fn set_resource_binding_flags(&mut self, flags: BindingFlags) -> error::Result<()> {
+        let flags = HlslBindingFlags(flags.0 as u32);
+        unsafe {
+            sys::spvc_compiler_hlsl_set_resource_binding_flags(self.ptr.as_ptr(), flags).ok(&*self)
+        }
+    }
+
+    /// This is a special HLSL workaround for the NumWorkGroups builtin.
+    /// This does not exist in HLSL, so the calling application must create a dummy cbuffer in
+    /// which the application will store this builtin.
+    ///
+    /// The cbuffer layout will be:
+    ///
+    /// ```hlsl
+    ///  cbuffer SPIRV_Cross_NumWorkgroups : register(b#, space#) {
+    ///     uint3 SPIRV_Cross_NumWorkgroups_count;
+    /// };
+    /// ```
+    ///
+    /// This must be called before [`Compiler::compile`] if the `NumWorkgroups` builtin is used,
+    /// or compilation will fail.
+    ///
+    /// The function returns None if NumWorkGroups builtin is not statically used in the shader
+    /// from the current entry point.
+    ///
+    /// If Some, returns the variable ID of a cbuffer which corresponds to
+    /// the cbuffer declared above.
+    ///
+    /// By default, no binding or descriptor set decoration is set,
+    /// so the calling application should declare explicit bindings on this ID before calling
+    /// [`Compiler::compile`].
+    pub fn remap_num_workgroups_builtin(&mut self) -> Option<Handle<VariableId>> {
+        unsafe {
+            let id = sys::spvc_compiler_hlsl_remap_num_workgroups_builtin(self.ptr.as_ptr());
+            self.create_handle_if_not_zero(id)
+        }
+    }
+}
+
+impl<'a> CompiledArtifact<'a, Hlsl> {
+    pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {
+        unsafe {
+            sys::spvc_compiler_hlsl_is_resource_used(
+                self.compiler.ptr.as_ptr(),
+                model,
+                set,
+                binding,
+            )
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {

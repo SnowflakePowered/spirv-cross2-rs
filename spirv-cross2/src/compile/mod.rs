@@ -116,7 +116,7 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     }
 
     /// Apply the set of compiler options to the compiler instance.
-    pub fn set_compiler_options(&mut self, options: &T::Options) -> error::Result<()> {
+    fn set_compiler_options(&mut self, options: &T::Options) -> error::Result<()> {
         unsafe {
             let mut handle = std::ptr::null_mut();
 
@@ -133,10 +133,12 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
 
     /// Consume the compilation instance, and compile source code to the
     /// output target.
-    pub fn compile(self) -> CompiledArtifact<'a, T> {
+    pub fn compile(mut self, options: &T::Options) -> error::Result<CompiledArtifact<'a, T>> {
         // todo: actually do the compilation.
 
-        CompiledArtifact { compiler: self }
+        self.set_compiler_options(options)?;
+
+        Ok(CompiledArtifact { compiler: self })
     }
 }
 

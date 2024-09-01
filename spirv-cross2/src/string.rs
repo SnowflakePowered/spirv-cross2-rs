@@ -43,6 +43,9 @@ pub(crate) enum MaybeOwnedCString<'a> {
 }
 
 impl MaybeOwnedCString<'_> {
+    /// Get a pointer to the C string.
+    ///
+    /// The pointer will be valid for the lifetime of `self`.
     pub fn as_ptr(&self) -> *const c_char {
         match self {
             MaybeOwnedCString::Owned(c) => c.as_ptr(),
@@ -167,7 +170,9 @@ impl<'a> MaybeCStr<'a> {
         }
     }
 
-    /// Allocate if necessary, if not then return a pointer to the original cstring
+    /// Allocate if necessary, if not then return a pointer to the original cstring.
+    ///
+    /// The returned pointer will be valid for the lifetime `'a`.
     pub(crate) fn to_cstring_ptr(&self) -> Result<MaybeOwnedCString<'a>, NulError> {
         if let Some(ptr) = self.pointer {
             Ok(MaybeOwnedCString::Borrowed {

@@ -3834,301 +3834,374 @@ extern "C" {
     pub fn spvc_hlsl_resource_binding_init(binding: *mut HlslResourceBinding);
 }
 impl spvc_compiler_option {
-    pub const Unknown: spvc_compiler_option = spvc_compiler_option(0);
+    pub const SPVC_COMPILER_OPTION_UNKNOWN: spvc_compiler_option = spvc_compiler_option(0);
 }
 impl spvc_compiler_option {
-    pub const ForceTemporary: spvc_compiler_option = spvc_compiler_option(16777217);
+    pub const SPVC_COMPILER_OPTION_FORCE_TEMPORARY: spvc_compiler_option =
+        spvc_compiler_option(16777217);
 }
 impl spvc_compiler_option {
-    pub const FlattenMultidimensionalArrays: spvc_compiler_option = spvc_compiler_option(16777218);
+    pub const SPVC_COMPILER_OPTION_FLATTEN_MULTIDIMENSIONAL_ARRAYS: spvc_compiler_option =
+        spvc_compiler_option(16777218);
 }
 impl spvc_compiler_option {
-    pub const FixupDepthConvention: spvc_compiler_option = spvc_compiler_option(16777219);
+    pub const SPVC_COMPILER_OPTION_FIXUP_DEPTH_CONVENTION: spvc_compiler_option =
+        spvc_compiler_option(16777219);
 }
 impl spvc_compiler_option {
-    pub const FlipVertexY: spvc_compiler_option = spvc_compiler_option(16777220);
+    pub const SPVC_COMPILER_OPTION_FLIP_VERTEX_Y: spvc_compiler_option =
+        spvc_compiler_option(16777220);
 }
 impl spvc_compiler_option {
-    pub const GlslSupportNonzeroBaseInstance: spvc_compiler_option = spvc_compiler_option(33554437);
+    pub const SPVC_COMPILER_OPTION_GLSL_SUPPORT_NONZERO_BASE_INSTANCE: spvc_compiler_option =
+        spvc_compiler_option(33554437);
 }
 impl spvc_compiler_option {
-    pub const GlslSeparateShaderObjects: spvc_compiler_option = spvc_compiler_option(33554438);
+    pub const SPVC_COMPILER_OPTION_GLSL_SEPARATE_SHADER_OBJECTS: spvc_compiler_option =
+        spvc_compiler_option(33554438);
 }
 impl spvc_compiler_option {
-    pub const GlslEnable420PackExtension: spvc_compiler_option = spvc_compiler_option(33554439);
+    pub const SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION: spvc_compiler_option =
+        spvc_compiler_option(33554439);
 }
 impl spvc_compiler_option {
-    pub const GlslVersion: spvc_compiler_option = spvc_compiler_option(33554440);
+    pub const SPVC_COMPILER_OPTION_GLSL_VERSION: spvc_compiler_option =
+        spvc_compiler_option(33554440);
 }
 impl spvc_compiler_option {
-    pub const GlslEs: spvc_compiler_option = spvc_compiler_option(33554441);
+    pub const SPVC_COMPILER_OPTION_GLSL_ES: spvc_compiler_option = spvc_compiler_option(33554441);
 }
 impl spvc_compiler_option {
-    pub const GlslVulkanSemantics: spvc_compiler_option = spvc_compiler_option(33554442);
+    pub const SPVC_COMPILER_OPTION_GLSL_VULKAN_SEMANTICS: spvc_compiler_option =
+        spvc_compiler_option(33554442);
 }
 impl spvc_compiler_option {
-    pub const GlslEsDefaultFloatPrecisionHighp: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_FLOAT_PRECISION_HIGHP: spvc_compiler_option =
         spvc_compiler_option(33554443);
 }
 impl spvc_compiler_option {
-    pub const GlslEsDefaultIntPrecisionHighp: spvc_compiler_option = spvc_compiler_option(33554444);
+    pub const SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_INT_PRECISION_HIGHP: spvc_compiler_option =
+        spvc_compiler_option(33554444);
 }
 impl spvc_compiler_option {
-    pub const HlslShaderModel: spvc_compiler_option = spvc_compiler_option(67108877);
+    pub const SPVC_COMPILER_OPTION_HLSL_SHADER_MODEL: spvc_compiler_option =
+        spvc_compiler_option(67108877);
 }
 impl spvc_compiler_option {
-    pub const HlslPointSizeCompat: spvc_compiler_option = spvc_compiler_option(67108878);
+    pub const SPVC_COMPILER_OPTION_HLSL_POINT_SIZE_COMPAT: spvc_compiler_option =
+        spvc_compiler_option(67108878);
 }
 impl spvc_compiler_option {
-    pub const HlslPointCoordCompat: spvc_compiler_option = spvc_compiler_option(67108879);
+    pub const SPVC_COMPILER_OPTION_HLSL_POINT_COORD_COMPAT: spvc_compiler_option =
+        spvc_compiler_option(67108879);
 }
 impl spvc_compiler_option {
-    pub const HlslSupportNonzeroBaseVertexBaseInstance: spvc_compiler_option =
-        spvc_compiler_option(67108880);
+    pub const SPVC_COMPILER_OPTION_HLSL_SUPPORT_NONZERO_BASE_VERTEX_BASE_INSTANCE:
+        spvc_compiler_option = spvc_compiler_option(67108880);
 }
 impl spvc_compiler_option {
-    pub const MslVersion: spvc_compiler_option = spvc_compiler_option(134217745);
+    pub const SPVC_COMPILER_OPTION_MSL_VERSION: spvc_compiler_option =
+        spvc_compiler_option(134217745);
 }
 impl spvc_compiler_option {
-    pub const MslTexelBufferTextureWidth: spvc_compiler_option = spvc_compiler_option(134217746);
+    pub const SPVC_COMPILER_OPTION_MSL_TEXEL_BUFFER_TEXTURE_WIDTH: spvc_compiler_option =
+        spvc_compiler_option(134217746);
 }
 impl spvc_compiler_option {
-    pub const MslAuxBufferIndex: spvc_compiler_option = spvc_compiler_option(134217747);
+    pub const SPVC_COMPILER_OPTION_MSL_AUX_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217747);
 }
 impl spvc_compiler_option {
-    pub const MslSwizzleBufferIndex: spvc_compiler_option = spvc_compiler_option(134217747);
+    pub const SPVC_COMPILER_OPTION_MSL_SWIZZLE_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217747);
 }
 impl spvc_compiler_option {
-    pub const MslIndirectParamsBufferIndex: spvc_compiler_option = spvc_compiler_option(134217748);
+    pub const SPVC_COMPILER_OPTION_MSL_INDIRECT_PARAMS_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217748);
 }
 impl spvc_compiler_option {
-    pub const MslShaderOutputBufferIndex: spvc_compiler_option = spvc_compiler_option(134217749);
+    pub const SPVC_COMPILER_OPTION_MSL_SHADER_OUTPUT_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217749);
 }
 impl spvc_compiler_option {
-    pub const MslShaderPatchOutputBufferIndex: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_SHADER_PATCH_OUTPUT_BUFFER_INDEX: spvc_compiler_option =
         spvc_compiler_option(134217750);
 }
 impl spvc_compiler_option {
-    pub const MslShaderTessFactorOutputBufferIndex: spvc_compiler_option =
-        spvc_compiler_option(134217751);
+    pub const SPVC_COMPILER_OPTION_MSL_SHADER_TESS_FACTOR_OUTPUT_BUFFER_INDEX:
+        spvc_compiler_option = spvc_compiler_option(134217751);
 }
 impl spvc_compiler_option {
-    pub const MslShaderInputWorkgroupIndex: spvc_compiler_option = spvc_compiler_option(134217752);
+    pub const SPVC_COMPILER_OPTION_MSL_SHADER_INPUT_WORKGROUP_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217752);
 }
 impl spvc_compiler_option {
-    pub const MslEnablePointSizeBuiltin: spvc_compiler_option = spvc_compiler_option(134217753);
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_POINT_SIZE_BUILTIN: spvc_compiler_option =
+        spvc_compiler_option(134217753);
 }
 impl spvc_compiler_option {
-    pub const MslDisableRasterization: spvc_compiler_option = spvc_compiler_option(134217754);
+    pub const SPVC_COMPILER_OPTION_MSL_DISABLE_RASTERIZATION: spvc_compiler_option =
+        spvc_compiler_option(134217754);
 }
 impl spvc_compiler_option {
-    pub const MslCaptureOutputToBuffer: spvc_compiler_option = spvc_compiler_option(134217755);
+    pub const SPVC_COMPILER_OPTION_MSL_CAPTURE_OUTPUT_TO_BUFFER: spvc_compiler_option =
+        spvc_compiler_option(134217755);
 }
 impl spvc_compiler_option {
-    pub const MslSwizzleTextureSamples: spvc_compiler_option = spvc_compiler_option(134217756);
+    pub const SPVC_COMPILER_OPTION_MSL_SWIZZLE_TEXTURE_SAMPLES: spvc_compiler_option =
+        spvc_compiler_option(134217756);
 }
 impl spvc_compiler_option {
-    pub const MslPadFragmentOutputComponents: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS: spvc_compiler_option =
         spvc_compiler_option(134217757);
 }
 impl spvc_compiler_option {
-    pub const MslTessDomainOriginLowerLeft: spvc_compiler_option = spvc_compiler_option(134217758);
+    pub const SPVC_COMPILER_OPTION_MSL_TESS_DOMAIN_ORIGIN_LOWER_LEFT: spvc_compiler_option =
+        spvc_compiler_option(134217758);
 }
 impl spvc_compiler_option {
-    pub const MslPlatform: spvc_compiler_option = spvc_compiler_option(134217759);
+    pub const SPVC_COMPILER_OPTION_MSL_PLATFORM: spvc_compiler_option =
+        spvc_compiler_option(134217759);
 }
 impl spvc_compiler_option {
-    pub const MslArgumentBuffers: spvc_compiler_option = spvc_compiler_option(134217760);
+    pub const SPVC_COMPILER_OPTION_MSL_ARGUMENT_BUFFERS: spvc_compiler_option =
+        spvc_compiler_option(134217760);
 }
 impl spvc_compiler_option {
-    pub const GlslEmitPushConstantAsUniformBuffer: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_GLSL_EMIT_PUSH_CONSTANT_AS_UNIFORM_BUFFER: spvc_compiler_option =
         spvc_compiler_option(33554465);
 }
 impl spvc_compiler_option {
-    pub const MslTextureBufferNative: spvc_compiler_option = spvc_compiler_option(134217762);
+    pub const SPVC_COMPILER_OPTION_MSL_TEXTURE_BUFFER_NATIVE: spvc_compiler_option =
+        spvc_compiler_option(134217762);
 }
 impl spvc_compiler_option {
-    pub const GlslEmitUniformBufferAsPlainUniforms: spvc_compiler_option =
-        spvc_compiler_option(33554467);
+    pub const SPVC_COMPILER_OPTION_GLSL_EMIT_UNIFORM_BUFFER_AS_PLAIN_UNIFORMS:
+        spvc_compiler_option = spvc_compiler_option(33554467);
 }
 impl spvc_compiler_option {
-    pub const MslBufferSizeBufferIndex: spvc_compiler_option = spvc_compiler_option(134217764);
+    pub const SPVC_COMPILER_OPTION_MSL_BUFFER_SIZE_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217764);
 }
 impl spvc_compiler_option {
-    pub const EmitLineDirectives: spvc_compiler_option = spvc_compiler_option(16777253);
+    pub const SPVC_COMPILER_OPTION_EMIT_LINE_DIRECTIVES: spvc_compiler_option =
+        spvc_compiler_option(16777253);
 }
 impl spvc_compiler_option {
-    pub const MslMultiview: spvc_compiler_option = spvc_compiler_option(134217766);
+    pub const SPVC_COMPILER_OPTION_MSL_MULTIVIEW: spvc_compiler_option =
+        spvc_compiler_option(134217766);
 }
 impl spvc_compiler_option {
-    pub const MslViewMaskBufferIndex: spvc_compiler_option = spvc_compiler_option(134217767);
+    pub const SPVC_COMPILER_OPTION_MSL_VIEW_MASK_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217767);
 }
 impl spvc_compiler_option {
-    pub const MslDeviceIndex: spvc_compiler_option = spvc_compiler_option(134217768);
+    pub const SPVC_COMPILER_OPTION_MSL_DEVICE_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217768);
 }
 impl spvc_compiler_option {
-    pub const MslViewIndexFromDeviceIndex: spvc_compiler_option = spvc_compiler_option(134217769);
+    pub const SPVC_COMPILER_OPTION_MSL_VIEW_INDEX_FROM_DEVICE_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217769);
 }
 impl spvc_compiler_option {
-    pub const MslDispatchBase: spvc_compiler_option = spvc_compiler_option(134217770);
+    pub const SPVC_COMPILER_OPTION_MSL_DISPATCH_BASE: spvc_compiler_option =
+        spvc_compiler_option(134217770);
 }
 impl spvc_compiler_option {
-    pub const MslDynamicOffsetsBufferIndex: spvc_compiler_option = spvc_compiler_option(134217771);
+    pub const SPVC_COMPILER_OPTION_MSL_DYNAMIC_OFFSETS_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217771);
 }
 impl spvc_compiler_option {
-    pub const MslTexture1DAs2D: spvc_compiler_option = spvc_compiler_option(134217772);
+    pub const SPVC_COMPILER_OPTION_MSL_TEXTURE_1D_AS_2D: spvc_compiler_option =
+        spvc_compiler_option(134217772);
 }
 impl spvc_compiler_option {
-    pub const MslEnableBaseIndexZero: spvc_compiler_option = spvc_compiler_option(134217773);
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_BASE_INDEX_ZERO: spvc_compiler_option =
+        spvc_compiler_option(134217773);
 }
 impl spvc_compiler_option {
-    pub const MslIosFramebufferFetchSubpass: spvc_compiler_option = spvc_compiler_option(134217774);
+    pub const SPVC_COMPILER_OPTION_MSL_IOS_FRAMEBUFFER_FETCH_SUBPASS: spvc_compiler_option =
+        spvc_compiler_option(134217774);
 }
 impl spvc_compiler_option {
-    pub const MslFramebufferFetchSubpass: spvc_compiler_option = spvc_compiler_option(134217774);
+    pub const SPVC_COMPILER_OPTION_MSL_FRAMEBUFFER_FETCH_SUBPASS: spvc_compiler_option =
+        spvc_compiler_option(134217774);
 }
 impl spvc_compiler_option {
-    pub const MslInvariantFpMath: spvc_compiler_option = spvc_compiler_option(134217775);
+    pub const SPVC_COMPILER_OPTION_MSL_INVARIANT_FP_MATH: spvc_compiler_option =
+        spvc_compiler_option(134217775);
 }
 impl spvc_compiler_option {
-    pub const MslEmulateCubemapArray: spvc_compiler_option = spvc_compiler_option(134217776);
+    pub const SPVC_COMPILER_OPTION_MSL_EMULATE_CUBEMAP_ARRAY: spvc_compiler_option =
+        spvc_compiler_option(134217776);
 }
 impl spvc_compiler_option {
-    pub const MslEnableDecorationBinding: spvc_compiler_option = spvc_compiler_option(134217777);
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_DECORATION_BINDING: spvc_compiler_option =
+        spvc_compiler_option(134217777);
 }
 impl spvc_compiler_option {
-    pub const MslForceActiveArgumentBufferResources: spvc_compiler_option =
-        spvc_compiler_option(134217778);
+    pub const SPVC_COMPILER_OPTION_MSL_FORCE_ACTIVE_ARGUMENT_BUFFER_RESOURCES:
+        spvc_compiler_option = spvc_compiler_option(134217778);
 }
 impl spvc_compiler_option {
-    pub const MslForceNativeArrays: spvc_compiler_option = spvc_compiler_option(134217779);
+    pub const SPVC_COMPILER_OPTION_MSL_FORCE_NATIVE_ARRAYS: spvc_compiler_option =
+        spvc_compiler_option(134217779);
 }
 impl spvc_compiler_option {
-    pub const EnableStorageImageQualifierDeduction: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_ENABLE_STORAGE_IMAGE_QUALIFIER_DEDUCTION: spvc_compiler_option =
         spvc_compiler_option(16777268);
 }
 impl spvc_compiler_option {
-    pub const HlslForceStorageBufferAsUav: spvc_compiler_option = spvc_compiler_option(67108917);
+    pub const SPVC_COMPILER_OPTION_HLSL_FORCE_STORAGE_BUFFER_AS_UAV: spvc_compiler_option =
+        spvc_compiler_option(67108917);
 }
 impl spvc_compiler_option {
-    pub const ForceZeroInitializedVariables: spvc_compiler_option = spvc_compiler_option(16777270);
+    pub const SPVC_COMPILER_OPTION_FORCE_ZERO_INITIALIZED_VARIABLES: spvc_compiler_option =
+        spvc_compiler_option(16777270);
 }
 impl spvc_compiler_option {
-    pub const HlslNonwritableUavTextureAsSrv: spvc_compiler_option = spvc_compiler_option(67108919);
+    pub const SPVC_COMPILER_OPTION_HLSL_NONWRITABLE_UAV_TEXTURE_AS_SRV: spvc_compiler_option =
+        spvc_compiler_option(67108919);
 }
 impl spvc_compiler_option {
-    pub const MslEnableFragOutputMask: spvc_compiler_option = spvc_compiler_option(134217784);
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_FRAG_OUTPUT_MASK: spvc_compiler_option =
+        spvc_compiler_option(134217784);
 }
 impl spvc_compiler_option {
-    pub const MslEnableFragDepthBuiltin: spvc_compiler_option = spvc_compiler_option(134217785);
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_FRAG_DEPTH_BUILTIN: spvc_compiler_option =
+        spvc_compiler_option(134217785);
 }
 impl spvc_compiler_option {
-    pub const MslEnableFragStencilRefBuiltin: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_FRAG_STENCIL_REF_BUILTIN: spvc_compiler_option =
         spvc_compiler_option(134217786);
 }
 impl spvc_compiler_option {
-    pub const MslEnableClipDistanceUserVarying: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_CLIP_DISTANCE_USER_VARYING: spvc_compiler_option =
         spvc_compiler_option(134217787);
 }
 impl spvc_compiler_option {
-    pub const HlslEnable16BitTypes: spvc_compiler_option = spvc_compiler_option(67108924);
+    pub const SPVC_COMPILER_OPTION_HLSL_ENABLE_16BIT_TYPES: spvc_compiler_option =
+        spvc_compiler_option(67108924);
 }
 impl spvc_compiler_option {
-    pub const MslMultiPatchWorkgroup: spvc_compiler_option = spvc_compiler_option(134217789);
+    pub const SPVC_COMPILER_OPTION_MSL_MULTI_PATCH_WORKGROUP: spvc_compiler_option =
+        spvc_compiler_option(134217789);
 }
 impl spvc_compiler_option {
-    pub const MslShaderInputBufferIndex: spvc_compiler_option = spvc_compiler_option(134217790);
+    pub const SPVC_COMPILER_OPTION_MSL_SHADER_INPUT_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217790);
 }
 impl spvc_compiler_option {
-    pub const MslShaderIndexBufferIndex: spvc_compiler_option = spvc_compiler_option(134217791);
+    pub const SPVC_COMPILER_OPTION_MSL_SHADER_INDEX_BUFFER_INDEX: spvc_compiler_option =
+        spvc_compiler_option(134217791);
 }
 impl spvc_compiler_option {
-    pub const MslVertexForTessellation: spvc_compiler_option = spvc_compiler_option(134217792);
+    pub const SPVC_COMPILER_OPTION_MSL_VERTEX_FOR_TESSELLATION: spvc_compiler_option =
+        spvc_compiler_option(134217792);
 }
 impl spvc_compiler_option {
-    pub const MslVertexIndexType: spvc_compiler_option = spvc_compiler_option(134217793);
+    pub const SPVC_COMPILER_OPTION_MSL_VERTEX_INDEX_TYPE: spvc_compiler_option =
+        spvc_compiler_option(134217793);
 }
 impl spvc_compiler_option {
-    pub const GlslForceFlattenedIoBlocks: spvc_compiler_option = spvc_compiler_option(33554498);
+    pub const SPVC_COMPILER_OPTION_GLSL_FORCE_FLATTENED_IO_BLOCKS: spvc_compiler_option =
+        spvc_compiler_option(33554498);
 }
 impl spvc_compiler_option {
-    pub const MslMultiviewLayeredRendering: spvc_compiler_option = spvc_compiler_option(134217795);
+    pub const SPVC_COMPILER_OPTION_MSL_MULTIVIEW_LAYERED_RENDERING: spvc_compiler_option =
+        spvc_compiler_option(134217795);
 }
 impl spvc_compiler_option {
-    pub const MslArrayedSubpassInput: spvc_compiler_option = spvc_compiler_option(134217796);
+    pub const SPVC_COMPILER_OPTION_MSL_ARRAYED_SUBPASS_INPUT: spvc_compiler_option =
+        spvc_compiler_option(134217796);
 }
 impl spvc_compiler_option {
-    pub const MslR32UiLinearTextureAlignment: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_R32UI_LINEAR_TEXTURE_ALIGNMENT: spvc_compiler_option =
         spvc_compiler_option(134217797);
 }
 impl spvc_compiler_option {
-    pub const MslR32UiAlignmentConstantId: spvc_compiler_option = spvc_compiler_option(134217798);
+    pub const SPVC_COMPILER_OPTION_MSL_R32UI_ALIGNMENT_CONSTANT_ID: spvc_compiler_option =
+        spvc_compiler_option(134217798);
 }
 impl spvc_compiler_option {
-    pub const HlslFlattenMatrixVertexInputSemantics: spvc_compiler_option =
-        spvc_compiler_option(67108935);
+    pub const SPVC_COMPILER_OPTION_HLSL_FLATTEN_MATRIX_VERTEX_INPUT_SEMANTICS:
+        spvc_compiler_option = spvc_compiler_option(67108935);
 }
 impl spvc_compiler_option {
-    pub const MslIosUseSimdgroupFunctions: spvc_compiler_option = spvc_compiler_option(134217800);
+    pub const SPVC_COMPILER_OPTION_MSL_IOS_USE_SIMDGROUP_FUNCTIONS: spvc_compiler_option =
+        spvc_compiler_option(134217800);
 }
 impl spvc_compiler_option {
-    pub const MslEmulateSubgroups: spvc_compiler_option = spvc_compiler_option(134217801);
+    pub const SPVC_COMPILER_OPTION_MSL_EMULATE_SUBGROUPS: spvc_compiler_option =
+        spvc_compiler_option(134217801);
 }
 impl spvc_compiler_option {
-    pub const MslFixedSubgroupSize: spvc_compiler_option = spvc_compiler_option(134217802);
+    pub const SPVC_COMPILER_OPTION_MSL_FIXED_SUBGROUP_SIZE: spvc_compiler_option =
+        spvc_compiler_option(134217802);
 }
 impl spvc_compiler_option {
-    pub const MslForceSampleRateShading: spvc_compiler_option = spvc_compiler_option(134217803);
+    pub const SPVC_COMPILER_OPTION_MSL_FORCE_SAMPLE_RATE_SHADING: spvc_compiler_option =
+        spvc_compiler_option(134217803);
 }
 impl spvc_compiler_option {
-    pub const MslIosSupportBaseVertexInstance: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_IOS_SUPPORT_BASE_VERTEX_INSTANCE: spvc_compiler_option =
         spvc_compiler_option(134217804);
 }
 impl spvc_compiler_option {
-    pub const GlslOvrMultiviewViewCount: spvc_compiler_option = spvc_compiler_option(33554509);
+    pub const SPVC_COMPILER_OPTION_GLSL_OVR_MULTIVIEW_VIEW_COUNT: spvc_compiler_option =
+        spvc_compiler_option(33554509);
 }
 impl spvc_compiler_option {
-    pub const RelaxNanChecks: spvc_compiler_option = spvc_compiler_option(16777294);
+    pub const SPVC_COMPILER_OPTION_RELAX_NAN_CHECKS: spvc_compiler_option =
+        spvc_compiler_option(16777294);
 }
 impl spvc_compiler_option {
-    pub const MslRawBufferTeseInput: spvc_compiler_option = spvc_compiler_option(134217807);
+    pub const SPVC_COMPILER_OPTION_MSL_RAW_BUFFER_TESE_INPUT: spvc_compiler_option =
+        spvc_compiler_option(134217807);
 }
 impl spvc_compiler_option {
-    pub const MslShaderPatchInputBufferIndex: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_SHADER_PATCH_INPUT_BUFFER_INDEX: spvc_compiler_option =
         spvc_compiler_option(134217808);
 }
 impl spvc_compiler_option {
-    pub const MslManualHelperInvocationUpdates: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_MSL_MANUAL_HELPER_INVOCATION_UPDATES: spvc_compiler_option =
         spvc_compiler_option(134217809);
 }
 impl spvc_compiler_option {
-    pub const MslCheckDiscardedFragStores: spvc_compiler_option = spvc_compiler_option(134217810);
+    pub const SPVC_COMPILER_OPTION_MSL_CHECK_DISCARDED_FRAG_STORES: spvc_compiler_option =
+        spvc_compiler_option(134217810);
 }
 impl spvc_compiler_option {
-    pub const GlslEnableRowMajorLoadWorkaround: spvc_compiler_option =
+    pub const SPVC_COMPILER_OPTION_GLSL_ENABLE_ROW_MAJOR_LOAD_WORKAROUND: spvc_compiler_option =
         spvc_compiler_option(33554515);
 }
 impl spvc_compiler_option {
-    pub const MslArgumentBuffersTier: spvc_compiler_option = spvc_compiler_option(134217812);
+    pub const SPVC_COMPILER_OPTION_MSL_ARGUMENT_BUFFERS_TIER: spvc_compiler_option =
+        spvc_compiler_option(134217812);
 }
 impl spvc_compiler_option {
-    pub const MslSampleDrefLodArrayAsGrad: spvc_compiler_option = spvc_compiler_option(134217813);
+    pub const SPVC_COMPILER_OPTION_MSL_SAMPLE_DREF_LOD_ARRAY_AS_GRAD: spvc_compiler_option =
+        spvc_compiler_option(134217813);
 }
 impl spvc_compiler_option {
-    pub const MslReadwriteTextureFences: spvc_compiler_option = spvc_compiler_option(134217814);
+    pub const SPVC_COMPILER_OPTION_MSL_READWRITE_TEXTURE_FENCES: spvc_compiler_option =
+        spvc_compiler_option(134217814);
 }
 impl spvc_compiler_option {
-    pub const MslReplaceRecursiveInputs: spvc_compiler_option = spvc_compiler_option(134217815);
+    pub const SPVC_COMPILER_OPTION_MSL_REPLACE_RECURSIVE_INPUTS: spvc_compiler_option =
+        spvc_compiler_option(134217815);
 }
 impl spvc_compiler_option {
-    pub const MslAgxManualCubeGradFixup: spvc_compiler_option = spvc_compiler_option(134217816);
+    pub const SPVC_COMPILER_OPTION_MSL_AGX_MANUAL_CUBE_GRAD_FIXUP: spvc_compiler_option =
+        spvc_compiler_option(134217816);
 }
 impl spvc_compiler_option {
-    pub const MslForceFragmentWithSideEffectsExecution: spvc_compiler_option =
-        spvc_compiler_option(134217817);
+    pub const SPVC_COMPILER_OPTION_MSL_FORCE_FRAGMENT_WITH_SIDE_EFFECTS_EXECUTION:
+        spvc_compiler_option = spvc_compiler_option(134217817);
 }
 impl spvc_compiler_option {
-    pub const HlslUseEntryPointName: spvc_compiler_option = spvc_compiler_option(67108954);
+    pub const SPVC_COMPILER_OPTION_HLSL_USE_ENTRY_POINT_NAME: spvc_compiler_option =
+        spvc_compiler_option(67108954);
 }
 impl ::std::ops::BitOr<spvc_compiler_option> for spvc_compiler_option {
     type Output = Self;

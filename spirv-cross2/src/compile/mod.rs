@@ -1,8 +1,8 @@
 use crate::error::{ContextRooted, Result, ToContextError};
 use crate::handle::Handle;
+use crate::sealed::Sealed;
 use crate::targets::Target;
 use crate::{error, spirv, Compiler, ContextStr};
-use spirv_cross2_derive::CompilerOptions;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_options, VariableId};
 use std::fmt::{Display, Formatter};
@@ -12,6 +12,7 @@ pub mod glsl;
 pub mod hlsl;
 pub mod msl;
 
+impl Sealed for CommonCompileOptions {}
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
 pub struct CommonCompileOptions {
     // common options
@@ -179,7 +180,9 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     }
 }
 
-pub(crate) trait CompilerOptions {
+/// Marker trait for compiler options.
+pub trait CompilerOptions: Sealed {
+    #[doc(hidden)]
     unsafe fn apply(
         &self,
         options: spvc_compiler_options,
@@ -227,7 +230,8 @@ mod test {
     }
 }
 
-#[derive(Debug, Default, CompilerOptions)]
+impl Sealed for NoOptions {}
+#[derive(Debug, Default, spirv_cross2_derive::CompilerOptions)]
 pub struct NoOptions;
 
 /// A target that can have compiler outputs.

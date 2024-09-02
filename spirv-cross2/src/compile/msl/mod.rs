@@ -24,10 +24,12 @@ use std::fmt::{Debug, Formatter};
 use crate::compile::CompilerOptions;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, VariableId};
+use crate::sealed::Sealed;
 use crate::string::ContextStr;
 use crate::targets::Msl;
 use crate::{error, spirv, Compiler, ContextRooted};
 
+impl Sealed for CompileOptions {}
 /// MSL compiler options
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
@@ -449,7 +451,11 @@ pub struct MslVersion {
 impl MslVersion {
     /// Create a new `MslVersion`.
     pub fn new(major: u32, minor: u32, patch: u32) -> Self {
-        Self { major, minor, patch }
+        Self {
+            major,
+            minor,
+            patch,
+        }
     }
 }
 

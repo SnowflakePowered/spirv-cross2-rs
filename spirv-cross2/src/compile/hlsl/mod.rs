@@ -10,6 +10,7 @@ pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 use crate::compile::CompilerOptions;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, VariableId};
+use crate::sealed::Sealed;
 use crate::string::ContextStr;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
@@ -41,8 +42,8 @@ bitflags! {
         const AUTO_ALL = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_ALL.0 as u32;
     }
 }
-// todo: make binding flags better.
 
+impl Sealed for CompileOptions {}
 /// HLSL compiler options
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
@@ -112,10 +113,12 @@ pub struct CompileOptions {
 /// HLSL Shader model.
 #[derive(Debug, Copy, Clone)]
 #[non_exhaustive]
+#[derive(Default)]
 pub enum HlslShaderModel {
     /// Shader Model 3.0 (Direct3D 9.0c).
     ///
     /// This is the lowest supported shader model.
+    #[default]
     ShaderModel3_0,
     /// Shader Model 4.0 (Direct3D 10.0).
     ///
@@ -165,12 +168,6 @@ impl From<HlslShaderModel> for u32 {
             HlslShaderModel::ShaderModel6_7 => 67,
             HlslShaderModel::ShaderModel6_8 => 68,
         }
-    }
-}
-
-impl Default for HlslShaderModel {
-    fn default() -> Self {
-        HlslShaderModel::ShaderModel3_0
     }
 }
 

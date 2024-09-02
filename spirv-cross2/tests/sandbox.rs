@@ -1,4 +1,3 @@
-use gfx_maths::{Mat4, Vec2, Vec4};
 use glslang::SpirvVersion::{SPIRV1_0, SPIRV1_1, SPIRV1_6};
 use glslang::{
     CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion,

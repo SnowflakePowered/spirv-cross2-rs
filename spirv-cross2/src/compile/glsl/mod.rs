@@ -1,9 +1,11 @@
 use super::{CommonCompileOptions, CompilerOptions};
 use crate::error::ToContextError;
+use crate::sealed::Sealed;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options};
 
+impl Sealed for CompileOptions {}
 /// GLSL compiler options.
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
@@ -79,9 +81,12 @@ pub struct CompileOptions {
     pub ovr_multiview_view_count: u32,
 }
 
+impl Sealed for GlslVersion {}
+
 /// GLSL language version.
 #[derive(Debug)]
 #[non_exhaustive]
+#[derive(Default)]
 pub enum GlslVersion {
     /// #version 110
     Glsl110,
@@ -106,6 +111,7 @@ pub enum GlslVersion {
     /// #version 440
     Glsl440,
     /// #version 450
+    #[default]
     Glsl450,
     /// #version 460
     Glsl460,
@@ -117,12 +123,6 @@ pub enum GlslVersion {
     Glsl310Es,
     /// #version 320 es
     Glsl320Es,
-}
-
-impl Default for GlslVersion {
-    fn default() -> Self {
-        GlslVersion::Glsl450
-    }
 }
 
 impl CompilerOptions for GlslVersion {

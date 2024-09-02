@@ -76,7 +76,8 @@ mod test {
     #[test]
     pub fn get_active_buffer_ranges() -> Result<(), SpirvCrossError> {
         let spv = SpirvCrossContext::new()?;
-        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let ubo: Vec<_> = compiler

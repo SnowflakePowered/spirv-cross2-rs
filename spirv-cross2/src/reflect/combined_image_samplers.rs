@@ -144,7 +144,8 @@ mod test {
     #[test]
     pub fn test_combined_image_sampler_build() -> Result<(), SpirvCrossError> {
         let spv = SpirvCrossContext::new()?;
-        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
 

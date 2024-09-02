@@ -205,7 +205,8 @@ mod test {
     #[test]
     pub fn create_compiler() -> Result<(), SpirvCrossError> {
         let spv = SpirvCrossContext::new()?;
-        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         Ok(())
@@ -214,7 +215,8 @@ mod test {
     #[test]
     pub fn reflect_interface_vars() -> Result<(), SpirvCrossError> {
         let spv = SpirvCrossContext::new()?;
-        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let vars = compiler.active_interface_variables()?;

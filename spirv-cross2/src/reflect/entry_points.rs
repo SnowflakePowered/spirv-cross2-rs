@@ -269,7 +269,8 @@ mod test {
     #[test]
     pub fn get_entry_points() -> Result<(), SpirvCrossError> {
         let spv = SpirvCrossContext::new()?;
-        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let old_entry_points: Vec<_> = compiler.entry_points()?.collect();

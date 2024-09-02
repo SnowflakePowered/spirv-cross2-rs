@@ -1,3 +1,4 @@
+use gfx_maths::{Mat4, Vec2, Vec4};
 use glslang::SpirvVersion::{SPIRV1_0, SPIRV1_1, SPIRV1_6};
 use glslang::{
     CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion,
@@ -5,6 +6,75 @@ use glslang::{
 use spirv_cross2::error::SpirvCrossError;
 use spirv_cross2::reflect::TypeInner;
 use spirv_cross2::{spirv, Module};
+
+#[test]
+pub fn spec_constant() -> Result<(), SpirvCrossError> {
+    const SHADER: &str = r##"#version 450
+
+layout (local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+
+
+layout(set = 0, binding = 0) uniform Config{
+    mat4 transform;
+    int matrixCount;
+} opData;
+
+layout(set = 0, binding = 1) readonly buffer  InputBuffer{
+    mat4 matrices[];
+} sourceData;
+
+layout(set = 0, binding = 2) buffer  OutputBuffer{
+    mat4 matrices[];
+} outputData;
+
+void main()
+{
+    //grab global ID
+	uint gID = gl_GlobalInvocationID.x;
+    //make sure we don't access past the buffer size
+    if(gID < opData.matrixCount)
+    {
+        // do math
+        outputData.matrices[gID] = sourceData.matrices[gID] * opData.transform;
+    }
+}
+"##;
+
+    let glslang = glslang::Compiler::acquire().unwrap();
+
+    let src = ShaderSource::from(SHADER);
+    let mut opts = CompilerOptions::default();
+
+    opts.target = Target::Vulkan {
+        version: VulkanVersion::Vulkan1_3,
+        spirv_version: SPIRV1_6,
+    };
+
+    let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None).unwrap();
+    let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
+
+    let cross = spirv_cross2::SpirvCross::new()?;
+    let mut compiler =
+        cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+
+    let spec_workgroup = compiler.work_group_size_specialization_constants();
+    eprintln!("{:?}", spec_workgroup);
+
+    let Some(args) = compiler.execution_mode_arguments(spirv::ExecutionMode::LocalSize)? else {
+        panic!("unexpected")
+    };
+
+    let id = spec_workgroup.x.unwrap().id;
+
+    // compiler.set_specialization_constant_value::<u32>(id, 100, 100, 10)?;
+    compiler.set_specialization_constant_value(id, 4u32)?;
+    let id = compiler.specialization_constant_value::<u32>(id)?;
+
+    eprintln!("{:?}", args);
+    eprintln!("{:?}", id);
+
+    Ok(())
+}
 
 #[test]
 pub fn workgroup_size() -> Result<(), SpirvCrossError> {
@@ -65,7 +135,7 @@ void main()
     let id = spec_workgroup.x.unwrap().id;
 
     // compiler.set_specialization_constant_value::<u32>(id, 100, 100, 10)?;
-    let id = compiler.specialization_constant_value::<u32>(id, 0, 0)?;
+    let id = compiler.specialization_constant_scalar::<u32>(id, 0, 0)?;
 
     eprintln!("{:?}", args);
     eprintln!("{:?}", id);

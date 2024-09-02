@@ -1,4 +1,4 @@
-extern crate core;
+#![cfg_attr(docsrs, feature(doc_cfg, doc_cfg_hide))]
 
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, SpvId};

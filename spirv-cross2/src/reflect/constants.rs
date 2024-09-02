@@ -1,6 +1,7 @@
 use crate::sealed::Sealed;
 use spirv_cross_sys::{spvc_constant, spvc_specialization_constant, TypeId};
 use std::mem::MaybeUninit;
+use std::ops::{Index, IndexMut};
 use std::slice;
 
 use crate::error::{SpirvCrossError, ToContextError};
@@ -8,7 +9,8 @@ use crate::handle::{ConstantId, Handle};
 use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 
-pub trait ConstantScalar: Sealed {
+/// A marker trait for types that can be represented as a scalar SPIR-V constant.
+pub trait ConstantScalar: Default + Sealed + Copy {
     #[doc(hidden)]
     unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self;
 
@@ -48,6 +50,7 @@ impl_spvc_constant!(spvc_constant_get_scalar_fp64 spvc_constant_set_scalar_fp64 
 impl Sealed for half::f16 {}
 
 #[cfg(feature = "f16")]
+#[cfg_attr(docsrs, doc(cfg(feature = "f16")))]
 impl ConstantScalar for half::f16 {
     unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self {
         let f32 = unsafe { sys::spvc_constant_get_scalar_fp16(constant, column, row) };
@@ -103,8 +106,8 @@ impl<'a, T> Compiler<'a, T> {
             return Err(SpirvCrossError::IndexOutOfBounds { row, column });
         }
 
-        let colsize = sys::spvc_rs_constant_get_matrix_colsize(handle);
         let vecsize = sys::spvc_rs_constant_get_vecsize(handle);
+        let colsize = sys::spvc_rs_constant_get_matrix_colsize(handle);
 
         if column >= colsize || row >= vecsize {
             return Err(SpirvCrossError::IndexOutOfBounds { row, column });
@@ -113,7 +116,18 @@ impl<'a, T> Compiler<'a, T> {
         Ok(())
     }
 
-    pub fn set_specialization_constant_value<S: ConstantScalar>(
+    /// Set the value of the specialization value at the given column and row.
+    ///
+    /// The type is inferred from the input, but it is not type checked against the SPIR-V.
+    ///
+    /// Using this function wrong is not unsafe, but could cause the output shader to
+    /// be invalid.
+    ///
+    /// [`Compiler::set_specialization_constant_value`] is more efficient and easier to use in
+    /// most cases, which will handle row and column for vector and matrix scalars. This function
+    /// remains to deal with more esoteric matrix shapes, or for getting only a single
+    /// element of a vector or matrix.
+    pub fn set_specialization_constant_scalar<S: ConstantScalar>(
         &mut self,
         handle: Handle<ConstantId>,
         column: u32,
@@ -130,7 +144,19 @@ impl<'a, T> Compiler<'a, T> {
         Ok(())
     }
 
-    pub fn specialization_constant_value<S: ConstantScalar>(
+    /// Get the value of the specialization value at the given column and row.
+    ///
+    /// The type is inferred from the return value, and is not type-checked
+    /// against the input SPIR-V.
+    ///
+    /// If the inferred type differs from what is expected, an indeterminate
+    /// but initialized value will be returned.
+    ///
+    /// [`Compiler::specialization_constant_value`] is more efficient and easier to use in
+    /// most cases, which will handle row and column for vector and matrix scalars. This function
+    /// remains to deal with more esoteric matrix shapes, or for getting only a single
+    /// element of a vector or matrix.
+    pub fn specialization_constant_scalar<S: ConstantScalar>(
         &self,
         handle: Handle<ConstantId>,
         column: u32,
@@ -260,5 +286,215 @@ impl<'a, T> Compiler<'a, T> {
         };
 
         Ok(type_id)
+    }
+}
+
+/// A marker trait for types that can be represented as a SPIR-V constant.
+pub trait ConstantValue: Sealed + Sized {
+    // None of anything here is a public API.
+    // As soon as generic_const_expr is stable, we can get rid of
+    // almost all of this silliness.
+    #[doc(hidden)]
+    const COLUMNS: usize;
+    #[doc(hidden)]
+    const VECSIZE: usize;
+    #[doc(hidden)]
+    type BaseArrayType: Default + Index<usize, Output = Self::BaseType> + IndexMut<usize>;
+    #[doc(hidden)]
+    type ArrayType: Default + Index<usize, Output = Self::BaseArrayType> + IndexMut<usize>;
+    #[doc(hidden)]
+    type BaseType: ConstantScalar;
+
+    #[doc(hidden)]
+    fn from_array(value: Self::ArrayType) -> Self;
+
+    #[doc(hidden)]
+    fn to_array(value: Self) -> Self::ArrayType;
+}
+
+impl<T: ConstantScalar> ConstantValue for T {
+    const COLUMNS: usize = 1;
+    const VECSIZE: usize = 1;
+    type BaseArrayType = [T; 1];
+    type ArrayType = [[T; 1]; 1];
+    type BaseType = T;
+
+    fn from_array(value: Self::ArrayType) -> Self {
+        value[0][0]
+    }
+
+    fn to_array(value: Self) -> Self::ArrayType {
+        [[value]]
+    }
+}
+
+#[cfg(feature = "gfx-math-types")]
+#[cfg_attr(docsrs, doc(cfg(feature = "gfx-math-types")))]
+mod gfx_maths_types {
+    use crate::reflect::ConstantValue;
+    use crate::sealed::Sealed;
+    use gfx_maths::{Mat4, Vec2, Vec3, Vec4};
+
+    impl Sealed for Vec2 {}
+    impl ConstantValue for Vec2 {
+        const COLUMNS: usize = 1;
+        const VECSIZE: usize = 2;
+        type BaseArrayType = [f32; 2];
+        type ArrayType = [[f32; 2]; 1];
+        type BaseType = f32;
+
+        fn from_array(value: Self::ArrayType) -> Self {
+            value[0].into()
+        }
+
+        fn to_array(value: Self) -> Self::ArrayType {
+            [[value.x, value.y]]
+        }
+    }
+
+    impl Sealed for Vec3 {}
+    impl ConstantValue for Vec3 {
+        const COLUMNS: usize = 1;
+        const VECSIZE: usize = 3;
+        type BaseArrayType = [f32; 3];
+        type ArrayType = [[f32; 3]; 1];
+        type BaseType = f32;
+
+        fn from_array(value: Self::ArrayType) -> Self {
+            value[0].into()
+        }
+
+        fn to_array(value: Self) -> Self::ArrayType {
+            [[value.x, value.y, value.z]]
+        }
+    }
+
+    impl Sealed for Vec4 {}
+    impl ConstantValue for Vec4 {
+        const COLUMNS: usize = 1;
+        const VECSIZE: usize = 4;
+        type BaseArrayType = [f32; 4];
+        type ArrayType = [[f32; 4]; 1];
+        type BaseType = f32;
+
+        fn from_array(value: Self::ArrayType) -> Self {
+            value[0].into()
+        }
+
+        fn to_array(value: Self) -> Self::ArrayType {
+            [[value.x, value.y, value.z, value.w]]
+        }
+    }
+
+    impl Sealed for Mat4 {}
+    impl ConstantValue for Mat4 {
+        const COLUMNS: usize = 4;
+        const VECSIZE: usize = 4;
+        type BaseArrayType = [f32; 4];
+        type ArrayType = [[f32; 4]; 4];
+        type BaseType = f32;
+
+        fn from_array(value: Self::ArrayType) -> Self {
+            value.into()
+        }
+
+        fn to_array(value: Self) -> Self::ArrayType {
+            let mut array = [[0f32; 4]; 4];
+            // gfx-math uses
+            // so we assign it back in the same order.
+
+            // const fn cr(c: usize, r: usize) -> usize {
+            //     r + c * 4
+            // }
+            array[0][0] = value[(0, 0)];
+            array[0][1] = value[(0, 1)];
+            array[0][2] = value[(0, 2)];
+            array[0][3] = value[(0, 3)];
+
+            array[1][0] = value[(1, 0)];
+            array[1][1] = value[(1, 1)];
+            array[1][2] = value[(1, 2)];
+            array[1][3] = value[(1, 3)];
+
+            array[2][0] = value[(2, 0)];
+            array[2][1] = value[(2, 1)];
+            array[2][2] = value[(2, 2)];
+            array[2][3] = value[(2, 3)];
+
+            array[3][0] = value[(3, 0)];
+            array[3][1] = value[(3, 1)];
+            array[3][2] = value[(3, 2)];
+            array[3][3] = value[(3, 3)];
+
+            array
+        }
+    }
+}
+
+impl<'a, T> Compiler<'a, T> {
+    /// Get the value of the specialization value.
+    ///
+    /// The type is inferred from the return value, and is not type-checked
+    /// against the input SPIR-V.
+    ///
+    /// If the output type dimensions are too large for the constant,
+    /// [`SpirvCrossError::IndexOutOfBounds`] will be returned.
+    ///
+    /// If the inferred type differs from what is expected, an indeterminate
+    /// but initialized value will be returned.
+    pub fn specialization_constant_value<S: ConstantValue>(
+        &self,
+        handle: Handle<ConstantId>,
+    ) -> error::Result<S> {
+        let constant = self.yield_id(handle)?;
+        unsafe {
+            // SAFETY: yield_id ensures safety.
+            let handle = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
+            // Self::bounds_check_constant(handle, column, row)?;
+            let mut output = S::ArrayType::default();
+
+            // bounds check the limits of the type.
+            Self::bounds_check_constant(handle, S::COLUMNS as u32 - 1, S::VECSIZE as u32 - 1)?;
+
+            for column in 0..S::COLUMNS {
+                for row in 0..S::VECSIZE {
+                    let value = S::BaseType::get(handle, column as u32, row as u32);
+                    output[column][row] = value;
+                }
+            }
+            Ok(S::from_array(output))
+        }
+    }
+
+    /// Set the value of the specialization value.
+    ///
+    /// The type is inferred from the input, but it is not type checked against the SPIR-V.
+    ///
+    /// Using this function wrong is not unsafe, but could cause the output shader to
+    /// be invalid.
+    ///
+    /// If the input dimensions are too large for the constant type,
+    /// [`SpirvCrossError::IndexOutOfBounds`] will be returned.
+    pub fn set_specialization_constant_value<S: ConstantValue>(
+        &mut self,
+        handle: Handle<ConstantId>,
+        value: S,
+    ) -> error::Result<()> {
+        let constant = self.yield_id(handle)?;
+        unsafe {
+            // SAFETY: yield_id ensures safety.
+            let handle = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), constant);
+
+            // bounds check the limits of the type.
+            Self::bounds_check_constant(handle, S::COLUMNS as u32 - 1, S::VECSIZE as u32 - 1)?;
+
+            let value = S::to_array(value);
+            for column in 0..S::COLUMNS {
+                for row in 0..S::VECSIZE {
+                    S::BaseType::set(handle, column as u32, row as u32, value[column][row]);
+                }
+            }
+        }
+        Ok(())
     }
 }

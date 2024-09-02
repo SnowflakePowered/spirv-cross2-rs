@@ -11,9 +11,16 @@ bytemuck = "1.17.1"
 thiserror = "1.0.63"
 self_cell = "1.0.4"
 half = { version = "2.4.1", optional = true }
+gfx-maths = { version = "0.2.9", optional = true}
 
 [features]
+default = ["gfx-math-types", "f16"]
 f16 = ["dep:half"]
+gfx-math-types = ["dep:gfx-maths"]
 
 [dev-dependencies]
 glslang = "0.4.0"
+
+[package.metadata.docs.rs]
+features = ["default", "f16"]
+rustdoc-args = ["--cfg", "docsrs"]

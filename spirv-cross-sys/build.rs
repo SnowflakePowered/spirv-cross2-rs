@@ -31,8 +31,8 @@ pub fn main() {
         .define("SPIRV_CROSS_C_API_MSL", "1")
         .define("SPIRV_CROSS_C_API_CPP", "1")
         .define("SPIRV_CROSS_C_API_REFLECT", "1")
-        .file("native/spvc_set.cpp")
-        .includes(&["native/SPIRV-Cross", "native/SPIRV-CROSS/include"]);
+        .includes(&["native/SPIRV-Cross", "native/SPIRV-CROSS/include"])
+        .file("native/spvc_set.cpp");
 
     add_subdirectory(&mut spvc_build);
     spvc_build.compile("spirv-cross");

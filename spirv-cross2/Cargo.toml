@@ -7,7 +7,7 @@ edition = "2021"
 spirv-cross-sys = { version = "0.1.0", path = "../spirv-cross-sys" }
 spirv-cross2-derive = { version = "0.1.0", path = "../spirv-cross2-derive" }
 
-bytemuck = "1.17.1"
+bytemuck = { version = "1.17.1", features = ["must_cast"] }
 thiserror = "1.0.63"
 bitflags = "2.6.0"
 

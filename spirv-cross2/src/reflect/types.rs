@@ -10,7 +10,7 @@ use crate::string::ContextStr;
 use spirv_cross_sys as sys;
 
 /// The kind of scalar
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(u8)]
 pub enum ScalarKind {
     /// Signed integer.
@@ -24,7 +24,7 @@ pub enum ScalarKind {
 }
 
 /// The bit width of a scalar.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(u8)]
 pub enum BitWidth {
     /// 1 bit
@@ -40,7 +40,7 @@ pub enum BitWidth {
 }
 
 /// A scalar type.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Scalar {
     /// How the value’s bits are to be interpreted.
     pub kind: ScalarKind,
@@ -111,39 +111,75 @@ impl TryFrom<BaseType> for Scalar {
     }
 }
 
-#[derive(Debug)]
+/// A type definition.
+#[derive(Debug, Clone)]
 pub struct Type<'a> {
+    /// The SPIR-V ID of the type.
     pub id: Handle<TypeId>,
+    /// The name of the type, if any.
     pub name: Option<ContextStr<'a>>,
+    /// Inner details about the type.
     pub inner: TypeInner<'a>,
 }
 
-#[derive(Debug)]
+/// Type definition for a struct member.
+#[derive(Debug, Clone)]
 pub struct StructMember<'a> {
+    /// The type ID of the struct member.
     pub id: Handle<TypeId>,
+    /// The type ID of the parent struct.
     pub struct_type: Handle<TypeId>,
+    /// The name of the struct member.
     pub name: Option<ContextStr<'a>>,
+    /// The index of the member inside the struct.
     pub index: usize,
+    /// The offset in bytes from the beginning of the struct.
     pub offset: u32,
+    /// The declared size of the struct member.
     pub size: usize,
+    /// The matrix stride of the member, if any.
+    ///
+    /// Matrix strides are only decorated on struct members.
     pub matrix_stride: Option<u32>,
+    /// The array stride of the member, if any.
+    ///
+    /// Array strides are only decorated on struct members.
     pub array_stride: Option<u32>,
 }
 
-#[derive(Debug)]
+/// Type definition for a struct.
+#[derive(Debug, Clone)]
 pub struct StructType<'a> {
+    /// The type ID of the struct.
     pub id: Handle<TypeId>,
+    /// The size of the struct in bytes.
     pub size: usize,
+    /// The members of the struct.
     pub members: Vec<StructMember<'a>>,
 }
 
-#[derive(Debug)]
+/// Valid values that specify the dimensions of an array.
+///
+/// Most of the time, these will be [`ArrayDimension::Literal`].
+/// If an array dimension is specified as a specialization constant,
+/// then the dimension will be [`ArrayDimension::Constant`].
+#[derive(Debug, Clone)]
 pub enum ArrayDimension {
+    /// A literal array dimension, i.e. `array[4]`.
     Literal(u32),
+    /// An array dimension specified as a specialization constant.
+    ///
+    /// This would show up in something like the following
+    ///
+    /// ```glsl
+    /// layout (constant_id = 0) const int SSAO_KERNEL_SIZE = 2;
+    /// vec4[SSAO_KERNEL_SIZE] kernel;
+    /// ```
     Constant(Handle<ConstantId>),
 }
 
-#[derive(Debug)]
+/// Class of image or texture handle.
+#[derive(Debug, Clone)]
 pub enum ImageClass {
     /// Combined image samplers.
     Sampled {
@@ -158,16 +194,20 @@ pub enum ImageClass {
     Texture {
         /// Whether this is a multisampled image.
         multisampled: bool,
-        /// Whether this image is arrayed
+        /// Whether this image is arrayed.
         arrayed: bool,
     },
     /// Storage images.
-    LoadStore { format: spirv::ImageFormat },
+    LoadStore {
+        /// The image format of the storage image.
+        format: spirv::ImageFormat,
+    },
 }
 
-#[derive(Debug)]
+/// Type definition for an image or texture handle.
+#[derive(Debug, Clone)]
 pub struct ImageType {
-    /// The id of the type,
+    /// The id of the type.
     pub id: Handle<TypeId>,
     /// The id of the type returned when the image is sampled or read from.
     pub sampled_type: Handle<TypeId>,
@@ -181,7 +221,7 @@ pub struct ImageType {
 ///
 /// The design of this API is inspired heavily by [`naga::TypeInner`](https://docs.rs/naga/latest/naga/enum.TypeInner.html),
 /// with some changes to fit SPIR-V.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TypeInner<'a> {
     /// Unknown type.
     Unknown,
@@ -244,6 +284,7 @@ pub enum TypeInner<'a> {
         /// i.e. `int a[4][6]` will return as `[Linear(6), Linear(4)]`.
         dimensions: Vec<ArrayDimension>,
     },
+    /// A texture or image handle.
     Image(ImageType),
     /// An opaque acceleration structure.
     AccelerationStructure,
@@ -597,14 +638,15 @@ impl<T> Compiler<'_, T> {
 #[cfg(test)]
 mod test {
     use crate::error::SpirvCrossError;
+    use crate::reflect::TypeInner;
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCross};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_stage_outputs() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
@@ -614,6 +656,41 @@ mod test {
 
         let ty = compiler.type_description(resources.uniform_buffers[0].base_type_id)?;
         eprintln!("{ty:?}");
+
+        // match ty.inner {
+        //     TypeInner::Struct(ty) => {
+        //         compiler.get_type(ty.members[0].id)?;
+        //     }
+        //     TypeInner::Vector { .. } => {}
+        //     _ => {}
+        // }
+        Ok(())
+    }
+
+    #[test]
+    pub fn set_member_name_validity_test() -> Result<(), SpirvCrossError> {
+        let spv = SpirvCrossContext::new()?;
+        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+
+        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let resources = compiler.shader_resources()?.all_resources()?;
+
+        // println!("{:#?}", resources);
+
+        let ty = compiler.type_description(resources.uniform_buffers[0].base_type_id)?;
+        let id = ty.id;
+
+        let name = compiler.member_name(id, 0)?;
+        assert_eq!(Some("MVP"), name.as_deref());
+
+        compiler.set_member_name(ty.id, 0, "NotMVP")?;
+        // assert_eq!(Some("MVP"), name.as_deref());
+
+        let name = compiler.member_name(id, 0)?;
+        assert_eq!(Some("NotMVP"), name.as_deref());
+        let resources = compiler.shader_resources()?.all_resources()?;
+
+        let ty = compiler.type_description(resources.uniform_buffers[0].base_type_id)?;
 
         // match ty.inner {
         //     TypeInner::Struct(ty) => {

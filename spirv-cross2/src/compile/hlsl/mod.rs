@@ -1,4 +1,4 @@
-use crate::compile::{CommonCompileOptions, CompiledArtifact};
+use crate::compile::{CommonOptions, CompiledArtifact};
 use crate::targets::Hlsl;
 use crate::{error, spirv, Compiler};
 use bitflags::bitflags;
@@ -14,6 +14,12 @@ use crate::string::ContextStr;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{HlslBindingFlagBits, HlslBindingFlags, HlslVertexAttributeRemap};
+
+/// Special constant used in a [`ResourceBinding`] desc_set.
+pub const PUSH_CONSTANT_DESCRIPTOR_SET: u32 = !0;
+
+/// Special constant used in a [`ResourceBinding`] binding.
+pub const PUSH_CONSTANT_BINDING: u32 = 0;
 
 bitflags! {
     /// Controls how resource bindings are declared in the output HLSL.
@@ -49,7 +55,7 @@ impl Sealed for CompileOptions {}
 pub struct CompileOptions {
     /// Compile options common to GLSL, HLSL, and MSL.
     #[expand]
-    pub common: CommonCompileOptions,
+    pub common: CommonOptions,
 
     /// The HLSL shader model version to output. The default is SM 3.0
     #[option(
@@ -178,12 +184,35 @@ impl From<HlslShaderModel> for u32 {
 
 /// HLSL specific APIs.
 impl<'a> Compiler<'a, Hlsl> {
-    pub fn add_resource_binding<'str>(&mut self, binding: ResourceBinding) -> error::Result<()> {
+    /// Add a resource binding to the HLSL compilation.
+    ///
+    /// By matching `stage`, `desc_set` and `binding` for a SPIR-V resource,
+    /// register bindings are set based on whether the HLSL resource is a
+    /// CBV, UAV, SRV or Sampler.
+    ///
+    /// A single binding in SPIR-V might contain multiple
+    /// resource types, e.g. `COMBINED_IMAGE_SAMPLER`, and SRV/Sampler bindings will be used respectively.
+    ///
+    /// On SM 5.0 and lower, `register_space` is ignored.
+    ///
+    /// To remap a push constant block which does not have any `desc_set` and `binding` associated with it,
+    /// use [`PUSH_CONSTANT_DESCRIPTOR_SET`] and [`PUSH_CONSTANT_BINDING`] as values for `desc_set` and `binding`.
+    ///
+    /// For deeper control of push constants, [`Compiler<Hlsl>::set_root_constant_layout`] can be used instead.
+    ///
+    /// If resource bindings are provided, [`CompiledArtifact<Hlsl>::is_resource_used`] will return true if
+    /// the set/binding combination was used by the HLSL code.
+    pub fn add_resource_binding<'str>(&mut self, binding: &ResourceBinding) -> error::Result<()> {
         unsafe {
-            sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), &binding).ok(&*self)
+            sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), binding).ok(&*self)
         }
     }
 
+    /// Compiles and remap vertex attribute at specific locations to a fixed semantic.
+    ///
+    /// The default is `TEXCOORD#` where # denotes location.
+    /// Matrices are unrolled to vectors with notation `${SEMANTIC}_#`, where # denotes row.
+    /// `$SEMANTIC` is either `TEXCOORD#` or a semantic name specified here.
     pub fn remap_vertex_attribute<'str>(
         &mut self,
         location: u32,
@@ -191,7 +220,7 @@ impl<'a> Compiler<'a, Hlsl> {
     ) -> error::Result<()> {
         let str = semantic.into();
         let Ok(semantic) = str.to_cstring_ptr() else {
-            return Err(SpirvCrossError::InvalidName(String::from(str.as_ref())));
+            return Err(SpirvCrossError::InvalidString(String::from(str.as_ref())));
         };
 
         let remap = HlslVertexAttributeRemap {
@@ -205,6 +234,10 @@ impl<'a> Compiler<'a, Hlsl> {
         }
     }
 
+    /// Optionally specify a custom root constant layout.
+    ///
+    /// Push constants ranges will be split up according to the
+    /// layout specified.
     pub fn set_root_constant_layout(
         &mut self,
         constant_info: &[RootConstants],
@@ -219,6 +252,7 @@ impl<'a> Compiler<'a, Hlsl> {
         }
     }
 
+    /// Controls how resource bindings are declared in the output HLSL.
     pub fn set_resource_binding_flags(&mut self, flags: BindingFlags) -> error::Result<()> {
         unsafe {
             sys::spvc_compiler_hlsl_set_resource_binding_flags(
@@ -259,9 +293,53 @@ impl<'a> Compiler<'a, Hlsl> {
             self.create_handle_if_not_zero(id)
         }
     }
+
+    /// Mask a stage output by location.
+    ///
+    /// If a shader output is active in this stage, but inactive in a subsequent stage,
+    /// this can be signalled here. This can be used to work around certain cross-stage matching problems
+    /// which plagues HLSL in certain scenarios.
+    ///
+    /// An output which matches one of these will not be emitted in stage output interfaces, but rather treated as a private
+    /// variable.
+    ///
+    /// This option is only meaningful for MSL and HLSL, since GLSL matches by location directly.
+    ///
+    pub fn mask_stage_output_by_location(
+        &mut self,
+        location: u32,
+        component: u32,
+    ) -> crate::error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_mask_stage_output_by_location(self.ptr.as_ptr(), location, component)
+                .ok(&*self)
+        }
+    }
+
+    /// Mask a stage output by builtin. Masking builtins only takes effect if the builtin in question is part of the stage output interface.
+    ///
+    /// If a shader output is active in this stage, but inactive in a subsequent stage,
+    /// this can be signalled here. This can be used to work around certain cross-stage matching problems
+    /// which plagues HLSL in certain scenarios.
+    ///
+    /// An output which matches one of these will not be emitted in stage output interfaces, but rather treated as a private
+    /// variable.
+    ///
+    /// This option is only meaningful for MSL and HLSL, since GLSL matches by location directly.
+    /// Masking builtins only takes effect if the builtin in question is part of the stage output interface.
+    pub fn mask_stage_output_by_builtin(
+        &mut self,
+        builtin: spirv::BuiltIn,
+    ) -> crate::error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin).ok(&*self)
+        }
+    }
 }
 
 impl<'a> CompiledArtifact<'a, Hlsl> {
+    /// Returns whether the set/binding combination provided in [`Compiler<Hlsl>::add_resource_binding`]
+    /// was used.
     pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {
         unsafe {
             sys::spvc_compiler_hlsl_is_resource_used(
@@ -277,18 +355,18 @@ impl<'a> CompiledArtifact<'a, Hlsl> {
 #[cfg(test)]
 mod test {
     use crate::compile::hlsl::CompileOptions;
-    use crate::compile::ApplyCompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
+    use crate::compile::sealed::ApplyCompilerOptions;
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCross};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");
 
     #[test]
     pub fn hlsl_opts() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
 

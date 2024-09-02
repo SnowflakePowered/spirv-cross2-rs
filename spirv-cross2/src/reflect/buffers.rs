@@ -68,14 +68,14 @@ mod test {
     use crate::error::SpirvCrossError;
     use crate::targets;
     use crate::Compiler;
-    use crate::{Module, SpirvCross};
+    use crate::{Module, SpirvCrossContext};
     use spirv_cross_sys::ResourceType;
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_active_buffer_ranges() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;

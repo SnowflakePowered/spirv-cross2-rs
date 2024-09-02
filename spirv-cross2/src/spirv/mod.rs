@@ -1,5 +1,5 @@
 //! SPIR-V definitions used by SPIRV-Cross.
-//!
+
 pub use spirv_cross_sys::SpvBuiltIn as BuiltIn;
 pub use spirv_cross_sys::SpvCapability as Capability;
 pub use spirv_cross_sys::SpvDecoration as Decoration;

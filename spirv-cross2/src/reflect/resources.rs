@@ -1,17 +1,20 @@
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
-use crate::handle::Handle;
+use crate::handle::{Handle, TypeId, VariableId};
 use crate::sealed::Sealed;
 use crate::string::ContextStr;
 use crate::{error, spirv, Compiler, PhantomCompiler, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
-    spvc_set, BuiltinResourceType, ResourceType, SpvId, TypeId, VariableId,
+    spvc_set,
 };
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
 
+pub use spirv_cross_sys::{BuiltinResourceType, ResourceType};
+
+/// A handle to shader resources.
 pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, PhantomCompiler<'a>);
 
 impl ContextRooted for &ShaderResources<'_> {
@@ -21,9 +24,12 @@ impl ContextRooted for &ShaderResources<'_> {
     }
 }
 
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Query shader resources, use ids with reflection interface to modify or query binding points, etc.
-    pub fn shader_resources(&self) -> crate::error::Result<ShaderResources> {
+    pub fn shader_resources(&self) -> crate::error::Result<ShaderResources<'ctx>> {
+        // SAFETY: 'ctx is Ok
+        // since this gets allocated forever
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1925
         unsafe {
             let mut resources = std::ptr::null_mut();
             sys::spvc_compiler_create_shader_resources(self.ptr.as_ptr(), &mut resources)
@@ -43,7 +49,10 @@ impl<'a, T> Compiler<'a, T> {
     pub fn shader_resources_for_active_variables(
         &self,
         set: InterfaceVariableSet,
-    ) -> crate::error::Result<ShaderResources> {
+    ) -> error::Result<ShaderResources<'ctx>> {
+        // SAFETY: 'ctx is Ok
+        // since this gets allocated forever
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1925
         unsafe {
             let mut resources = std::ptr::null_mut();
             sys::spvc_compiler_create_shader_resources_for_active_variables(
@@ -81,7 +90,7 @@ impl<'a> InterfaceVariableSet<'a> {
             spirv_cross_sys::spvc_rs_expose_set(self.0, vec.as_mut_ptr(), &mut length);
 
             vec.into_iter()
-                .map(|id| self.2.create_handle(VariableId(SpvId(id))))
+                .map(|id| self.2.create_handle(VariableId::from(id)))
                 .collect()
         }
     }
@@ -134,7 +143,7 @@ impl<'a, T> Compiler<'a, T> {
     }
 }
 
-/// Iterator over reflected resources.
+/// Iterator over reflected resources, created by [`ShaderResources::resources_for_type`].
 pub struct ResourceIter<'a>(
     PhantomCompiler<'a>,
     slice::Iter<'a, spvc_reflected_resource>,
@@ -148,7 +157,7 @@ impl<'a> Iterator for ResourceIter<'a> {
     }
 }
 
-/// Iterator over reflected builtin resources
+/// Iterator over reflected builtin resources, created by [`ShaderResources::builtin_resources_for_type`].
 pub struct BuiltinResourceIter<'a>(
     PhantomCompiler<'a>,
     slice::Iter<'a, spvc_reflected_builtin_resource>,
@@ -162,11 +171,17 @@ impl<'a> Iterator for BuiltinResourceIter<'a> {
     }
 }
 
+/// Description of a shader resource.
 #[derive(Debug)]
 pub struct Resource<'a> {
+    /// A handle to the variable this resource points to.
     pub id: Handle<VariableId>,
+    /// A handle to the base type of this resource.
     pub base_type_id: Handle<TypeId>,
+    /// A handle to the type of this resource, often a pointer
+    /// or array.
     pub type_id: Handle<TypeId>,
+    /// The name of this resource.
     pub name: ContextStr<'a>,
 }
 
@@ -214,7 +229,7 @@ impl ToStatic for Resource<'_> {
     }
 }
 
-/// Cloning a [`Resource`] will detach its lifetime from the [`crate::SpirvCross`] context
+/// Cloning a [`Resource`] will detach its lifetime from the [`crate::SpirvCrossContext`] context
 /// from which it originated.
 impl Clone for Resource<'_> {
     fn clone(&self) -> Resource<'static> {
@@ -222,10 +237,14 @@ impl Clone for Resource<'_> {
     }
 }
 
+/// Description of a built-in shader resource.
 #[derive(Debug)]
 pub struct BuiltinResource<'a> {
+    /// The SPIR-V built-in for this resource.
     pub builtin: spirv::BuiltIn,
+    /// A handle to the type ID of the value.
     pub value_type_id: Handle<TypeId>,
+    /// The resource data for this built-in resource.
     pub resource: Resource<'a>,
 }
 
@@ -269,7 +288,7 @@ impl ToStatic for BuiltinResource<'_> {
     }
 }
 
-/// Cloning a [`BuiltinResource`] will detach its lifetime from the [`crate::SpirvCross`] context
+/// Cloning a [`BuiltinResource`] will detach its lifetime from the [`crate::SpirvCrossContext`] context
 /// from which it originated.
 impl Clone for BuiltinResource<'_> {
     fn clone(&self) -> BuiltinResource<'static> {
@@ -277,29 +296,47 @@ impl Clone for BuiltinResource<'_> {
     }
 }
 
+/// All SPIR-V resources declared in the module.
 #[derive(Debug)]
 pub struct AllResources<'a> {
+    /// Uniform buffer (UBOs) resources.
     pub uniform_buffers: Vec<Resource<'a>>,
+    /// Storage buffer (SSBO) resources.
     pub storage_buffers: Vec<Resource<'a>>,
+    /// Shader stage inputs.
     pub stage_inputs: Vec<Resource<'a>>,
+    /// Shader stage outputs.
     pub stage_outputs: Vec<Resource<'a>>,
+    /// Shader subpass inputs.
     pub subpass_inputs: Vec<Resource<'a>>,
+    /// Storage images (i.e. `imageND`).
     pub storage_images: Vec<Resource<'a>>,
+    /// Sampled images (i.e. `samplerND`).
     pub sampled_images: Vec<Resource<'a>>,
+    /// Atomic counters.
     pub atomic_counters: Vec<Resource<'a>>,
+    /// Acceleration structures.
     pub acceleration_structures: Vec<Resource<'a>>,
-
+    /// Legacy OpenGL plain uniforms.
     pub gl_plain_uniforms: Vec<Resource<'a>>,
 
+    /// Push constant buffers.
+    ///
+    /// There is only ever at most one push constant buffer,
+    /// but this is multiplicit in case this restriction is lifted.
     pub push_constant_buffers: Vec<Resource<'a>>,
+    /// Record buffers.
     pub shader_record_buffers: Vec<Resource<'a>>,
 
-    // For Vulkan GLSL and HLSL source,
-    // these correspond to separate texture2D and samplers respectively.
+    /// For Vulkan GLSL and HLSL sources, split images (i.e. `textureND`).
     pub separate_images: Vec<Resource<'a>>,
+
+    /// For Vulkan GLSL and HLSL sources, split samplers (i.e. `sampler`).
     pub separate_samplers: Vec<Resource<'a>>,
 
+    /// Shader built-in inputs.
     pub builtin_inputs: Vec<BuiltinResource<'a>>,
+    /// Shader built-in outputs.
     pub builtin_outputs: Vec<BuiltinResource<'a>>,
 }
 
@@ -389,7 +426,7 @@ impl ToStatic for AllResources<'_> {
     }
 }
 
-/// Cloning a [`AllResources`] will detach its lifetime from the [`crate::SpirvCross`] context
+/// Cloning a [`AllResources`] will detach its lifetime from the [`crate::SpirvCrossContext`] context
 /// from which it originated.
 impl Clone for AllResources<'_> {
     fn clone(&self) -> AllResources<'static> {
@@ -400,6 +437,8 @@ impl Clone for AllResources<'_> {
 impl<'a> ShaderResources<'a> {
     /// Get an iterator for all resources of the given type.
     pub fn resources_for_type(&self, ty: ResourceType) -> error::Result<ResourceIter<'a>> {
+        // SAFETY: 'a is OK to return here:
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1802
         let mut count = 0;
         let mut out = std::ptr::null();
         unsafe {
@@ -424,6 +463,9 @@ impl<'a> ShaderResources<'a> {
     ) -> error::Result<BuiltinResourceIter<'a>> {
         let mut count = 0;
         let mut out = std::ptr::null();
+
+        // SAFETY: 'a is OK to return here:
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1826
         unsafe {
             spirv_cross_sys::spvc_resources_get_builtin_resource_list_for_type(
                 self.0.as_ptr(),

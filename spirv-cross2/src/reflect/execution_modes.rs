@@ -6,18 +6,31 @@ use spirv_cross_sys as sys;
 use spirv_cross_sys::ConstantId;
 use std::slice;
 
+/// Arguments to an `OpExecutionMode`.
 #[derive(Debug)]
 pub enum ExecutionModeArguments {
+    /// No arguments.
+    ///
+    /// This is also used to set execution modes for modes that don't have arguments.
     None,
-    Unit(u32),
+    /// A single literal argument.
+    Literal(u32),
+    /// Arguments to `LocalSize` execution mode.
     LocalSize {
+        /// Workgroup size x.
         x: u32,
+        /// Workgroup size y.
         y: u32,
+        /// Workgroup size z.
         z: u32,
     },
+    /// Arguments to `LocalSizeId` execution mode.
     LocalSizeId {
+        /// Workgroup size x ID.
         x: Handle<ConstantId>,
+        /// Workgroup size y ID.
         y: Handle<ConstantId>,
+        /// Workgroup size z ID.
         z: Handle<ConstantId>,
     },
 }
@@ -26,7 +39,7 @@ impl ExecutionModeArguments {
     fn expand(self) -> [u32; 3] {
         match self {
             ExecutionModeArguments::None => [0, 0, 0],
-            ExecutionModeArguments::Unit(a) => [a, 0, 0],
+            ExecutionModeArguments::Literal(a) => [a, 0, 0],
             ExecutionModeArguments::LocalSize { x, y, z } => [x, y, z],
             ExecutionModeArguments::LocalSizeId { x, y, z } => [x.id(), y.id(), z.id()],
         }
@@ -54,6 +67,7 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
+    /// Query `OpExecutionMode`.
     pub fn execution_modes(&self) -> error::Result<&'a [spirv::ExecutionMode]> {
         unsafe {
             let mut size = 0;
@@ -140,7 +154,7 @@ impl<'a, T> Compiler<'a, T> {
                     mode,
                     0,
                 );
-                Some(ExecutionModeArguments::Unit(x))
+                Some(ExecutionModeArguments::Literal(x))
             },
             _ => {
                 if !self.execution_modes()?.contains(&mode) {
@@ -157,13 +171,13 @@ impl<'a, T> Compiler<'a, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{spirv, targets, Module, SpirvCross};
+    use crate::{spirv, targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn execution_modes() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;

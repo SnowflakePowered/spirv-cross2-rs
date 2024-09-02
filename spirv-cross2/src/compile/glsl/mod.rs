@@ -1,10 +1,12 @@
-use super::{CommonCompileOptions};
-use crate::error::ToContextError;
-use crate::sealed::Sealed;
-use crate::ContextRooted;
-use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options};
+use super::CommonOptions;
 use crate::compile::sealed::ApplyCompilerOptions;
+use crate::error::ToContextError;
+use crate::handle::Handle;
+use crate::sealed::Sealed;
+use crate::targets::Glsl;
+use crate::{error, Compiler, ContextRooted};
+use spirv_cross_sys as sys;
+use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options, VariableId};
 
 impl Sealed for CompileOptions {}
 /// GLSL compiler options.
@@ -13,7 +15,7 @@ impl Sealed for CompileOptions {}
 pub struct CompileOptions {
     /// Compile options common to GLSL, HLSL, and MSL.
     #[expand]
-    pub common: CommonCompileOptions,
+    pub common: CommonOptions,
 
     /// The GLSL version to output. The default is #version 450.
     #[expand]
@@ -180,21 +182,36 @@ impl ApplyCompilerOptions for GlslVersion {
     }
 }
 
+impl Compiler<'_, Glsl> {
+    /// Legacy GLSL compatibility method.
+    ///
+    /// Takes a uniform or push constant variable and flattens it into a `(i|u)vec4 array[N];` array instead.
+    /// For this to work, all types in the block must be the same basic type, e.g. mixing `vec2` and `vec4` is fine, but
+    /// mixing int and float is not.
+    ///
+    /// The name of the uniform array will be the same as the interface block name.
+    pub fn flatten_buffer_block(&mut self, block: Handle<VariableId>) -> error::Result<()> {
+        let block = self.yield_id(block)?;
+
+        unsafe { sys::spvc_compiler_flatten_buffer_block(self.ptr.as_ptr(), block).ok(self) }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::compile::glsl::CompileOptions;
-    use crate::compile::ApplyCompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
+    use crate::compile::sealed::ApplyCompilerOptions;
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCross};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");
 
     #[test]
     pub fn glsl_opts() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
 

@@ -3,11 +3,23 @@ use crate::compile::{CompilableTarget, NoOptions};
 use crate::sealed::Sealed;
 use spirv_cross_sys::CompilerBackend;
 
+/// Reflection only backend, no compilation features
+/// enabled.
 pub struct None;
+/// Compile SPIR-V to GLSL.
 pub struct Glsl;
+/// Compile SPIR-V to Metal Shading Language (MSL).
 pub struct Msl;
+/// Compile SPIR-V to HLSL.
 pub struct Hlsl;
+/// Compile SPIR-V to debuggable C++.
+///
+/// This backend is deprecated but is included here for completion.
+/// See the [SPIRV-Cross docs](https://github.com/KhronosGroup/SPIRV-Cross?tab=readme-ov-file#using-shaders-generated-from-c-backend)
+/// for how to debug shaders generated from the C++ backend
+#[deprecated = "This backend is deprecated in SPIRV-Cross."]
 pub struct Cpp;
+/// Compile SPIR-V to a JSON reflection format
 pub struct Json;
 
 impl Sealed for None {}
@@ -47,11 +59,15 @@ impl Target for Json {
     const BACKEND: CompilerBackend = CompilerBackend::Json;
 }
 
+#[allow(deprecated)]
 impl CompilableTarget for Cpp {
     type Options = NoOptions;
 }
 
+#[allow(deprecated)]
 impl Sealed for Cpp {}
+
+#[allow(deprecated)]
 impl Target for Cpp {
     const BACKEND: CompilerBackend = CompilerBackend::Cpp;
 }

@@ -4,8 +4,10 @@ use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 use std::slice;
 
+/// A proof that [`Compiler::create_dummy_sampler_for_combined_images`] was called.
 #[derive(Debug, Copy, Clone)]
 pub struct BuiltDummySamplerProof {
+    /// The handle to a sampler object, if one was needed to be created.
     pub sampler_id: Option<Handle<VariableId>>,
     label: Handle<()>,
 }
@@ -36,8 +38,11 @@ impl Iterator for CombinedImageSamplerIter<'_> {
 
 /// A combined image sampler.
 pub struct CombinedImageSampler {
+    /// A handle to the created combined image sampler.
     pub combined_id: Handle<VariableId>,
+    /// A handle to the split image of the combined image sampler.
     pub image_id: Handle<VariableId>,
+    /// A handle to the split sampler of the combined image sampler.
     pub sampler_id: Handle<VariableId>,
 }
 
@@ -63,11 +68,7 @@ impl<'a, T> Compiler<'a, T> {
             )
             .ok(&*self)?;
 
-            let sampler_id = if var_id.0 .0 == 0 {
-                None
-            } else {
-                Some(self.create_handle(var_id))
-            };
+            let sampler_id = self.create_handle_if_not_zero(var_id);
 
             Ok(BuiltDummySamplerProof {
                 sampler_id,
@@ -136,13 +137,13 @@ impl<'a, T> Compiler<'a, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCross};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn test_combined_image_sampler_build() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;

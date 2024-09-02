@@ -1,20 +1,25 @@
 use crate::error::{ContextRooted, Result, ToContextError};
-use crate::handle::Handle;
 use crate::sealed::Sealed;
 use crate::targets::Target;
-use crate::{error, spirv, Compiler, ContextStr};
+use crate::{error, Compiler, ContextStr, SpirvCrossError};
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_compiler_options, VariableId};
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 
+/// GLSL compile options.
 pub mod glsl;
+
+/// HLSL compile options.
 pub mod hlsl;
+
+/// MSL compile options.
 pub mod msl;
 
-impl Sealed for CommonCompileOptions {}
+impl Sealed for CommonOptions {}
+
+/// Compile options common to all backends.
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
-pub struct CommonCompileOptions {
+pub struct CommonOptions {
     // common options
     /// Debug option to always emit temporary variables for all expressions.
     #[option(SPVC_COMPILER_OPTION_FORCE_TEMPORARY, false)]
@@ -104,46 +109,31 @@ impl<'a, T> Deref for CompiledArtifact<'a, T> {
 
 /// Cross-compilation related methods.
 impl<'a, T: CompilableTarget> Compiler<'a, T> {
-    pub fn add_header_line(&mut self, line: &str) -> Result<()> {
-        unsafe {
-            sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), line.as_ptr().cast()).ok(self)
-        }
+    /// Adds a line in valid header position.
+    ///
+    /// For example, in the GLSL backend this would be right after #version.
+    ///
+    /// This is useful for enabling custom extensions which are outside the scope of SPIRV-Cross.
+    /// This can be combined with variable remapping.
+    ///
+    /// A new-line will be added after this line.
+    ///
+    /// While this function is a more generic way of adding arbitrary text to the header
+    /// of an output file, [`Compiler::require_extension`] should be used when adding extensions since it will
+    /// avoid creating collisions with SPIRV-Cross generated extensions.
+    pub fn add_header_line<'str>(&mut self, line: impl Into<ContextStr<'str>>) -> Result<()> {
+        let line = line.into();
+        let Ok(cstring) = line.to_cstring_ptr() else {
+            return Err(SpirvCrossError::InvalidString(String::from(line.as_ref())));
+        };
+        unsafe { sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), cstring.as_ptr()).ok(self) }
     }
 
-    pub fn flatten_buffer_block(&mut self, block: VariableId) -> Result<()> {
-        unsafe { sys::spvc_compiler_flatten_buffer_block(self.ptr.as_ptr(), block).ok(self) }
-    }
-
+    /// Adds an extension which is required to run this shader, e.g.
+    /// require_extension("GL_KHR_my_extension");
     pub fn require_extension(&mut self, ext: &str) -> Result<()> {
         unsafe {
             sys::spvc_compiler_require_extension(self.ptr.as_ptr(), ext.as_ptr().cast()).ok(self)
-        }
-    }
-
-    pub fn mask_stage_output_by_location(&mut self, location: u32, component: u32) -> Result<()> {
-        unsafe {
-            sys::spvc_compiler_mask_stage_output_by_location(self.ptr.as_ptr(), location, component)
-                .ok(&*self)
-        }
-    }
-
-    pub fn mask_stage_output_by_builtin(&mut self, builtin: spirv::BuiltIn) -> Result<()> {
-        unsafe {
-            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin).ok(&*self)
-        }
-    }
-
-    pub fn variable_is_depth_or_compare(
-        &self,
-        variable: impl Into<Handle<VariableId>>,
-    ) -> Result<bool> {
-        let variable = variable.into();
-        let id = self.yield_id(variable)?;
-        unsafe {
-            Ok(sys::spvc_compiler_variable_is_depth_or_compare(
-                self.ptr.as_ptr(),
-                id,
-            ))
         }
     }
 
@@ -172,6 +162,9 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
         unsafe {
             let mut src = std::ptr::null();
             sys::spvc_compiler_compile(self.ptr.as_ptr(), &mut src).ok(&self)?;
+
+            // SAFETY: 'a is OK to return here
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1782
             let src = ContextStr::from_ptr(src);
             Ok(CompiledArtifact {
                 compiler: self,
@@ -182,13 +175,13 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
 }
 
 /// Marker trait for compiler options.
-pub trait CompilerOptions: sealed::ApplyCompilerOptions {}
+pub trait CompilerOptions: Default + sealed::ApplyCompilerOptions {}
 
 pub(crate) mod sealed {
-    use spirv_cross_sys::spvc_compiler_options;
     use crate::error;
     use crate::error::ContextRooted;
     use crate::sealed::Sealed;
+    use spirv_cross_sys::spvc_compiler_options;
 
     pub trait ApplyCompilerOptions: Sealed {
         #[doc(hidden)]
@@ -206,13 +199,13 @@ mod test {
     use crate::error::SpirvCrossError;
     use crate::targets;
     use crate::Compiler;
-    use crate::{Module, SpirvCross};
+    use crate::{Module, SpirvCrossContext};
 
     const BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn create_compiler() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
@@ -221,7 +214,7 @@ mod test {
 
     #[test]
     pub fn reflect_interface_vars() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
@@ -242,10 +235,20 @@ mod test {
 }
 
 impl Sealed for NoOptions {}
+
+/// No compilation options.
+///
+/// Used for compiler backends that take no options.
 #[derive(Debug, Default, spirv_cross2_derive::CompilerOptions)]
 pub struct NoOptions;
 
-/// A target that can have compiler outputs.
+/// Marker trait for a compiler target that can have compiler outputs.
 pub trait CompilableTarget: Target {
+    /// The options that this target accepts.
     type Options: CompilerOptions;
+
+    /// Create a new instance of compiler options for this target.
+    fn options() -> Self::Options {
+        Self::Options::default()
+    }
 }

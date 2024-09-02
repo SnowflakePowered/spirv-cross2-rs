@@ -9,6 +9,7 @@ use crate::string::ContextStr;
 use crate::Compiler;
 use crate::{error, spirv};
 
+/// Iterator for declared extensions, created by [`Compiler::declared_extensions`].
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>);
 
 impl<'a> Iterator for ExtensionsIter<'a> {
@@ -38,6 +39,8 @@ impl<'a, T> Compiler<'a, T> {
 
     /// Gets the list of all SPIR-V extensions which were declared in the SPIR-V module.
     pub fn declared_extensions(&self) -> error::Result<ExtensionsIter<'a>> {
+        // SAFETY: 'a is OK to return here
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2756
         unsafe {
             let mut caps = std::ptr::null_mut();
             let mut size = 0;
@@ -57,12 +60,13 @@ impl<'a, T> Compiler<'a, T> {
     }
 }
 
+/// Proof that [`Compiler::update_active_builtins`] was called.
 #[derive(Debug, Copy, Clone)]
 pub struct ActiveBuiltinsUpdatedProof(Handle<()>);
 
 /// Querying builtins in the SPIR-V module
-impl<'a, T> Compiler<'a, T> {
-    /// Gets the list of all SPIR-V Capabilities which were declared in the SPIR-V module.
+impl<T> Compiler<'_, T> {
+    /// Update active built-ins in the SPIR-V module.
     pub fn update_active_builtins(&mut self) -> ActiveBuiltinsUpdatedProof {
         unsafe {
             sys::spvc_compiler_update_active_builtins(self.ptr.as_ptr());
@@ -70,7 +74,10 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
-    // spvc_compiler_has_active_builtin
+    /// Return whether the builtin is used or not.
+    ///
+    /// Requires [`Compiler::update_active_builtins`] to be called first,
+    /// proof of which is required to call this function.
     pub fn has_active_builtin(
         &self,
         builtin: spirv::BuiltIn,
@@ -93,11 +100,15 @@ impl<'a, T> Compiler<'a, T> {
     }
 }
 
+/// Iterator type created by [`Compiler::entry_points`].
 pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>);
 
+/// A SPIR-V entry point.
 #[derive(Debug)]
 pub struct EntryPoint<'a> {
+    /// The execution model for the entry point.
     pub execution_model: spirv::ExecutionModel,
+    /// The name of the entry point.
     pub name: ContextStr<'a>,
 }
 
@@ -116,7 +127,7 @@ impl<'a> Iterator for EntryPointIter<'a> {
 }
 
 /// Reflection of entry points.
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// All operations work on the current entry point.
     /// Entry points can be swapped out with set_entry_point().
     /// Entry points should be set right after the constructor completes as some reflection functions traverse the graph from the entry point.
@@ -135,8 +146,10 @@ impl<'a, T> Compiler<'a, T> {
     /// New variants of entry point query and reflection.
     /// Names for entry points in the SPIR-V module may alias if they belong to different execution models.
     /// To disambiguate, we must pass along with the entry point names the execution model.
-    pub fn entry_points(&self) -> error::Result<EntryPointIter<'a>> {
+    pub fn entry_points(&self) -> error::Result<EntryPointIter<'ctx>> {
         unsafe {
+            // SAFETY: 'ctx is OK to return here
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2170
             let mut entry_points = std::ptr::null();
             let mut size = 0;
             sys::spvc_compiler_get_entry_points(self.ptr.as_ptr(), &mut entry_points, &mut size)
@@ -148,17 +161,19 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
-    /// Get the
+    /// Get the cleansed name of the entry point for the given original name.
     pub fn cleansed_entry_point_name<'str>(
         &self,
         name: impl Into<ContextStr<'str>>,
         model: spirv::ExecutionModel,
-    ) -> error::Result<Option<ContextStr<'a>>> {
+    ) -> error::Result<Option<ContextStr<'ctx>>> {
+        // SAFETY: 'ctx is OK to return here
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2217
         let name = name.into();
 
         unsafe {
             let Ok(name) = name.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidName(name.to_string()));
+                return Err(SpirvCrossError::InvalidString(name.to_string()));
             };
 
             let name = sys::spvc_compiler_get_cleansed_entry_point_name(
@@ -174,6 +189,25 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
+    /// Set the current entry point by name.
+    ///
+    /// All operations work on the current entry point.
+    ///
+    /// Entry points should be set right after the constructor completes as some reflection functions traverse the graph from the entry point.
+    /// Resource reflection also depends on the entry point.
+    ///
+    /// By default, the current entry point is set to the first OpEntryPoint which appears in the SPIR-V module.
+    ///
+    /// New variants of entry point query and reflection.
+    /// Names for entry points in the SPIR-V module may alias if they belong to different execution models.
+    /// To disambiguate, we must pass along with the entry point names the execution model.
+    ///
+    /// ## Shader language restrictions
+    /// Some shader languages restrict the names that can be given to entry points, and the
+    /// corresponding backend will automatically rename an entry point name, on compilation if it is illegal.
+    ///
+    /// For example, the common entry point name `main()` is illegal in MSL, and is renamed to an
+    /// alternate name by the MSL backend.
     pub fn set_entry_point<'str>(
         &mut self,
         name: impl Into<ContextStr<'str>>,
@@ -182,14 +216,19 @@ impl<'a, T> Compiler<'a, T> {
         let name = name.into();
         unsafe {
             let Ok(name) = name.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidName(name.to_string()));
+                return Err(SpirvCrossError::InvalidString(name.to_string()));
             };
 
-            sys::spvc_compiler_set_entry_point(self.ptr.as_ptr(), name.as_ptr(), model)
-                .ok(&*self)
+            sys::spvc_compiler_set_entry_point(self.ptr.as_ptr(), name.as_ptr(), model).ok(&*self)
         }
     }
 
+    /// Renames an entry point from `from` to `to`.
+    ///
+    /// If old_name is currently selected as the current entry point, it will continue to be the current entry point,
+    /// albeit with a new name.
+    ///
+    /// Values returned from [`Compiler::entry_points`] before this call will be outdated.
     pub fn rename_entry_point<'str>(
         &mut self,
         from: impl Into<ContextStr<'str>>,
@@ -201,11 +240,11 @@ impl<'a, T> Compiler<'a, T> {
 
         unsafe {
             let Ok(from) = from.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidName(from.as_ref().to_string()));
+                return Err(SpirvCrossError::InvalidString(from.as_ref().to_string()));
             };
 
             let Ok(to) = to.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidName(to.as_ref().to_string()));
+                return Err(SpirvCrossError::InvalidString(to.as_ref().to_string()));
             };
 
             sys::spvc_compiler_rename_entry_point(
@@ -223,32 +262,33 @@ impl<'a, T> Compiler<'a, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{spirv, targets, Module, SpirvCross};
+    use crate::{spirv, targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_entry_points() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
-        let entry_points: Vec<_> = compiler.entry_points()?.collect();
-        let main = &entry_points[0];
+        let old_entry_points: Vec<_> = compiler.entry_points()?.collect();
+        let main = &old_entry_points[0];
 
-        eprintln!("{entry_points:?}");
+        assert_eq!("main", main.name.as_ref());
         compiler.rename_entry_point("main", "new_main", spirv::ExecutionModel::Fragment)?;
 
-        let new_name =
+        let no_name =
             compiler.cleansed_entry_point_name("main", spirv::ExecutionModel::Fragment)?;
 
-        let entry_points: Vec<_> = compiler.entry_points()?.collect();
-        let main = &entry_points[0];
-        eprintln!("{:?}", new_name);
-        eprintln!("{entry_points:?}");
-        //
-        // let entry_points: Vec<_> = compiler.entry_points()?.collect();
-        // let main = &entry_points[0];
+        assert!(no_name.is_none());
+
+        assert_eq!("main", main.name.as_ref());
+        let new_name =
+            compiler.cleansed_entry_point_name("new_main", spirv::ExecutionModel::Fragment)?;
+
+        assert_eq!(Some("new_main"), new_name.as_deref());
+
         Ok(())
     }
 }

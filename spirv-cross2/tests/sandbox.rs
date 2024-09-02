@@ -52,7 +52,7 @@ void main()
     let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCross::new()?;
+    let cross = spirv_cross2::SpirvCrossContext::new()?;
     let mut compiler =
         cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
 
@@ -121,7 +121,7 @@ void main()
     let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCross::new()?;
+    let cross = spirv_cross2::SpirvCrossContext::new()?;
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
 
     let spec_workgroup = compiler.work_group_size_specialization_constants();
@@ -171,7 +171,7 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCross::new()?;
+    let cross = spirv_cross2::SpirvCrossContext::new()?;
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
@@ -212,7 +212,7 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCross::new()?;
+    let cross = spirv_cross2::SpirvCrossContext::new()?;
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
@@ -265,7 +265,7 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCross::new()?;
+    let cross = spirv_cross2::SpirvCrossContext::new()?;
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
@@ -281,8 +281,6 @@ pub fn const_id_array_dim() -> Result<(), SpirvCrossError> {
     const SHADER: &str = r##"#version 450
 
 layout (constant_id = 0) const int SSAO_KERNEL_SIZE = 2;
-
-
 layout(location = 0) out vec4[SSAO_KERNEL_SIZE][4] color;
 layout(binding = 1) uniform sampler2D tex;
 
@@ -303,7 +301,7 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCross::new()?;
+    let cross = spirv_cross2::SpirvCrossContext::new()?;
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
@@ -340,7 +338,7 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCross::new()?;
+    let cross = spirv_cross2::SpirvCrossContext::new()?;
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 

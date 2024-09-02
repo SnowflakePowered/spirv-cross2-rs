@@ -62,21 +62,29 @@ impl ConstantScalar for half::f16 {
     }
 }
 
+/// A SPIR-V specialization constant
 #[derive(Debug, Clone)]
 pub struct SpecializationConstant {
+    /// The handle to the constant.
     pub id: Handle<ConstantId>,
+    /// The declared `constant_id` of the constant.
     pub constant_id: u32,
 }
 
+/// Specialization constants for a workgroup size.
 #[derive(Debug, Clone)]
 pub struct WorkgroupSizeSpecializationConstants {
+    /// Workgroup size in _x_.
     pub x: Option<SpecializationConstant>,
+    /// Workgroup size in _y_.
     pub y: Option<SpecializationConstant>,
+    /// Workgroup size in _z_.
     pub z: Option<SpecializationConstant>,
+    /// The constant ID of the builtin `WorkGroupSize`
     pub builtin_workgroup_size_handle: Option<Handle<ConstantId>>,
 }
 
-/// An iterator over specialization constants.
+/// An iterator over specialization constants, created by [`Compiler::specialization_constants`].
 pub struct SpecializationConstantIter<'a>(
     PhantomCompiler<'a>,
     slice::Iter<'a, spvc_specialization_constant>,
@@ -172,6 +180,7 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
+    /// Query declared specialization constants.
     pub fn specialization_constants(&self) -> error::Result<SpecializationConstantIter<'a>> {
         unsafe {
             let mut constants = std::ptr::null();
@@ -188,6 +197,7 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
+    /// Get subconstants for composite type specialization constants.
     pub fn specialization_sub_constants(
         &self,
         constant: Handle<ConstantId>,
@@ -222,8 +232,9 @@ impl<'a, T> Compiler<'a, T> {
     /// If the component is not a specialization constant, a zeroed out struct will be written.
     /// The return value is the constant ID of the builtin WorkGroupSize, but this is not expected to be useful
     /// for most use cases.
-    /// If LocalSizeId is used, there is no uvec3 value representing the workgroup size, so the return value is 0,
-    /// but x, y and z are written as normal if the components are specialization constants.
+    ///
+    /// If `LocalSizeId` is used, there is no uvec3 value representing the workgroup size, so the return value is 0,
+    /// but _x_, _y_ and _z_ are written as normal if the components are specialization constants.
     pub fn work_group_size_specialization_constants(&self) -> WorkgroupSizeSpecializationConstants {
         unsafe {
             let mut x = MaybeUninit::zeroed();

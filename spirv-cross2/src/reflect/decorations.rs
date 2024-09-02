@@ -1,6 +1,6 @@
 use crate::error::{SpirvCrossError, ToContextError};
-use crate::handle::{Handle, Id};
-use crate::reflect::{Resource, StructMember};
+use crate::handle::{ConstantId, Handle, Id, TypeId, VariableId};
+use crate::reflect::StructMember;
 use crate::sealed::Sealed;
 use crate::spirv::Decoration;
 use crate::string::ContextStr;
@@ -8,8 +8,9 @@ use crate::Compiler;
 use crate::{error, spirv, ToStatic};
 use core::slice;
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{BaseType, ConstantId, FromPrimitive, SpvId, ToPrimitive, VariableId};
+use spirv_cross_sys::{FromPrimitive, SpvId, ToPrimitive};
 
+/// A value accompanying an `OpDecoration`
 #[derive(Debug)]
 pub enum DecorationValue<'a> {
     /// Returned by the following decorations.
@@ -37,6 +38,50 @@ pub enum DecorationValue<'a> {
     String(ContextStr<'a>),
     /// All other decorations to indicate the presence of a decoration.
     Present,
+}
+
+impl DecorationValue<'_> {
+    /// Helper function to unset a decoration value, to be passed to
+    /// [`Compiler::set_decoration`].
+    pub const fn unset() -> Option<Self> {
+        None
+    }
+}
+
+impl From<u32> for DecorationValue<'_> {
+    fn from(value: u32) -> Self {
+        DecorationValue::Literal(value)
+    }
+}
+
+impl From<()> for DecorationValue<'_> {
+    fn from(_value: ()) -> Self {
+        DecorationValue::Present
+    }
+}
+
+impl From<Handle<ConstantId>> for DecorationValue<'_> {
+    fn from(value: Handle<ConstantId>) -> Self {
+        DecorationValue::Constant(value)
+    }
+}
+
+impl<'a> From<&'a str> for DecorationValue<'a> {
+    fn from(value: &'a str) -> Self {
+        DecorationValue::String(ContextStr::from_str(value))
+    }
+}
+
+impl From<String> for DecorationValue<'_> {
+    fn from(value: String) -> Self {
+        DecorationValue::String(ContextStr::from_string(value))
+    }
+}
+
+impl<'a> From<ContextStr<'a>> for DecorationValue<'a> {
+    fn from(value: ContextStr<'a>) -> Self {
+        DecorationValue::String(value)
+    }
 }
 
 impl Sealed for DecorationValue<'_> {}
@@ -139,14 +184,15 @@ impl<'a, T> Compiler<'a, T> {
     }
 
     /// Gets the value for member decorations which take arguments.
-    pub fn member_decoration<I: Id>(
+    pub fn member_decoration_by_handle(
         &self,
-        member: &StructMember<'a>,
+        struct_type_id: Handle<TypeId>,
+        index: u32,
         decoration: Decoration,
     ) -> error::Result<Option<DecorationValue>> {
         // SAFETY: id is yielded by the instance so it's safe to use.
-        let struct_type = self.yield_id(member.struct_type)?;
-        let index = member.index as u32;
+        let struct_type = self.yield_id(struct_type_id)?;
+        let index = index;
 
         unsafe {
             let has_decoration = sys::spvc_compiler_has_member_decoration(
@@ -179,16 +225,22 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
+    /// Gets the value for member decorations which take arguments.
+    pub fn member_decoration<I: Id>(
+        &self,
+        member: &StructMember<'a>,
+        decoration: Decoration,
+    ) -> error::Result<Option<DecorationValue>> {
+        self.member_decoration_by_handle(member.struct_type, member.index as u32, decoration)
+    }
+
     /// Set the value of a decoration for an ID.
     pub fn set_decoration<'value, I: Id>(
         &mut self,
         id: Handle<I>,
         decoration: Decoration,
-        value: Option<DecorationValue<'value>>,
-    ) -> error::Result<()>
-    where
-        'value: 'a,
-    {
+        value: Option<impl Into<DecorationValue<'value>>>,
+    ) -> error::Result<()> {
         // SAFETY: id is yielded by the instance so it's safe to use.
         let id = SpvId(self.yield_id(id)?.id());
         unsafe {
@@ -196,6 +248,8 @@ impl<'a, T> Compiler<'a, T> {
                 sys::spvc_compiler_unset_decoration(self.ptr.as_ptr(), id, decoration);
                 return Ok(());
             };
+
+            let value = value.into();
 
             if !value.type_is_valid_for_decoration(decoration) {
                 return Err(SpirvCrossError::InvalidDecorationInput(
@@ -275,14 +329,27 @@ impl<'a, T> Compiler<'a, T> {
         &mut self,
         member: &StructMember<'a>,
         decoration: Decoration,
-        value: Option<DecorationValue<'value>>,
-    ) -> error::Result<()>
-    where
-        'value: 'a,
-    {
+        value: Option<impl Into<DecorationValue<'value>>>,
+    ) -> error::Result<()> {
+        self.set_member_decoration_by_handle(
+            member.struct_type,
+            member.index as u32,
+            decoration,
+            value,
+        )
+    }
+
+    /// Set the value of a decoration for a struct member by the handle of its parent struct
+    /// and the index.
+    pub fn set_member_decoration_by_handle<'value>(
+        &mut self,
+        struct_type: Handle<TypeId>,
+        index: u32,
+        decoration: Decoration,
+        value: Option<impl Into<DecorationValue<'value>>>,
+    ) -> error::Result<()> {
         // SAFETY: id is yielded by the instance so it's safe to use.
-        let struct_type = self.yield_id(member.struct_type)?;
-        let index = member.index as u32;
+        let struct_type = self.yield_id(struct_type)?;
 
         unsafe {
             let Some(value) = value else {
@@ -294,6 +361,8 @@ impl<'a, T> Compiler<'a, T> {
                 );
                 return Ok(());
             };
+
+            let value = value.into();
 
             if !value.type_is_valid_for_decoration(decoration) {
                 return Err(SpirvCrossError::InvalidDecorationInput(
@@ -494,13 +563,13 @@ mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
 
-    use crate::{targets, Module, SpirvCross};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn set_decoration_test() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;

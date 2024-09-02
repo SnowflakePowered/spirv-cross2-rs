@@ -1,10 +1,96 @@
 #![cfg_attr(docsrs, feature(doc_cfg, doc_cfg_hide))]
+#![forbid(missing_docs)]
 
+//! Safe and sound Rust bindings to [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross).
+//!
+//! All backends exposed by the SPIRV-Cross C API are fully supported, including
+//!
+//! * [GLSL](targets::Glsl)
+//! * [HLSL](targets::Hlsl)
+//! * [MSL](targets::Msl)
+//! * [JSON](targets::Json)
+//! * [C++](targets::Cpp)
+//! * [Reflection Only](targets::None)
+//!
+//! The API provided is roughly similar to the SPIRV-Cross [`Compiler`](https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross.hpp) C++ API,
+//! with some inspiration from [naga](https://docs.rs/naga/latest/naga/index.html). A best effort has been
+//! made to ensure that these bindings are sound, and that mutations occur strictly within Rust's
+//! borrow rules.
+//!
+//! ## Context
+//! The entry point to the library is [`SpirvCrossContext`], which owns all foreign allocations.
+//! Hence, all wrapper structs have a lifetime parameter that refers to the lifetime of the context.
+//!
+//! [`Compiler`] instances can share a context, in which case the context must outlive all associated
+//! objects, or it can take ownership of a context and have a `'static` lifetime, where all associated
+//! objects will be dropped only when the compiler instance is dropped.
+//!
+//! ## Strings
+//! Methods on [`Compiler`] return and accept [`ContextStr`] instead of a normal string type. A
+//! [`ContextStr`] may or may not be owned by the context, or may come from Rust. Rust string types
+//! can be coerced automatically to [`ContextStr`] as an input, and [`ContextStr`] can easily be copied
+//! to a Rust string type.
+//!
+//! If a returned [`ContextStr`] is owned by the context and is immutable,
+//! it will share the lifetime of the context. Some functions return _short lived_ strings which
+//! are owned by the underlying compiler instance. These strings can be modified by `set_` functions,
+//! thus they only have a lifetime corresponding to the lifetime of the immutable borrow of the [`Compiler`]
+//! that produced them. References to these short-lived strings can not be alive before calling a
+//! mutating function.
+//!
+//! ## Usage
+//! Here is an example of using the API to do some reflection and compile to GLSL.
+//!
+//! Note the `'static` lifetime of the artifact, as the context is owned by the compiler.
+//!
+//! ```
+//! use spirv_cross2::compile::{CompilableTarget, CompiledArtifact};
+//! use spirv_cross2::{Module, SpirvCrossContext, SpirvCrossError};
+//! use spirv_cross2::compile::glsl::GlslVersion;
+//! use spirv_cross2::reflect::{DecorationValue, ResourceType};
+//! use spirv_cross2::spirv;
+//! use spirv_cross2::targets::Glsl;
+//!
+//! fn compile_spirv(words: &[u32]) -> Result<CompiledArtifact<'static, Glsl>, SpirvCrossError> {
+//!     let module = Module::from_words(words);
+//!     let context = SpirvCrossContext::new()?;
+//!
+//!     let mut compiler = context.into_compiler::<Glsl>(module)?;
+//!
+//!     let resources = compiler.shader_resources()?;
+//!
+//!     for resource in resources.resources_for_type(ResourceType::SampledImage)? {
+//!         let Some(DecorationValue::Literal(set)) =
+//!                 compiler.decoration(resource.id,  spirv::Decoration::DescriptorSet)? else {
+//!             continue;
+//!         };
+//!         let Some(DecorationValue::Literal(binding)) =
+//!             compiler.decoration(resource.id,  spirv::Decoration::Binding)? else {
+//!             continue;
+//!         };
+//!
+//!         println!("Image {} at set = {}, binding = {}", resource.name, set, binding);
+//!
+//!         // Modify the decoration to prepare it for GLSL.
+//!         compiler.set_decoration(resource.id, spirv::Decoration::DescriptorSet,
+//!                 DecorationValue::unset())?;
+//!
+//!         // Some arbitrary remapping if we want.
+//!         compiler.set_decoration(resource.id, spirv::Decoration::Binding,
+//!             Some(set * 16 + binding))?;
+//!     }
+//!
+//!     let mut options = Glsl::options();
+//!     options.version = GlslVersion::Glsl300Es;
+//!
+//!     compiler.compile(&options)
+//! }
+//! ```
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, SpvId};
 use std::borrow::Borrow;
 
-use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
+use crate::error::{ContextRooted, ToContextError};
 
 use crate::sealed::Sealed;
 use crate::targets::Target;
@@ -13,35 +99,47 @@ use std::ops::Deref;
 use std::ptr::NonNull;
 use std::rc::Rc;
 
+/// Compilation of SPIR-V to a textual format.
 pub mod compile;
-pub mod error;
 
 /// SPIR-V types and definitions.
 pub mod spirv;
 
+/// Handles to SPIR-V IDs from reflection.
 pub mod handle;
 
+/// SPIR-V reflection helpers and types.
 pub mod reflect;
-pub(crate) mod string;
+
+/// Compiler output targets.
 pub mod targets;
+
+/// Error handling traits and support.
+pub(crate) mod error;
+
+/// String helpers
+pub(crate) mod string;
 
 pub(crate) mod sealed {
     pub trait Sealed {}
 }
 
+pub use crate::error::SpirvCrossError;
+pub use crate::string::ContextStr;
+
 /// The SPIRV-Cross context. All memory allocations originating from
 /// this context will have the same lifetime as the context.
 #[repr(transparent)]
-pub struct SpirvCross(NonNull<spvc_context_s>);
+pub struct SpirvCrossContext(NonNull<spvc_context_s>);
 
 enum ContextRoot<'a> {
-    Owned(SpirvCross),
-    Borrowed(&'a SpirvCross),
-    RefCounted(Rc<SpirvCross>),
+    Owned(SpirvCrossContext),
+    Borrowed(&'a SpirvCrossContext),
+    RefCounted(Rc<SpirvCrossContext>),
 }
 
-impl<'a> Borrow<SpirvCross> for ContextRoot<'a> {
-    fn borrow(&self) -> &SpirvCross {
+impl<'a> Borrow<SpirvCrossContext> for ContextRoot<'a> {
+    fn borrow(&self) -> &SpirvCrossContext {
         match self {
             ContextRoot::Owned(a) => a,
             ContextRoot::Borrowed(a) => a,
@@ -50,8 +148,8 @@ impl<'a> Borrow<SpirvCross> for ContextRoot<'a> {
     }
 }
 
-impl<'a> AsRef<SpirvCross> for ContextRoot<'a> {
-    fn as_ref(&self) -> &SpirvCross {
+impl<'a> AsRef<SpirvCrossContext> for ContextRoot<'a> {
+    fn as_ref(&self) -> &SpirvCrossContext {
         match self {
             ContextRoot::Owned(a) => a,
             ContextRoot::Borrowed(a) => a,
@@ -70,19 +168,17 @@ impl ContextRoot<'_> {
     }
 }
 
+/// A SPIR-V Module represented as SPIR-V words.
 pub struct Module<'a>(&'a [SpvId]);
 
 impl<'a> Module<'a> {
+    /// Create a new `Module` from SPIR-V words.
     pub fn from_words(words: &'a [u32]) -> Self {
-        const {
-            assert!(std::mem::size_of::<u32>() == std::mem::size_of::<SpvId>());
-        }
-
-        Module(bytemuck::cast_slice(words))
+        Module(bytemuck::must_cast_slice(words))
     }
 }
 
-impl SpirvCross {
+impl SpirvCrossContext {
     /// Initialize a new SPIRV-Cross context.
     pub fn new() -> error::Result<Self> {
         unsafe {
@@ -221,13 +317,13 @@ impl SpirvCross {
     }
 }
 
-impl Drop for SpirvCross {
+impl Drop for SpirvCrossContext {
     fn drop(&mut self) {
         unsafe { sys::spvc_context_destroy(self.0.as_ptr()) }
     }
 }
 
-impl ContextRooted for &SpirvCross {
+impl ContextRooted for &SpirvCrossContext {
     fn context(&self) -> NonNull<spvc_context_s> {
         self.0
     }
@@ -236,6 +332,7 @@ impl ContextRooted for &SpirvCross {
 /// Helper trait to detach objects with lifetimes attached to
 /// a compiler or context.
 pub trait ToStatic: Sealed {
+    /// The static type to return.
     type Static<'a>
     where
         'a: 'static;
@@ -244,15 +341,13 @@ pub trait ToStatic: Sealed {
     fn to_static(&self) -> Self::Static<'static>;
 }
 
-pub use crate::string::ContextStr;
-
 #[cfg(test)]
 mod test {
-    use crate::SpirvCross;
+    use crate::SpirvCrossContext;
 
     #[test]
     pub fn init_context_test() {
-        SpirvCross::new().unwrap();
+        SpirvCrossContext::new().unwrap();
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::compile::{CommonCompileOptions, CompiledArtifact};
+use crate::compile::{CommonOptions, CompiledArtifact};
 use spirv_cross_sys as sys;
 pub use spirv_cross_sys::MslChromaLocation as ChromaLocation;
 pub use spirv_cross_sys::MslComponentSwizzle as ComponentSwizzle;
@@ -19,6 +19,30 @@ pub use spirv_cross_sys::MslShaderInterfaceVar2 as ShaderInterfaceVar;
 pub use spirv_cross_sys::MslShaderVariableFormat as ShaderVariableFormat;
 pub use spirv_cross_sys::MslShaderVariableRate as ShaderVariableRate;
 
+/// Special constant used in a [`ResourceBinding`] desc_set.
+pub const PUSH_CONSTANT_DESCRIPTOR_SET: u32 = !0;
+
+/// Special constant used in a [`ResourceBinding`] binding.
+pub const PUSH_CONSTANT_BINDING: u32 = 0;
+
+/// Special constant used in a [`ResourceBinding`] binding
+/// element to indicate the buffer binding for swizzle buffers.
+pub const SWIZZLE_BUFFER_BINDING: u32 = !1;
+
+/// Special constant used in a [`ResourceBinding`] binding
+/// element to indicate the buffer binding for buffer size buffers to support `OpArrayLength`.
+pub const BUFFER_SIZE_BUFFER_BINDING: u32 = !2;
+
+/// Special constant used in a [`ResourceBinding`] binding
+/// element to indicate the buffer binding used for the argument buffer itself.
+///
+/// This buffer binding should be kept as small as possible as all automatic bindings for buffers
+/// will start at `max(ARGUMENT_BUFFER_BINDING) + 1`.
+pub const ARGUMENT_BUFFER_BINDING: u32 = !3;
+
+/// Maximum number of argument buffers supported.
+pub const MAX_ARGUMENT_BUFFERS: u32 = 8;
+
 use std::fmt::{Debug, Formatter};
 
 use crate::error::{SpirvCrossError, ToContextError};
@@ -35,7 +59,7 @@ impl Sealed for CompileOptions {}
 pub struct CompileOptions {
     /// Compile options common to GLSL, HLSL, and MSL.
     #[expand]
-    pub common: CommonCompileOptions,
+    pub common: CommonOptions,
 
     /// The MSL version to compile to.
     ///
@@ -500,26 +524,38 @@ impl From<(u32, u32, u32)> for MslVersion {
     }
 }
 
+/// When using Metal argument buffers, indicates the Metal argument buffer tier level supported by the Metal platform.
+///
+/// Tier capabilities based on recommendations from Apple engineering.
 #[repr(u32)]
 #[derive(Debug, Copy, Clone)]
 pub enum ArgumentBuffersTier {
+    /// Tier1 supports writable images on macOS, but not on iOS.
     Tier1 = 0,
+    /// Tier2 supports writable images on macOS and iOS, and higher resource count limits.
     Tier2 = 1,
 }
 
+/// The platform that the Metal runtime will be on.
 #[repr(u32)]
 #[derive(Debug, Copy, Clone)]
 pub enum MetalPlatform {
     #[allow(non_camel_case_types)]
+    /// iOS (mobile and iPad)
     iOS = 0,
+    /// macOS (Desktop)
     MacOS = 1,
 }
 
+/// The type of index in the index buffer.
 #[repr(u32)]
 #[derive(Debug, Copy, Clone)]
 pub enum IndexType {
+    /// No index
     None = 0,
+    /// Uint16 indices.
     Uint16 = 1,
+    /// Uint32 indices.
     Uint32 = 2,
 }
 
@@ -557,8 +593,7 @@ impl From<ArgumentBuffersTier> for u32 {
 pub struct BufferRequirements {
     /// Whether an auxiliary swizzle buffer is needed by the shader.
     pub needs_swizzle_buffer: bool,
-    /// Whether a buffer
-    /// containing `STORAGE_BUFFER` buffer sizes to support OpArrayLength
+    /// Whether a buffer containing `STORAGE_BUFFER` buffer sizes to support OpArrayLength
     /// is needed by the shader.
     pub needs_buffer_size_buffer: bool,
     /// Whether an output buffer is needed by the shader.
@@ -626,7 +661,7 @@ impl<'a> Compiler<'a, Msl> {
     /// and binding.
     ///
     /// If resource bindings are provided,
-    /// [`CompiledArtifact::is_resource_used`] will return true after [`Compiler::compile`] if
+    /// [`CompiledArtifact<Msl>::is_resource_used`] will return true after [`Compiler::compile`] if
     /// the set/binding combination was used by the MSL code.
     pub fn add_resource_binding(&mut self, binding: &ResourceBinding) -> error::Result<()> {
         unsafe {
@@ -667,7 +702,7 @@ impl<'a> Compiler<'a, Msl> {
     }
 
     /// This function marks a resource an inline uniform block
-    /// (VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT)
+    /// (`VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT`)
     ///
     /// `desc_set` and `binding` are the SPIR-V descriptor set and binding of a buffer resource
     /// in this shader.
@@ -707,7 +742,7 @@ impl<'a> Compiler<'a, Msl> {
     /// This can be used on both combined image/samplers (sampler2D) or standalone samplers.
     /// The remapped sampler must not be an array of samplers.
     ///
-    /// Prefer [`Compiler::remap_constexpr_sampler_by_binding`] unless you're also doing reflection anyways.
+    /// Prefer [`Compiler<Msl>::remap_constexpr_sampler_by_binding`] unless you're also doing reflection anyways.
     pub fn remap_constexpr_sampler(
         &mut self,
         variable: impl Into<Handle<VariableId>>,
@@ -800,7 +835,7 @@ impl<'a> Compiler<'a, Msl> {
             let str = str.into();
 
             let Ok(suffix) = str.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidName(String::from(str.as_ref())));
+                return Err(SpirvCrossError::InvalidString(String::from(str.as_ref())));
             };
 
             sys::spvc_compiler_msl_set_combined_sampler_suffix(self.ptr.as_ptr(), suffix.as_ptr())
@@ -809,10 +844,52 @@ impl<'a> Compiler<'a, Msl> {
     }
 
     /// Get the suffix for combined image samplers.
-    pub fn get_combined_sampler_suffix(&self) -> ContextStr<'a> {
+    pub fn get_combined_sampler_suffix(&self) -> ContextStr {
         unsafe {
             let suffix = sys::spvc_compiler_msl_get_combined_sampler_suffix(self.ptr.as_ptr());
             ContextStr::from_ptr(suffix)
+        }
+    }
+
+    /// Mask a stage output by location.
+    ///
+    /// If a shader output is active in this stage, but inactive in a subsequent stage,
+    /// this can be signalled here. This can be used to work around certain cross-stage matching problems
+    /// which plagues MSL in certain scenarios.
+    ///
+    /// An output which matches one of these will not be emitted in stage output interfaces, but rather treated as a private
+    /// variable.
+    ///
+    /// This option is only meaningful for MSL and HLSL, since GLSL matches by location directly.
+    ///
+    pub fn mask_stage_output_by_location(
+        &mut self,
+        location: u32,
+        component: u32,
+    ) -> crate::error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_mask_stage_output_by_location(self.ptr.as_ptr(), location, component)
+                .ok(&*self)
+        }
+    }
+
+    /// Mask a stage output by builtin. Masking builtins only takes effect if the builtin in question is part of the stage output interface.
+    ///
+    /// If a shader output is active in this stage, but inactive in a subsequent stage,
+    /// this can be signalled here. This can be used to work around certain cross-stage matching problems
+    /// which plagues MSL in certain scenarios.
+    ///
+    /// An output which matches one of these will not be emitted in stage output interfaces, but rather treated as a private
+    /// variable.
+    ///
+    /// This option is only meaningful for MSL and HLSL, since GLSL matches by location directly.
+    /// Masking builtins only takes effect if the builtin in question is part of the stage output interface.
+    pub fn mask_stage_output_by_builtin(
+        &mut self,
+        builtin: spirv::BuiltIn,
+    ) -> crate::error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin).ok(&*self)
         }
     }
 }
@@ -836,16 +913,22 @@ pub enum AutomaticResourceBindingTier {
 }
 
 impl<'a> CompiledArtifact<'a, Msl> {
+    /// Returns whether the set/binding combination provided in [`Compiler<Msl>::add_resource_binding`]
+    /// was used.
     pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {
         unsafe {
             sys::spvc_compiler_msl_is_resource_used(self.compiler.ptr.as_ptr(), model, set, binding)
         }
     }
 
+    /// Returns whether the location provided in [`Compiler<Msl>::add_shader_input`]
+    /// was used.
     pub fn is_shader_input_used(&self, location: u32) -> bool {
         unsafe { sys::spvc_compiler_msl_is_shader_input_used(self.compiler.ptr.as_ptr(), location) }
     }
 
+    /// Returns whether the location provided in [`Compiler<Msl>::add_shader_output`]
+    /// was used.
     pub fn is_shader_output_used(&self, location: u32) -> bool {
         unsafe {
             sys::spvc_compiler_msl_is_shader_output_used(self.compiler.ptr.as_ptr(), location)
@@ -887,23 +970,44 @@ impl<'a> CompiledArtifact<'a, Msl> {
             Ok(Some(res))
         }
     }
+
+    /// Query if a variable ID was used as a depth resource.
+    ///
+    /// This is meaningful for MSL since descriptor types depend on this knowledge.
+    /// Cases which return true:
+    /// - Images which are declared with depth = 1 image type.
+    /// - Samplers which are statically used at least once with Dref opcodes.
+    /// - Images which are statically used at least once with Dref opcodes.
+    pub fn variable_is_depth_or_compare(
+        &self,
+        variable: impl Into<Handle<VariableId>>,
+    ) -> error::Result<bool> {
+        let variable = variable.into();
+        let id = self.yield_id(variable)?;
+        unsafe {
+            Ok(sys::spvc_compiler_variable_is_depth_or_compare(
+                self.ptr.as_ptr(),
+                id,
+            ))
+        }
+    }
 }
 
 #[cfg(test)]
 mod test {
     use crate::compile::msl::CompileOptions;
-    use crate::compile::ApplyCompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
+    use crate::compile::sealed::ApplyCompilerOptions;
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCross};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");
 
     #[test]
     pub fn msl_opts() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCross::new()?;
+        let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
 

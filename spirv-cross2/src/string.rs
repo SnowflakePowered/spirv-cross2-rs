@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 
 /// An immutable wrapper around a valid UTF-8 string whose memory contents
-/// may or may not be originating from a [`SpirvCross`](crate::SpirvCross)
+/// may or may not be originating from a [`SpirvCrossContext`](crate::SpirvCrossContext)
 /// context.
 ///
 /// In most cases, users of this library do not need to worry about
@@ -25,6 +25,15 @@ use std::ops::Deref;
 /// If the provenance of the string is an owned Rust `String`, or
 /// a `&str` with lifetime longer than `'a`, then an allocation will
 /// occur when passing the string to FFI.
+///
+/// # Safety
+/// Returning `ContextStr<'a>` where `'a` is the lifetime of the
+/// [`SpirvCrossContext`](crate::SpirvCrossContext) is **almost always incorrect**.
+///
+/// The only exception is if the name is explicitly allocated into the context,
+/// and can not be modified by a `set_`. function.
+///
+/// In most cases, the returned lifetime should be the lifetime of the mutable borrow.
 #[derive(Clone)]
 pub struct ContextStr<'a> {
     pointer: Option<*const c_char>,

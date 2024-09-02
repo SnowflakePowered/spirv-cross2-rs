@@ -1,43 +1,31 @@
-// TODO:
-
-// const char *argument);
-// SPVC_PUBLIC_API void spvc_compiler_set_name(spvc_compiler compiler, SpvId id, const char *argument);
-//
-// const char *argument);
-// SPVC_PUBLIC_API void spvc_compiler_set_member_name(spvc_compiler compiler, spvc_type_id id, unsigned member_index,
-// const char *argument);
-
-//
-
-// SPVC_PUBLIC_API const char *spvc_compiler_get_name(spvc_compiler compiler, SpvId id);
-// SPVC_PUBLIC_API const char *spvc_compiler_get_member_name(spvc_compiler compiler, SpvId id);
-
 use crate::error;
 use crate::handle::{Handle, Id};
 use crate::Compiler;
-use std::borrow::Cow;
-use std::ffi::CStr;
 
 use crate::error::SpirvCrossError;
-use crate::reflect::StructMember;
 use crate::string::ContextStr;
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{SpvId, VariableId};
+use spirv_cross_sys::{SpvId, TypeId, VariableId};
 
-impl<'a, T> Compiler<'a, T> {
-    pub fn name<I: Id>(&self, handle: Handle<I>) -> error::Result<Option<Cow<'a, str>>> {
+impl<T> Compiler<'_, T> {
+    /// Gets the identifier (`OpName`) of an ID.
+    pub fn name<I: Id>(&self, handle: Handle<I>) -> error::Result<Option<ContextStr>> {
         let id = self.yield_id(handle)?;
         unsafe {
             let name = sys::spvc_compiler_get_name(self.ptr.as_ptr(), SpvId(id.id()));
-            let name = CStr::from_ptr(name);
+            let name = ContextStr::from_ptr(name);
             if name.is_empty() {
                 Ok(None)
             } else {
-                Ok(Some(name.to_string_lossy()))
+                Ok(Some(name))
             }
         }
     }
 
+    /// Overrides the identifier OpName of an ID.
+    ///
+    /// Identifiers beginning with underscores or identifiers which contain double underscores
+    /// are reserved by the implementation.
     pub fn set_name<'str, I: Id>(
         &mut self,
         handle: Handle<I>,
@@ -48,7 +36,9 @@ impl<'a, T> Compiler<'a, T> {
 
         unsafe {
             let Ok(cstring) = string.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidName(String::from(string.as_ref())));
+                return Err(SpirvCrossError::InvalidString(String::from(
+                    string.as_ref(),
+                )));
             };
 
             sys::spvc_compiler_set_name(self.ptr.as_ptr(), SpvId(id.id()), cstring.as_ptr());
@@ -61,12 +51,14 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
-    pub fn member_name<I: Id>(
+    /// Given a struct type ID, obtain the identifier for member number "index".
+    pub fn member_name(
         &self,
-        struct_member: StructMember<'a>,
-    ) -> error::Result<Option<ContextStr<'a>>> {
-        let struct_type_id = self.yield_id(struct_member.struct_type)?;
-        let index = struct_member.index as u32;
+        struct_type: Handle<TypeId>,
+        index: u32,
+    ) -> error::Result<Option<ContextStr>> {
+        let struct_type_id = self.yield_id(struct_type)?;
+        let index = index;
 
         unsafe {
             let name = sys::spvc_compiler_get_member_name(self.ptr.as_ptr(), struct_type_id, index);
@@ -79,18 +71,22 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
-    pub fn set_member_name<'str, I: Id>(
+    /// Sets the member identifier for the given struct member.
+    pub fn set_member_name<'str>(
         &mut self,
-        struct_member: StructMember<'a>,
+        struct_type: Handle<TypeId>,
+        index: u32,
         string: impl Into<ContextStr<'str>>,
     ) -> error::Result<()> {
-        let struct_type_id = self.yield_id(struct_member.struct_type)?;
-        let index = struct_member.index as u32;
+        let struct_type_id = self.yield_id(struct_type)?;
+        let index = index;
         let string = string.into();
 
         unsafe {
             let Ok(cstring) = string.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidName(String::from(string.as_ref())));
+                return Err(SpirvCrossError::InvalidString(String::from(
+                    string.as_ref(),
+                )));
             };
 
             sys::spvc_compiler_set_member_name(
@@ -107,7 +103,9 @@ impl<'a, T> Compiler<'a, T> {
             Ok(())
         }
     }
+}
 
+impl<'ctx, T> Compiler<'ctx, T> {
     /// When declaring buffer blocks in GLSL, the name declared in the GLSL source
     /// might not be the same as the name declared in the SPIR-V module due to naming conflicts.
     /// In this case, SPIRV-Cross needs to find a fallback-name, and it might only
@@ -126,17 +124,17 @@ impl<'a, T> Compiler<'a, T> {
     pub fn remapped_declared_block_name(
         &self,
         handle: impl Into<Handle<VariableId>>,
-    ) -> error::Result<Option<Cow<'a, str>>> {
+    ) -> error::Result<Option<ContextStr<'ctx>>> {
         let handle = handle.into();
         let handle = self.yield_id(handle)?;
         unsafe {
             let name =
                 sys::spvc_compiler_get_remapped_declared_block_name(self.ptr.as_ptr(), handle);
-            let name = CStr::from_ptr(name);
+            let name = ContextStr::from_ptr(name);
             if name.is_empty() {
                 Ok(None)
             } else {
-                Ok(Some(name.to_string_lossy()))
+                Ok(Some(name))
             }
         }
     }

@@ -220,14 +220,17 @@ mod test {
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let vars = compiler.active_interface_variables()?;
+
+        let mut handles = vars
+            .to_handles()
+            .into_iter()
+            .map(|h| h.id())
+            .collect::<Vec<_>>();
+        handles.sort();
+
         assert_eq!(
-            &[13, 9],
-            &vars
-                .to_handles()
-                .into_iter()
-                .map(|h| h.id())
-                .collect::<Vec<_>>()
-                .as_slice()
+            &[9, 13],
+            &handles.as_slice()
         );
 
         compiler.set_enabled_interface_variables(vars)?;

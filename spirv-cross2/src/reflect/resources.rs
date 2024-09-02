@@ -89,9 +89,13 @@ impl<'a> InterfaceVariableSet<'a> {
             let mut vec = vec![0; length];
             spirv_cross_sys::spvc_rs_expose_set(self.0, vec.as_mut_ptr(), &mut length);
 
-            vec.into_iter()
+            let mut handles: Vec<Handle<VariableId>> = vec.into_iter()
                 .map(|id| self.2.create_handle(VariableId::from(id)))
-                .collect()
+                .collect();
+
+            handles.sort_by_key(|h| h.id());
+
+            handles
         }
     }
 }

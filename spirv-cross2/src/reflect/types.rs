@@ -638,7 +638,6 @@ impl<T> Compiler<'_, T> {
 #[cfg(test)]
 mod test {
     use crate::error::SpirvCrossError;
-    use crate::reflect::TypeInner;
     use crate::Compiler;
     use crate::{targets, Module, SpirvCrossContext};
 

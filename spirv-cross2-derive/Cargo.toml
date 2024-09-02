@@ -2,6 +2,10 @@
 name = "spirv-cross2-derive"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["Ronny Chan <ronny@ronnychan.ca>"]
+description = "spirv-cross2 derive macros"
+repository = "https://github.com/SnowflakePowered/spirv-cross2"
 
 [lib]
 proc-macro = true

@@ -1,6 +1,6 @@
 [package]
 name = "spirv-cross-sys"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 
@@ -10,6 +10,7 @@ description = "Raw bindings to SPIRV-Cross"
 categories = ["rendering", "rendering::graphics-api"]
 repository = "https://github.com/SnowflakePowered/spirv-cross2"
 keywords = ["spirv", "shaders"]
+readme = "../README.md"
 
 [dependencies]
 bytemuck = "1.17.1"

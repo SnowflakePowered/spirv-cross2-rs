@@ -5,19 +5,19 @@ use std::ffi::c_char;
 
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
-use crate::string::MaybeCStr;
+use crate::string::ContextStr;
 use crate::Compiler;
 use crate::{error, spirv};
 
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>);
 
 impl<'a> Iterator for ExtensionsIter<'a> {
-    type Item = MaybeCStr<'a>;
+    type Item = ContextStr<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0
             .next()
-            .map(|ptr| unsafe { MaybeCStr::from_ptr(*ptr) })
+            .map(|ptr| unsafe { ContextStr::from_ptr(*ptr) })
     }
 }
 
@@ -98,7 +98,7 @@ pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>);
 #[derive(Debug)]
 pub struct EntryPoint<'a> {
     pub execution_model: spirv::ExecutionModel,
-    pub name: MaybeCStr<'a>,
+    pub name: ContextStr<'a>,
 }
 
 impl<'a> Iterator for EntryPointIter<'a> {
@@ -106,7 +106,7 @@ impl<'a> Iterator for EntryPointIter<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|entry| unsafe {
-            let name = MaybeCStr::from_ptr(entry.name);
+            let name = ContextStr::from_ptr(entry.name);
             EntryPoint {
                 name,
                 execution_model: entry.execution_model,
@@ -151,9 +151,9 @@ impl<'a, T> Compiler<'a, T> {
     /// Get the
     pub fn cleansed_entry_point_name<'str>(
         &self,
-        name: impl Into<MaybeCStr<'str>>,
+        name: impl Into<ContextStr<'str>>,
         model: spirv::ExecutionModel,
-    ) -> error::Result<Option<MaybeCStr<'a>>> {
+    ) -> error::Result<Option<ContextStr<'a>>> {
         let name = name.into();
 
         unsafe {
@@ -170,13 +170,13 @@ impl<'a, T> Compiler<'a, T> {
             if name.is_null() {
                 return Ok(None);
             }
-            Ok(Some(MaybeCStr::from_ptr(name)))
+            Ok(Some(ContextStr::from_ptr(name)))
         }
     }
 
     pub fn set_entry_point<'str>(
         &mut self,
-        name: impl Into<MaybeCStr<'str>>,
+        name: impl Into<ContextStr<'str>>,
         model: spirv::ExecutionModel,
     ) -> error::Result<()> {
         let name = name.into();
@@ -192,8 +192,8 @@ impl<'a, T> Compiler<'a, T> {
 
     pub fn rename_entry_point<'str>(
         &mut self,
-        from: impl Into<MaybeCStr<'str>>,
-        to: impl Into<MaybeCStr<'str>>,
+        from: impl Into<ContextStr<'str>>,
+        to: impl Into<ContextStr<'str>>,
         model: spirv::ExecutionModel,
     ) -> error::Result<()> {
         let from = from.into();

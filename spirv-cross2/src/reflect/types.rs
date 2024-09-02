@@ -6,7 +6,7 @@ use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::handle::{ConstantId, TypeId};
 use crate::spirv::StorageClass;
-use crate::string::MaybeCStr;
+use crate::string::ContextStr;
 use spirv_cross_sys as sys;
 
 /// The kind of scalar
@@ -114,7 +114,7 @@ impl TryFrom<BaseType> for Scalar {
 #[derive(Debug)]
 pub struct Type<'a> {
     pub id: Handle<TypeId>,
-    pub name: Option<MaybeCStr<'a>>,
+    pub name: Option<ContextStr<'a>>,
     pub inner: TypeInner<'a>,
 }
 
@@ -122,7 +122,7 @@ pub struct Type<'a> {
 pub struct StructMember<'a> {
     pub id: Handle<TypeId>,
     pub struct_type: Handle<TypeId>,
-    pub name: Option<MaybeCStr<'a>>,
+    pub name: Option<ContextStr<'a>>,
     pub index: usize,
     pub offset: u32,
     pub size: usize,
@@ -267,7 +267,7 @@ impl<T> Compiler<'_, T> {
             let mut members = Vec::with_capacity(member_type_len as usize);
             for i in 0..member_type_len {
                 let id = sys::spvc_type_get_member_type(ty, i);
-                let name = MaybeCStr::from_ptr(sys::spvc_compiler_get_member_name(
+                let name = ContextStr::from_ptr(sys::spvc_compiler_get_member_name(
                     self.ptr.as_ptr(),
                     struct_ty_id,
                     i,
@@ -360,7 +360,7 @@ impl<T> Compiler<'_, T> {
     fn process_array<'a>(
         &self,
         id: TypeId,
-        name: Option<MaybeCStr<'a>>,
+        name: Option<ContextStr<'a>>,
     ) -> error::Result<Type<'a>> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
@@ -455,7 +455,7 @@ impl<T> Compiler<'_, T> {
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
 
             let base_ty = sys::spvc_type_get_basetype(ty);
-            let name = MaybeCStr::from_ptr(sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0));
+            let name = ContextStr::from_ptr(sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0));
 
             let name = if name.as_ref().is_empty() {
                 None

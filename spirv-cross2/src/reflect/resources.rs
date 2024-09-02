@@ -1,7 +1,7 @@
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::sealed::Sealed;
-use crate::string::MaybeCStr;
+use crate::string::ContextStr;
 use crate::{error, spirv, Compiler, PhantomCompiler, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
@@ -167,7 +167,7 @@ pub struct Resource<'a> {
     pub id: Handle<VariableId>,
     pub base_type_id: Handle<TypeId>,
     pub type_id: Handle<TypeId>,
-    pub name: MaybeCStr<'a>,
+    pub name: ContextStr<'a>,
 }
 
 impl<'a> Resource<'a> {
@@ -179,7 +179,7 @@ impl<'a> Resource<'a> {
             // There should never be invalid UTF-8 in a shader.
             // as per SPIR-V spec: The character set is Unicode in the UTF-8 encoding scheme.
             // so this will be free 100% of the time.
-            name: unsafe { MaybeCStr::from_ptr(value.name) },
+            name: unsafe { ContextStr::from_ptr(value.name) },
         }
     }
 }
@@ -197,7 +197,7 @@ impl ToStatic for Resource<'_> {
             id: self.id,
             base_type_id: self.base_type_id,
             type_id: self.type_id,
-            name: MaybeCStr::from_string(self.name.to_string()),
+            name: ContextStr::from_string(self.name.to_string()),
         }
     }
 }

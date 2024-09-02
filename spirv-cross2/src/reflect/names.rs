@@ -20,7 +20,7 @@ use std::ffi::CStr;
 
 use crate::error::SpirvCrossError;
 use crate::reflect::StructMember;
-use crate::string::MaybeCStr;
+use crate::string::ContextStr;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{SpvId, VariableId};
 
@@ -41,7 +41,7 @@ impl<'a, T> Compiler<'a, T> {
     pub fn set_name<'str, I: Id>(
         &mut self,
         handle: Handle<I>,
-        string: impl Into<MaybeCStr<'str>>,
+        string: impl Into<ContextStr<'str>>,
     ) -> error::Result<()> {
         let id = self.yield_id(handle)?;
         let string = string.into();
@@ -64,13 +64,13 @@ impl<'a, T> Compiler<'a, T> {
     pub fn member_name<I: Id>(
         &self,
         struct_member: StructMember<'a>,
-    ) -> error::Result<Option<MaybeCStr<'a>>> {
+    ) -> error::Result<Option<ContextStr<'a>>> {
         let struct_type_id = self.yield_id(struct_member.struct_type)?;
         let index = struct_member.index as u32;
 
         unsafe {
             let name = sys::spvc_compiler_get_member_name(self.ptr.as_ptr(), struct_type_id, index);
-            let name = MaybeCStr::from_ptr(name);
+            let name = ContextStr::from_ptr(name);
             if name.is_empty() {
                 Ok(None)
             } else {
@@ -82,7 +82,7 @@ impl<'a, T> Compiler<'a, T> {
     pub fn set_member_name<'str, I: Id>(
         &mut self,
         struct_member: StructMember<'a>,
-        string: impl Into<MaybeCStr<'str>>,
+        string: impl Into<ContextStr<'str>>,
     ) -> error::Result<()> {
         let struct_type_id = self.yield_id(struct_member.struct_type)?;
         let index = struct_member.index as u32;

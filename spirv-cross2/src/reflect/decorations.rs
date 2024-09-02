@@ -3,7 +3,7 @@ use crate::handle::{Handle, Id};
 use crate::reflect::StructMember;
 use crate::sealed::Sealed;
 use crate::spirv::Decoration;
-use crate::string::MaybeCStr;
+use crate::string::ContextStr;
 use crate::Compiler;
 use crate::{error, spirv, ToStatic};
 use core::slice;
@@ -34,7 +34,7 @@ pub enum DecorationValue<'a> {
     /// Only for decoration [`SpecId`](Decoration::SpecId).
     Constant(Handle<ConstantId>),
     /// Only for decoration [`HlslSemanticGOOGLE`](Decoration::HlslSemanticGOOGLE) and [`UserTypeGOOGLE`](Decoration::HlslSemanticGOOGLE).
-    String(MaybeCStr<'a>),
+    String(ContextStr<'a>),
     /// All other decorations to indicate the presence of a decoration.
     Present,
 }
@@ -54,7 +54,7 @@ impl ToStatic for DecorationValue<'_> {
             DecorationValue::Constant(a) => DecorationValue::Constant(*a),
             DecorationValue::String(c) => {
                 let owned = c.to_string();
-                DecorationValue::String(MaybeCStr::from_string(owned))
+                DecorationValue::String(ContextStr::from_string(owned))
             }
             DecorationValue::Present => DecorationValue::Present,
         }
@@ -134,7 +134,7 @@ impl<'a, T> Compiler<'a, T> {
             if decoration_is_string(decoration) {
                 let str =
                     sys::spvc_compiler_get_decoration_string(self.ptr.as_ptr(), id, decoration);
-                return Ok(Some(DecorationValue::String(MaybeCStr::from_ptr(str))));
+                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(str))));
             }
 
             let value = sys::spvc_compiler_get_decoration(self.ptr.as_ptr(), id, decoration);
@@ -170,7 +170,7 @@ impl<'a, T> Compiler<'a, T> {
                     index,
                     decoration,
                 );
-                return Ok(Some(DecorationValue::String(MaybeCStr::from_ptr(str))));
+                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(str))));
             }
 
             let value = sys::spvc_compiler_get_member_decoration(

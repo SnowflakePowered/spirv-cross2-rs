@@ -24,7 +24,7 @@ use std::fmt::{Debug, Formatter};
 use crate::compile::CompilerOptions;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, VariableId};
-use crate::string::MaybeCStr;
+use crate::string::ContextStr;
 use crate::targets::Msl;
 use crate::{error, spirv, Compiler, ContextRooted};
 
@@ -776,7 +776,7 @@ impl<'a> Compiler<'a, Msl> {
     /// Set the suffix for combined image samplers.
     pub fn set_combined_sampler_suffix<'str>(
         &mut self,
-        str: impl Into<MaybeCStr<'str>>,
+        str: impl Into<ContextStr<'str>>,
     ) -> error::Result<()> {
         unsafe {
             let str = str.into();
@@ -791,10 +791,10 @@ impl<'a> Compiler<'a, Msl> {
     }
 
     /// Get the suffix for combined image samplers.
-    pub fn get_combined_sampler_suffix(&self) -> MaybeCStr<'a> {
+    pub fn get_combined_sampler_suffix(&self) -> ContextStr<'a> {
         unsafe {
             let suffix = sys::spvc_compiler_msl_get_combined_sampler_suffix(self.ptr.as_ptr());
-            MaybeCStr::from_ptr(suffix)
+            ContextStr::from_ptr(suffix)
         }
     }
 }

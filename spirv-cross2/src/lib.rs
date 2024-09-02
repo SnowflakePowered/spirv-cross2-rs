@@ -22,7 +22,7 @@ pub mod spirv;
 pub mod handle;
 
 pub mod reflect;
-pub mod string;
+pub(crate) mod string;
 pub mod targets;
 
 pub(crate) mod sealed {
@@ -243,6 +243,8 @@ pub trait ToStatic: Sealed {
     /// Clone the object into an instance with `'static` lifetime.
     fn to_static(&self) -> Self::Static<'static>;
 }
+
+pub use crate::string::ContextStr;
 
 #[cfg(test)]
 mod test {

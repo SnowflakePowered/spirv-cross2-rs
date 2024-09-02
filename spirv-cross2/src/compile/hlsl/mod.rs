@@ -10,7 +10,7 @@ pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 use crate::compile::CompilerOptions;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, VariableId};
-use crate::string::MaybeCStr;
+use crate::string::ContextStr;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{HlslBindingFlags, HlslVertexAttributeRemap};
@@ -159,7 +159,7 @@ impl<'a> Compiler<'a, Hlsl> {
     pub fn remap_vertex_attribute<'str>(
         &mut self,
         location: u32,
-        semantic: impl Into<MaybeCStr<'str>>,
+        semantic: impl Into<ContextStr<'str>>,
     ) -> error::Result<()> {
         let str = semantic.into();
         let Ok(semantic) = str.to_cstring_ptr() else {

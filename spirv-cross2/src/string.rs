@@ -5,8 +5,18 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 
 /// An immutable wrapper around a valid UTF-8 string whose memory contents
-/// may or may not be originating from FFI.
+/// may or may not be originating from a [`SpirvCross`](crate::SpirvCross)
+/// context.
 ///
+/// In most cases, users of this library do not need to worry about
+/// constructing a [`ContextStr`]. All functions that take strings
+/// take `impl Into<ContextStr<'_>>`, which converts automatically from
+/// [`&str`](str) and [`String`](String).
+///
+/// [`ContextStr`] also implements [`Deref`](Deref) for [`&str`](str),
+/// so all immutable `str` methods are available.
+///
+/// # Allocation Behaviour
 /// If the string originated from FFI and is a valid nul-terminated
 /// C string, then the pointer to the string will be saved,
 /// such that when being read by FFI there are no extra allocations
@@ -16,18 +26,18 @@ use std::ops::Deref;
 /// a `&str` with lifetime longer than `'a`, then an allocation will
 /// occur when passing the string to FFI.
 #[derive(Clone)]
-pub struct MaybeCStr<'a> {
+pub struct ContextStr<'a> {
     pointer: Option<*const c_char>,
     cow: Cow<'a, str>,
 }
 
-impl<'a> Display for MaybeCStr<'a> {
+impl<'a> Display for ContextStr<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.cow)
     }
 }
 
-impl<'a> Debug for MaybeCStr<'a> {
+impl<'a> Debug for ContextStr<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.cow)
     }
@@ -54,13 +64,13 @@ impl MaybeOwnedCString<'_> {
     }
 }
 
-impl AsRef<str> for MaybeCStr<'_> {
+impl AsRef<str> for ContextStr<'_> {
     fn as_ref(&self) -> &str {
         self.cow.as_ref()
     }
 }
 
-impl Deref for MaybeCStr<'_> {
+impl Deref for ContextStr<'_> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -68,25 +78,27 @@ impl Deref for MaybeCStr<'_> {
     }
 }
 
-impl From<String> for MaybeCStr<'_> {
+impl From<String> for ContextStr<'_> {
     fn from(value: String) -> Self {
         Self::from_string(value)
     }
 }
 
-impl<'a> From<&'a str> for MaybeCStr<'a> {
+impl<'a> From<&'a str> for ContextStr<'a> {
     fn from(value: &'a str) -> Self {
         Self::from_str(value)
     }
 }
 
-impl<'a> From<&'a CStr> for MaybeCStr<'a> {
+impl<'a> From<&'a CStr> for ContextStr<'a> {
     fn from(value: &'a CStr) -> Self {
-        Self::from_cstr(value)
+        /// This is OK as long as the lifetime of the cstr is alive for the
+        /// lifetime of the ContextStr
+        unsafe { Self::from_cstr(value) }
     }
 }
 
-impl<'a> MaybeCStr<'a> {
+impl<'a> ContextStr<'a> {
     /// Wraps a raw C string with a safe C string wrapper.
     ///
     /// If the raw C string is valid UTF-8, a pointer to the string will be
@@ -116,7 +128,7 @@ impl<'a> MaybeCStr<'a> {
     /// it's suggested to tie the lifetime to whichever source lifetime is safe in the context,
     /// such as by providing a helper function taking the lifetime of a host value for the slice,
     /// or by explicit annotation.
-    pub unsafe fn from_ptr<'b>(ptr: *const c_char) -> MaybeCStr<'b>
+    pub(crate) unsafe fn from_ptr<'b>(ptr: *const c_char) -> ContextStr<'b>
     where
         'a: 'b,
     {
@@ -143,7 +155,7 @@ impl<'a> MaybeCStr<'a> {
     /// it's suggested to tie the lifetime to whichever source lifetime is safe in the context,
     /// such as by providing a helper function taking the lifetime of a host value for the slice,
     /// or by explicit annotation.
-    pub fn from_cstr(cstr: &'a CStr) -> Self {
+    pub(crate) unsafe fn from_cstr(cstr: &'a CStr) -> Self {
         Self {
             pointer: Some(cstr.as_ptr()),
             cow: cstr.to_string_lossy(),
@@ -153,7 +165,7 @@ impl<'a> MaybeCStr<'a> {
     /// Wrap a Rust `&str`.
     ///
     /// This will allocate when exposing to C.
-    pub fn from_str(str: &'a str) -> Self {
+    pub(crate) fn from_str(str: &'a str) -> Self {
         Self {
             pointer: None,
             cow: Cow::Borrowed(str),
@@ -163,7 +175,7 @@ impl<'a> MaybeCStr<'a> {
     /// Wrap a Rust `String`.
     ///
     /// This will allocate when exposing to C.
-    pub fn from_string(str: String) -> Self {
+    pub(crate) fn from_string(str: String) -> Self {
         Self {
             pointer: None,
             cow: Cow::Owned(str),
@@ -188,22 +200,22 @@ impl<'a> MaybeCStr<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::string::MaybeCStr;
+    use crate::string::ContextStr;
     use std::ffi::CString;
     use std::marker::PhantomData;
 
     struct LifetimeTest<'a>(PhantomData<&'a ()>);
     impl<'a> LifetimeTest<'a> {
-        pub fn get(&self) -> MaybeCStr<'a> {
+        pub fn get(&self) -> ContextStr<'a> {
             let cstring = CString::new(String::from("hello"))
                 .unwrap()
                 .into_raw()
                 .cast_const();
 
-            unsafe { MaybeCStr::from_ptr(cstring) }
+            unsafe { ContextStr::from_ptr(cstring) }
         }
 
-        pub fn set(&mut self, cstr: MaybeCStr) {
+        pub fn set(&mut self, cstr: ContextStr) {
             println!("{:p}", cstr.to_cstring_ptr().unwrap().as_ptr())
         }
     }

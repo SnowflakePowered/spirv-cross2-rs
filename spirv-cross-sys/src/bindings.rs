@@ -2819,6 +2819,7 @@ pub enum MslShaderVariableFormat {
 pub use self::MslShaderVariableFormat as MslShaderInputFormat;
 pub use self::MslShaderVariableFormat as MslVertexFormat;
 #[repr(C)]
+#[non_exhaustive]
 pub struct MslVertexAttribute {
     pub location: crate::ctypes::c_uint,
     pub msl_buffer: crate::ctypes::c_uint,
@@ -2918,6 +2919,7 @@ extern "C" {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct MslShaderInterfaceVar {
     pub location: crate::ctypes::c_uint,
     pub format: MslVertexFormat,
@@ -2998,6 +3000,7 @@ pub enum MslShaderVariableRate {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct MslShaderInterfaceVar2 {
     pub location: crate::ctypes::c_uint,
     pub format: MslShaderVariableFormat,
@@ -3076,6 +3079,7 @@ extern "C" {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct MslResourceBinding {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,
@@ -3161,6 +3165,7 @@ fn bindgen_test_layout_MslResourceBinding() {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct MslResourceBinding2 {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,
@@ -3780,6 +3785,7 @@ fn bindgen_test_layout_HlslResourceBindingMapping() {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct HlslResourceBinding {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,

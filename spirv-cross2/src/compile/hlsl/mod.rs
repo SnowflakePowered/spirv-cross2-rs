@@ -15,6 +15,8 @@ use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{HlslBindingFlags, HlslVertexAttributeRemap};
 
+// todo: make binding flags better.
+
 /// HLSL compiler options
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
@@ -42,6 +44,7 @@ pub struct CompileOptions {
 
     /// If true, the backend will assume that VertexIndex and InstanceIndex will need to apply
     /// a base offset, and you will need to fill in a cbuffer with offsets.
+    ///
     /// Set to false if you know you will never use base instance or base vertex
     /// functionality as it might remove an internal cbuffer.
     #[option(
@@ -52,7 +55,6 @@ pub struct CompileOptions {
 
     /// Forces a storage buffer to always be declared as UAV, even if the readonly decoration is used.
     /// By default, a readonly storage buffer will be declared as ByteAddressBuffer (SRV) instead.
-    /// Alternatively, use set_hlsl_force_storage_buffer_as_uav to specify individually.
     #[option(SPVC_COMPILER_OPTION_HLSL_FORCE_STORAGE_BUFFER_AS_UAV, false)]
     pub force_storage_buffer_as_uav: bool,
 
@@ -148,13 +150,9 @@ impl Default for HlslShaderModel {
 
 /// HLSL specific APIs.
 impl<'a> Compiler<'a, Hlsl> {
-    pub fn add_resource_binding<'str>(
-        &mut self,
-        binding: ResourceBinding,
-    ) -> error::Result<()> {
+    pub fn add_resource_binding<'str>(&mut self, binding: ResourceBinding) -> error::Result<()> {
         unsafe {
-            sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), &binding)
-                .ok(&*self)
+            sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), &binding).ok(&*self)
         }
     }
 

@@ -1,16 +1,33 @@
-use crate::compile::CommonCompileOptions;
+use crate::compile::{CommonCompileOptions, CompiledArtifact};
+use spirv_cross_sys as sys;
+pub use spirv_cross_sys::MslChromaLocation as ChromaLocation;
+pub use spirv_cross_sys::MslComponentSwizzle as ComponentSwizzle;
 pub use spirv_cross_sys::MslConstexprSampler as ConstexprSampler;
+pub use spirv_cross_sys::MslFormatResolution as FormatResolution;
 pub use spirv_cross_sys::MslResourceBinding2 as ResourceBinding;
+pub use spirv_cross_sys::MslSamplerAddress as SamplerAddress;
+pub use spirv_cross_sys::MslSamplerBorderColor as SamplerBorderColor;
+pub use spirv_cross_sys::MslSamplerCompareFunc as SamplerCompareFunc;
+pub use spirv_cross_sys::MslSamplerCoord as SamplerCoord;
+pub use spirv_cross_sys::MslSamplerFilter as SamplerFilter;
+pub use spirv_cross_sys::MslSamplerMipFilter as SamplerMipFilter;
 pub use spirv_cross_sys::MslSamplerYcbcrConversion as SamplerYcbcrConversion;
+pub use spirv_cross_sys::MslSamplerYcbcrModelConversion as SamplerYcbcrModelConversion;
+pub use spirv_cross_sys::MslSamplerYcbcrRange as SamplerYcbcrRange;
 pub use spirv_cross_sys::MslShaderInput as ShaderInput;
 pub use spirv_cross_sys::MslShaderInterfaceVar2 as ShaderInterfaceVar;
-pub use spirv_cross_sys::MslVertexAttribute as VertexAttribute;
+pub use spirv_cross_sys::MslShaderVariableFormat as ShaderVariableFormat;
+pub use spirv_cross_sys::MslShaderVariableRate as ShaderVariableRate;
 
 use std::fmt::{Debug, Formatter};
 
 use crate::compile::CompilerOptions;
-use crate::error::ToContextError;
-use crate::ContextRooted;
+use crate::error::{SpirvCrossError, ToContextError};
+use crate::handle::{Handle, VariableId};
+use crate::string::MaybeCStr;
+use crate::targets::Msl;
+use crate::{error, spirv, Compiler, ContextRooted};
+
 /// MSL compiler options
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
@@ -513,6 +530,342 @@ impl From<ArgumentBuffersTier> for u32 {
         match value {
             ArgumentBuffersTier::Tier1 => 0,
             ArgumentBuffersTier::Tier2 => 1,
+        }
+    }
+}
+
+/// Buffers that need to be provided to the MSL shader.
+#[non_exhaustive]
+#[derive(Debug, Clone)]
+pub struct BufferRequirements {
+    /// Whether an auxiliary swizzle buffer is needed by the shader.
+    pub needs_swizzle_buffer: bool,
+    /// Whether a buffer
+    /// containing `STORAGE_BUFFER` buffer sizes to support OpArrayLength
+    /// is needed by the shader.
+    pub needs_buffer_size_buffer: bool,
+    /// Whether an output buffer is needed by the shader.
+    pub needs_output_buffer: bool,
+    /// Whether a patch output buffer is needed by the shader.
+    pub needs_patch_output_buffer: bool,
+    /// Whether an input threadgroup buffer is needed by the shader.
+    pub needs_input_threadgroup_buffer: bool,
+}
+
+/// MSL specific APIs.
+impl<'a> Compiler<'a, Msl> {
+    /// Get whether the vertex shader requires rasterization to be disabled.
+    pub fn is_rasterization_disabled(&self) -> bool {
+        unsafe { sys::spvc_compiler_msl_is_rasterization_disabled(self.ptr.as_ptr()) }
+    }
+
+    /// Get information such as required buffers for the MSL shader
+    pub fn buffer_requirements(&self) -> BufferRequirements {
+        unsafe {
+            let needs_swizzle_buffer =
+                sys::spvc_compiler_msl_needs_swizzle_buffer(self.ptr.as_ptr());
+            let needs_buffer_size_buffer =
+                sys::spvc_compiler_msl_needs_buffer_size_buffer(self.ptr.as_ptr());
+            let needs_output_buffer = sys::spvc_compiler_msl_needs_output_buffer(self.ptr.as_ptr());
+            let needs_patch_output_buffer =
+                sys::spvc_compiler_msl_needs_patch_output_buffer(self.ptr.as_ptr());
+            let needs_input_threadgroup_buffer =
+                sys::spvc_compiler_msl_needs_input_threadgroup_mem(self.ptr.as_ptr());
+
+            BufferRequirements {
+                needs_swizzle_buffer,
+                needs_buffer_size_buffer,
+                needs_output_buffer,
+                needs_patch_output_buffer,
+                needs_input_threadgroup_buffer,
+            }
+        }
+    }
+
+    /// Add a shader interface variable description used to fix up shader input variables.
+    ///
+    /// If shader inputs are provided, [`CompiledArtifact::is_shader_input_used`] will return true after
+    /// calling [`Compiler::compile`] if the location were used by the MSL code.
+    ///
+    /// Note: this covers the functionality implemented by the SPIR-V Cross
+    /// C API `spvc_compiler_msl_add_vertex_attribute`.
+    pub fn add_shader_input(&mut self, input: &ShaderInterfaceVar) -> error::Result<()> {
+        unsafe { sys::spvc_compiler_msl_add_shader_input_2(self.ptr.as_ptr(), input).ok(&*self) }
+    }
+
+    /// Add a shader interface variable description used to fix up shader output variables.
+    ///
+    /// If shader outputs are provided, [`CompiledArtifact::is_shader_input_used`] will return true after
+    /// calling [`Compiler::compile`] if the location were used by the MSL code.
+    ///
+    /// Note: this covers the functionality implemented by the SPIR-V Cross
+    /// C API `spvc_compiler_msl_add_vertex_attribute`.
+    pub fn add_shader_output(&mut self, input: &ShaderInterfaceVar) -> error::Result<()> {
+        unsafe { sys::spvc_compiler_msl_add_shader_output_2(self.ptr.as_ptr(), input).ok(&*self) }
+    }
+
+    /// Add a resource binding to indicate the MSL buffer,
+    /// texture or sampler index to use for a particular SPIR-V description set
+    /// and binding.
+    ///
+    /// If resource bindings are provided,
+    /// [`CompiledArtifact::is_resource_used`] will return true after [`Compiler::compile`] if
+    /// the set/binding combination was used by the MSL code.
+    pub fn add_resource_binding(&mut self, binding: &ResourceBinding) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_msl_add_resource_binding_2(self.ptr.as_ptr(), binding).ok(&*self)
+        }
+    }
+
+    /// When using MSL argument buffers, we can force "classic" MSL 1.0 binding schemes for certain descriptor sets.
+    /// This corresponds to VK_KHR_push_descriptor in Vulkan.
+    pub fn add_discrete_descriptor_set(&mut self, desc_set: u32) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_msl_add_discrete_descriptor_set(self.ptr.as_ptr(), desc_set)
+                .ok(&*self)
+        }
+    }
+
+    /// This function marks a resource as using a dynamic offset
+    /// (``VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC` or `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC`).
+    ///
+    /// `desc_set` and `binding` are the SPIR-V descriptor set and binding of a buffer resource
+    /// in this shader.
+    ///
+    /// `index` is the index within the dynamic offset buffer to use.
+    ///
+    /// This function only has any effect if argument buffers are enabled.
+    /// If so, the buffer will have its address adjusted at the beginning of the shader with
+    /// an offset taken from the dynamic offset buffer.
+    pub fn add_dynamic_buffer(
+        &mut self,
+        desc_set: u32,
+        binding: u32,
+        index: u32,
+    ) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_msl_add_dynamic_buffer(self.ptr.as_ptr(), desc_set, binding, index)
+                .ok(&*self)
+        }
+    }
+
+    /// This function marks a resource an inline uniform block
+    /// (VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT)
+    ///
+    /// `desc_set` and `binding` are the SPIR-V descriptor set and binding of a buffer resource
+    /// in this shader.
+    ///
+    /// This function only has any effect if argument buffers are enabled.
+    /// If so, the buffer block will be directly embedded into the argument
+    /// buffer, instead of being referenced indirectly via pointer.
+    pub fn add_inline_uniform_block(&mut self, desc_set: u32, binding: u32) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_msl_add_inline_uniform_block(self.ptr.as_ptr(), desc_set, binding)
+                .ok(&*self)
+        }
+    }
+
+    /// If an argument buffer is large enough, it may need to be in the device storage space rather than
+    /// constant. Opt-in to this behavior here on a per set basis.
+    pub fn set_argument_buffer_device_address_space(
+        &mut self,
+        desc_set: u32,
+        device_address: bool,
+    ) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_msl_set_argument_buffer_device_address_space(
+                self.ptr.as_ptr(),
+                desc_set,
+                device_address,
+            )
+            .ok(&*self)
+        }
+    }
+
+    /// Remap a sampler with ID to a constexpr sampler.
+    /// Older iOS targets must use constexpr samplers in certain cases (PCF),
+    /// so a static sampler must be used.
+    ///
+    /// The sampler will not consume a binding, but be declared in the entry point as a constexpr sampler.
+    /// This can be used on both combined image/samplers (sampler2D) or standalone samplers.
+    /// The remapped sampler must not be an array of samplers.
+    ///
+    /// Prefer [`Compiler::remap_constexpr_sampler_by_binding`] unless you're also doing reflection anyways.
+    pub fn remap_constexpr_sampler(
+        &mut self,
+        variable: Handle<VariableId>,
+        sampler: &ConstexprSampler,
+        ycbcr: Option<&SamplerYcbcrConversion>,
+    ) -> error::Result<()> {
+        let id = self.yield_id(variable)?;
+        if let Some(ycbcr) = ycbcr {
+            unsafe {
+                sys::spvc_compiler_msl_remap_constexpr_sampler_ycbcr(
+                    self.ptr.as_ptr(),
+                    id,
+                    sampler,
+                    ycbcr,
+                )
+                .ok(&*self)
+            }
+        } else {
+            unsafe {
+                sys::spvc_compiler_msl_remap_constexpr_sampler(self.ptr.as_ptr(), id, sampler)
+                    .ok(&*self)
+            }
+        }
+    }
+
+    /// Remap a sampler with set/binding, to a constexpr sampler.
+    /// Older iOS targets must use constexpr samplers in certain cases (PCF),
+    /// so a static sampler must be used.
+    ///
+    /// The sampler will not consume a binding, but be declared in the entry point as a constexpr sampler.
+    /// This can be used on both combined image/samplers (sampler2D) or standalone samplers.
+    /// The remapped sampler must not be an array of samplers.
+    ///
+    /// Remaps based on ID take priority over set/binding remaps.
+    pub fn remap_constexpr_sampler_by_binding(
+        &mut self,
+        desc_set: u32,
+        binding: u32,
+        sampler: &ConstexprSampler,
+        ycbcr: Option<&SamplerYcbcrConversion>,
+    ) -> error::Result<()> {
+        if let Some(ycbcr) = ycbcr {
+            unsafe {
+                sys::spvc_compiler_msl_remap_constexpr_sampler_by_binding_ycbcr(
+                    self.ptr.as_ptr(),
+                    desc_set,
+                    binding,
+                    sampler,
+                    ycbcr,
+                )
+                .ok(&*self)
+            }
+        } else {
+            unsafe {
+                sys::spvc_compiler_msl_remap_constexpr_sampler_by_binding(
+                    self.ptr.as_ptr(),
+                    desc_set,
+                    binding,
+                    sampler,
+                )
+                .ok(&*self)
+            }
+        }
+    }
+
+    /// If using [`CompileOptions::pad_fragment_output_components`], override the number of components we expect
+    /// to use for a particular location. The default is 4 if number of components is not overridden.
+    pub fn set_fragment_output_components(
+        &mut self,
+        location: u32,
+        components: u32,
+    ) -> error::Result<()> {
+        unsafe {
+            sys::spvc_compiler_msl_set_fragment_output_components(
+                self.ptr.as_ptr(),
+                location,
+                components,
+            )
+            .ok(&*self)
+        }
+    }
+
+    /// Set the suffix for combined image samplers.
+    pub fn set_combined_sampler_suffix<'str>(
+        &mut self,
+        str: impl Into<MaybeCStr<'str>>,
+    ) -> error::Result<()> {
+        unsafe {
+            let str = str.into();
+
+            let Ok(suffix) = str.to_cstring_ptr() else {
+                return Err(SpirvCrossError::InvalidName(String::from(str.as_ref())));
+            };
+
+            sys::spvc_compiler_msl_set_combined_sampler_suffix(self.ptr.as_ptr(), suffix.as_ptr())
+                .ok(&*self)
+        }
+    }
+
+    /// Get the suffix for combined image samplers.
+    pub fn get_combined_sampler_suffix(&self) -> MaybeCStr<'a> {
+        unsafe {
+            let suffix = sys::spvc_compiler_msl_get_combined_sampler_suffix(self.ptr.as_ptr());
+            MaybeCStr::from_ptr(suffix)
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default)]
+#[non_exhaustive]
+/// The tier of automatic resource binding.
+///
+/// Note that tertiary and quaternary bindings are not accessible via
+/// the SPIR-V Cross C API.
+pub enum AutomaticResourceBindingTier {
+    #[default]
+    /// The primary automatic resource binding.
+    Primary,
+
+    /// Should only be used for combined image samplers, in which case the
+    /// sampler's binding is returned instead.
+    ///
+    /// Also used for the auxillary image atomic buffer.
+    Secondary,
+}
+
+impl<'a> CompiledArtifact<'a, Msl> {
+    pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {
+        unsafe {
+            sys::spvc_compiler_msl_is_resource_used(self.compiler.ptr.as_ptr(), model, set, binding)
+        }
+    }
+
+    pub fn is_shader_input_used(&self, location: u32) -> bool {
+        unsafe { sys::spvc_compiler_msl_is_shader_input_used(self.compiler.ptr.as_ptr(), location) }
+    }
+
+    pub fn is_shader_output_used(&self, location: u32) -> bool {
+        unsafe {
+            sys::spvc_compiler_msl_is_shader_output_used(self.compiler.ptr.as_ptr(), location)
+        }
+    }
+
+    /// For a variable resource ID, report the automatically assigned resource index.
+    ///
+    /// If the descriptor set was part of an argument buffer, report the [[id(N)]],
+    /// or [[buffer/texture/sampler]] binding for other resources.
+    ///
+    /// If the resource was a combined image sampler, report the image binding for [`AutomaticResourceBindingTier::Primary`],
+    /// or the sampler half for [`AutomaticResourceBindingTier::Secondary`].
+    ///
+    /// If no binding exists, None is returned.
+    pub fn automatic_resource_binding(
+        &self,
+        handle: Handle<VariableId>,
+        tier: AutomaticResourceBindingTier,
+    ) -> error::Result<Option<u32>> {
+        let id = self.yield_id(handle)?;
+
+        let res = match tier {
+            AutomaticResourceBindingTier::Primary => unsafe {
+                sys::spvc_compiler_msl_get_automatic_resource_binding(self.ptr.as_ptr(), id)
+            },
+            AutomaticResourceBindingTier::Secondary => unsafe {
+                sys::spvc_compiler_msl_get_automatic_resource_binding_secondary(
+                    self.ptr.as_ptr(),
+                    id,
+                )
+            },
+        };
+
+        if res == u32::MAX {
+            Ok(None)
+        } else {
+            Ok(Some(res))
         }
     }
 }

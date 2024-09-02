@@ -125,8 +125,9 @@ impl<'a, T> Compiler<'a, T> {
     /// This also applies to HLSL cbuffers.
     pub fn remapped_declared_block_name(
         &self,
-        handle: Handle<VariableId>,
+        handle: impl Into<Handle<VariableId>>,
     ) -> error::Result<Option<Cow<'a, str>>> {
+        let handle = handle.into();
         let handle = self.yield_id(handle)?;
         unsafe {
             let name =

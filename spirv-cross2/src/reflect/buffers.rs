@@ -15,8 +15,9 @@ impl<'a, T> Compiler<'a, T> {
     /// This can be used for Buffer (UBO), BufferBlock/StorageBuffer (SSBO) and PushConstant blocks.
     pub fn active_buffer_ranges(
         &self,
-        handle: Handle<VariableId>,
+        handle: impl Into<Handle<VariableId>>,
     ) -> error::Result<&'a [BufferRange]> {
+        let handle = handle.into();
         let handle = self.yield_id(handle)?;
 
         unsafe {
@@ -43,8 +44,9 @@ impl<'a, T> Compiler<'a, T> {
     /// To rely on this functionality, ensure that the SPIR-V module is not stripped.
     pub fn hlsl_counter_buffer(
         &self,
-        variable: Handle<VariableId>,
+        variable: impl Into<Handle<VariableId>>,
     ) -> error::Result<Option<Handle<VariableId>>> {
+        let variable = variable.into();
         let id = self.yield_id(variable)?;
         unsafe {
             let mut counter = VariableId(SpvId(0));

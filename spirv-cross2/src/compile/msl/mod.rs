@@ -693,10 +693,11 @@ impl<'a> Compiler<'a, Msl> {
     /// Prefer [`Compiler::remap_constexpr_sampler_by_binding`] unless you're also doing reflection anyways.
     pub fn remap_constexpr_sampler(
         &mut self,
-        variable: Handle<VariableId>,
+        variable: impl Into<Handle<VariableId>>,
         sampler: &ConstexprSampler,
         ycbcr: Option<&SamplerYcbcrConversion>,
     ) -> error::Result<()> {
+        let variable = variable.into();
         let id = self.yield_id(variable)?;
         if let Some(ycbcr) = ycbcr {
             unsafe {
@@ -845,9 +846,10 @@ impl<'a> CompiledArtifact<'a, Msl> {
     /// If no binding exists, None is returned.
     pub fn automatic_resource_binding(
         &self,
-        handle: Handle<VariableId>,
+        handle: impl Into<Handle<VariableId>>,
         tier: AutomaticResourceBindingTier,
     ) -> error::Result<Option<u32>> {
+        let handle = handle.into();
         let id = self.yield_id(handle)?;
 
         let res = match tier {

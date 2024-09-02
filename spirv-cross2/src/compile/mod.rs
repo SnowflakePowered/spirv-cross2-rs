@@ -105,7 +105,11 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
         }
     }
 
-    pub fn variable_is_depth_or_compare(&self, variable: Handle<VariableId>) -> Result<bool> {
+    pub fn variable_is_depth_or_compare(
+        &self,
+        variable: impl Into<Handle<VariableId>>,
+    ) -> Result<bool> {
+        let variable = variable.into();
         let id = self.yield_id(variable)?;
         unsafe {
             Ok(sys::spvc_compiler_variable_is_depth_or_compare(

@@ -1,6 +1,6 @@
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, Id};
-use crate::reflect::StructMember;
+use crate::reflect::{Resource, StructMember};
 use crate::sealed::Sealed;
 use crate::spirv::Decoration;
 use crate::string::ContextStr;
@@ -8,7 +8,7 @@ use crate::Compiler;
 use crate::{error, spirv, ToStatic};
 use core::slice;
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{ConstantId, FromPrimitive, SpvId, ToPrimitive, VariableId};
+use spirv_cross_sys::{BaseType, ConstantId, FromPrimitive, SpvId, ToPrimitive, VariableId};
 
 #[derive(Debug)]
 pub enum DecorationValue<'a> {
@@ -113,10 +113,6 @@ fn decoration_is_string(decoration: Decoration) -> bool {
 
 impl<'a, T> Compiler<'a, T> {
     /// Gets the value for decorations which take arguments.
-    ///
-    /// There following decorations are recognized, any other decoration will return none.
-    ///
-    /// - [`Decoration::BuiltIn`]
     pub fn decoration<I: Id>(
         &self,
         id: Handle<I>,
@@ -142,7 +138,7 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
-    /// Gets the value for decorations which take arguments.
+    /// Gets the value for member decorations which take arguments.
     pub fn member_decoration<I: Id>(
         &self,
         member: &StructMember<'a>,
@@ -183,6 +179,7 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
+    /// Set the value of a decoration for an ID.
     pub fn set_decoration<'value, I: Id>(
         &mut self,
         id: Handle<I>,
@@ -273,7 +270,8 @@ impl<'a, T> Compiler<'a, T> {
         Ok(())
     }
 
-    pub fn set_member_decoration<'value, I: Id>(
+    /// Set the value of a decoration for a struct member.
+    pub fn set_member_decoration<'value>(
         &mut self,
         member: &StructMember<'a>,
         decoration: Decoration,
@@ -401,10 +399,10 @@ impl<'a, T> Compiler<'a, T> {
     /// If the decoration does not have any value attached to it (e.g. DecorationRelaxedPrecision), this function will also return None.
     pub fn binary_offset_for_decoration(
         &self,
-        variable: Handle<VariableId>,
+        variable: impl Into<Handle<VariableId>>,
         decoration: Decoration,
     ) -> error::Result<Option<u32>> {
-        let id = self.yield_id(variable)?;
+        let id = self.yield_id(variable.into())?;
 
         unsafe {
             let mut offset = 0;
@@ -459,13 +457,31 @@ impl<'a, T> Compiler<'a, T> {
         }
     }
 
+    /// Get the decorations for a buffer block resource.
+    ///
+    /// If the resource is not a struct, returns None.
     pub fn buffer_block_decorations(
         &self,
-        variable: Handle<VariableId>,
-    ) -> error::Result<&'a [Decoration]> {
-        let id = self.yield_id(variable)?;
+        block: &Resource<'a>,
+    ) -> error::Result<Option<&'a [Decoration]>> {
+        // this API is weird because there's an assert in
+        // `get_block_buffer_flags`
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_parsed_ir.cpp#L567
+        // that is not caught by the C API.
+        // so we need to pre-check the type.
+
+        let id = self.yield_id(block.id)?;
+        let base_type_id = self.yield_id(block.base_type_id)?;
 
         unsafe {
+            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), base_type_id);
+
+            let base_ty = sys::spvc_type_get_basetype(ty);
+
+            if base_ty != BaseType::Struct {
+                return Ok(None);
+            }
+
             let mut size = 0;
             let mut buffer = std::ptr::null();
             sys::spvc_compiler_get_buffer_block_decorations(
@@ -476,7 +492,12 @@ impl<'a, T> Compiler<'a, T> {
             )
             .ok(self)?;
 
-            Ok(slice::from_raw_parts(buffer, size))
+            let slice = slice::from_raw_parts(buffer, size);
+            if slice.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(slice))
+            }
         }
     }
 }

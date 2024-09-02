@@ -184,6 +184,18 @@ impl<'a> Resource<'a> {
     }
 }
 
+impl<'a, 'b> From<&'a Resource<'b>> for Handle<VariableId> {
+    fn from(value: &'a Resource<'b>) -> Self {
+        value.id
+    }
+}
+
+impl From<Resource<'_>> for Handle<VariableId> {
+    fn from(value: Resource<'_>) -> Self {
+        value.id
+    }
+}
+
 impl Sealed for Resource<'_> {}
 impl ToStatic for Resource<'_> {
     type Static<'a>
@@ -215,6 +227,18 @@ pub struct BuiltinResource<'a> {
     pub builtin: spirv::BuiltIn,
     pub value_type_id: Handle<TypeId>,
     pub resource: Resource<'a>,
+}
+
+impl<'a, 'b> From<&'a BuiltinResource<'b>> for Handle<VariableId> {
+    fn from(value: &'a BuiltinResource<'b>) -> Self {
+        value.resource.id
+    }
+}
+
+impl From<BuiltinResource<'_>> for Handle<VariableId> {
+    fn from(value: BuiltinResource<'_>) -> Self {
+        value.resource.id
+    }
 }
 
 impl<'a> BuiltinResource<'a> {

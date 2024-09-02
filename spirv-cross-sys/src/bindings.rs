@@ -2,7 +2,7 @@
 
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct SpvId(pub ::std::os::raw::c_uint);
+pub struct SpvId(pub crate::ctypes::c_uint);
 #[repr(i32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
@@ -2193,13 +2193,13 @@ pub enum SpvOp {
 }
 extern "C" {
     pub fn spvc_get_version(
-        major: *mut ::std::os::raw::c_uint,
-        minor: *mut ::std::os::raw::c_uint,
-        patch: *mut ::std::os::raw::c_uint,
+        major: *mut crate::ctypes::c_uint,
+        minor: *mut crate::ctypes::c_uint,
+        patch: *mut crate::ctypes::c_uint,
     );
 }
 extern "C" {
-    pub fn spvc_get_commit_revision_and_timestamp() -> *const ::std::os::raw::c_char;
+    pub fn spvc_get_commit_revision_and_timestamp() -> *const crate::ctypes::c_char;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -2264,7 +2264,7 @@ pub struct spvc_reflected_resource {
     pub id: VariableId,
     pub base_type_id: TypeId,
     pub type_id: TypeId,
-    pub name: *const ::std::os::raw::c_char,
+    pub name: *const crate::ctypes::c_char,
 }
 #[test]
 fn bindgen_test_layout_spvc_reflected_resource() {
@@ -2379,7 +2379,7 @@ fn bindgen_test_layout_spvc_reflected_builtin_resource() {
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct spvc_entry_point {
     pub execution_model: SpvExecutionModel,
-    pub name: *const ::std::os::raw::c_char,
+    pub name: *const crate::ctypes::c_char,
 }
 #[test]
 fn bindgen_test_layout_spvc_entry_point() {
@@ -2473,7 +2473,7 @@ fn bindgen_test_layout_spvc_combined_image_sampler() {
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct spvc_specialization_constant {
     pub id: ConstantId,
-    pub constant_id: ::std::os::raw::c_uint,
+    pub constant_id: crate::ctypes::c_uint,
 }
 #[test]
 fn bindgen_test_layout_spvc_specialization_constant() {
@@ -2514,7 +2514,7 @@ fn bindgen_test_layout_spvc_specialization_constant() {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct BufferRange {
-    pub index: ::std::os::raw::c_uint,
+    pub index: crate::ctypes::c_uint,
     pub offset: usize,
     pub range: usize,
 }
@@ -2566,10 +2566,10 @@ fn bindgen_test_layout_BufferRange() {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslRootConstants {
-    pub start: ::std::os::raw::c_uint,
-    pub end: ::std::os::raw::c_uint,
-    pub binding: ::std::os::raw::c_uint,
-    pub space: ::std::os::raw::c_uint,
+    pub start: crate::ctypes::c_uint,
+    pub end: crate::ctypes::c_uint,
+    pub binding: crate::ctypes::c_uint,
+    pub space: crate::ctypes::c_uint,
 }
 #[test]
 fn bindgen_test_layout_HlslRootConstants() {
@@ -2629,8 +2629,8 @@ fn bindgen_test_layout_HlslRootConstants() {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslVertexAttributeRemap {
-    pub location: ::std::os::raw::c_uint,
-    pub semantic: *const ::std::os::raw::c_char,
+    pub location: crate::ctypes::c_uint,
+    pub semantic: *const crate::ctypes::c_char,
 }
 #[test]
 fn bindgen_test_layout_HlslVertexAttributeRemap() {
@@ -2820,11 +2820,11 @@ pub use self::MslShaderVariableFormat as MslShaderInputFormat;
 pub use self::MslShaderVariableFormat as MslVertexFormat;
 #[repr(C)]
 pub struct MslVertexAttribute {
-    pub location: ::std::os::raw::c_uint,
-    pub msl_buffer: ::std::os::raw::c_uint,
-    pub msl_offset: ::std::os::raw::c_uint,
-    pub msl_stride: ::std::os::raw::c_uint,
-    pub per_instance: crate::spvc_bool,
+    pub location: crate::ctypes::c_uint,
+    pub msl_buffer: crate::ctypes::c_uint,
+    pub msl_offset: crate::ctypes::c_uint,
+    pub msl_stride: crate::ctypes::c_uint,
+    pub per_instance: crate::ctypes::spvc_bool,
     pub format: MslVertexFormat,
     pub builtin: SpvBuiltIn,
 }
@@ -2919,10 +2919,10 @@ extern "C" {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslShaderInterfaceVar {
-    pub location: ::std::os::raw::c_uint,
+    pub location: crate::ctypes::c_uint,
     pub format: MslVertexFormat,
     pub builtin: SpvBuiltIn,
-    pub vecsize: ::std::os::raw::c_uint,
+    pub vecsize: crate::ctypes::c_uint,
 }
 #[test]
 fn bindgen_test_layout_MslShaderInterfaceVar() {
@@ -2999,10 +2999,10 @@ pub enum MslShaderVariableRate {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslShaderInterfaceVar2 {
-    pub location: ::std::os::raw::c_uint,
+    pub location: crate::ctypes::c_uint,
     pub format: MslShaderVariableFormat,
     pub builtin: SpvBuiltIn,
-    pub vecsize: ::std::os::raw::c_uint,
+    pub vecsize: crate::ctypes::c_uint,
     pub rate: MslShaderVariableRate,
 }
 #[test]
@@ -3078,11 +3078,11 @@ extern "C" {
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslResourceBinding {
     pub stage: SpvExecutionModel,
-    pub desc_set: ::std::os::raw::c_uint,
-    pub binding: ::std::os::raw::c_uint,
-    pub msl_buffer: ::std::os::raw::c_uint,
-    pub msl_texture: ::std::os::raw::c_uint,
-    pub msl_sampler: ::std::os::raw::c_uint,
+    pub desc_set: crate::ctypes::c_uint,
+    pub binding: crate::ctypes::c_uint,
+    pub msl_buffer: crate::ctypes::c_uint,
+    pub msl_texture: crate::ctypes::c_uint,
+    pub msl_sampler: crate::ctypes::c_uint,
 }
 #[test]
 fn bindgen_test_layout_MslResourceBinding() {
@@ -3163,12 +3163,12 @@ fn bindgen_test_layout_MslResourceBinding() {
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslResourceBinding2 {
     pub stage: SpvExecutionModel,
-    pub desc_set: ::std::os::raw::c_uint,
-    pub binding: ::std::os::raw::c_uint,
-    pub count: ::std::os::raw::c_uint,
-    pub msl_buffer: ::std::os::raw::c_uint,
-    pub msl_texture: ::std::os::raw::c_uint,
-    pub msl_sampler: ::std::os::raw::c_uint,
+    pub desc_set: crate::ctypes::c_uint,
+    pub binding: crate::ctypes::c_uint,
+    pub count: crate::ctypes::c_uint,
+    pub msl_buffer: crate::ctypes::c_uint,
+    pub msl_texture: crate::ctypes::c_uint,
+    pub msl_sampler: crate::ctypes::c_uint,
 }
 #[test]
 fn bindgen_test_layout_MslResourceBinding2() {
@@ -3262,7 +3262,7 @@ extern "C" {
     pub fn spvc_msl_resource_binding_init_2(binding: *mut MslResourceBinding2);
 }
 extern "C" {
-    pub fn spvc_msl_get_aux_buffer_struct_version() -> ::std::os::raw::c_uint;
+    pub fn spvc_msl_get_aux_buffer_struct_version() -> crate::ctypes::c_uint;
 }
 #[repr(i32)]
 #[derive(
@@ -3385,10 +3385,10 @@ pub struct MslConstexprSampler {
     pub border_color: MslSamplerBorderColor,
     pub lod_clamp_min: f32,
     pub lod_clamp_max: f32,
-    pub max_anisotropy: ::std::os::raw::c_int,
-    pub compare_enable: crate::spvc_bool,
-    pub lod_clamp_enable: crate::spvc_bool,
-    pub anisotropy_enable: crate::spvc_bool,
+    pub max_anisotropy: crate::ctypes::c_int,
+    pub compare_enable: crate::ctypes::spvc_bool,
+    pub lod_clamp_enable: crate::ctypes::spvc_bool,
+    pub anisotropy_enable: crate::ctypes::spvc_bool,
 }
 #[test]
 fn bindgen_test_layout_MslConstexprSampler() {
@@ -3561,7 +3561,7 @@ extern "C" {
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslSamplerYcbcrConversion {
-    pub planes: ::std::os::raw::c_uint,
+    pub planes: crate::ctypes::c_uint,
     pub resolution: MslFormatResolution,
     pub chroma_filter: MslSamplerFilter,
     pub x_chroma_offset: MslChromaLocation,
@@ -3569,7 +3569,7 @@ pub struct MslSamplerYcbcrConversion {
     pub swizzle: [MslComponentSwizzle; 4usize],
     pub ycbcr_model: MslSamplerYcbcrModelConversion,
     pub ycbcr_range: MslSamplerYcbcrRange,
-    pub bpc: ::std::os::raw::c_uint,
+    pub bpc: crate::ctypes::c_uint,
 }
 #[test]
 fn bindgen_test_layout_MslSamplerYcbcrConversion() {
@@ -3735,12 +3735,12 @@ impl ::std::ops::BitAndAssign for HlslBindingFlagBits {
 pub struct HlslBindingFlagBits(pub i32);
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct HlslBindingFlags(pub ::std::os::raw::c_uint);
+pub struct HlslBindingFlags(pub crate::ctypes::c_uint);
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslResourceBindingMapping {
-    pub register_space: ::std::os::raw::c_uint,
-    pub register_binding: ::std::os::raw::c_uint,
+    pub register_space: crate::ctypes::c_uint,
+    pub register_binding: crate::ctypes::c_uint,
 }
 #[test]
 fn bindgen_test_layout_HlslResourceBindingMapping() {
@@ -3782,8 +3782,8 @@ fn bindgen_test_layout_HlslResourceBindingMapping() {
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslResourceBinding {
     pub stage: SpvExecutionModel,
-    pub desc_set: ::std::os::raw::c_uint,
-    pub binding: ::std::os::raw::c_uint,
+    pub desc_set: crate::ctypes::c_uint,
+    pub binding: crate::ctypes::c_uint,
     pub cbv: HlslResourceBindingMapping,
     pub uav: HlslResourceBindingMapping,
     pub srv: HlslResourceBindingMapping,
@@ -4291,19 +4291,16 @@ extern "C" {
 extern "C" {
     pub fn spvc_context_get_last_error_string(
         context: spvc_context,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 pub type spvc_error_callback = ::std::option::Option<
-    unsafe extern "C" fn(
-        userdata: *mut ::std::os::raw::c_void,
-        error: *const ::std::os::raw::c_char,
-    ),
+    unsafe extern "C" fn(userdata: *mut crate::ctypes::c_void, error: *const crate::ctypes::c_char),
 >;
 extern "C" {
     pub fn spvc_context_set_error_callback(
         context: spvc_context,
         cb: spvc_error_callback,
-        userdata: *mut ::std::os::raw::c_void,
+        userdata: *mut crate::ctypes::c_void,
     );
 }
 extern "C" {
@@ -4326,7 +4323,7 @@ extern "C" {
     ) -> spvc_result;
 }
 extern "C" {
-    pub fn spvc_compiler_get_current_id_bound(compiler: spvc_compiler) -> ::std::os::raw::c_uint;
+    pub fn spvc_compiler_get_current_id_bound(compiler: spvc_compiler) -> crate::ctypes::c_uint;
 }
 extern "C" {
     #[must_use]
@@ -4340,7 +4337,7 @@ extern "C" {
     pub fn spvc_compiler_options_set_bool(
         options: spvc_compiler_options,
         option: spvc_compiler_option,
-        value: crate::spvc_bool,
+        value: crate::ctypes::spvc_bool,
     ) -> spvc_result;
 }
 extern "C" {
@@ -4348,7 +4345,7 @@ extern "C" {
     pub fn spvc_compiler_options_set_uint(
         options: spvc_compiler_options,
         option: spvc_compiler_option,
-        value: ::std::os::raw::c_uint,
+        value: crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
@@ -4362,21 +4359,21 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_compile(
         compiler: spvc_compiler,
-        source: *mut *const ::std::os::raw::c_char,
+        source: *mut *const crate::ctypes::c_char,
     ) -> spvc_result;
 }
 extern "C" {
     #[must_use]
     pub fn spvc_compiler_add_header_line(
         compiler: spvc_compiler,
-        line: *const ::std::os::raw::c_char,
+        line: *const crate::ctypes::c_char,
     ) -> spvc_result;
 }
 extern "C" {
     #[must_use]
     pub fn spvc_compiler_require_extension(
         compiler: spvc_compiler,
-        ext: *const ::std::os::raw::c_char,
+        ext: *const crate::ctypes::c_char,
     ) -> spvc_result;
 }
 extern "C" {
@@ -4386,7 +4383,7 @@ extern "C" {
     pub fn spvc_compiler_get_required_extension(
         compiler: spvc_compiler,
         index: usize,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     #[must_use]
@@ -4399,14 +4396,14 @@ extern "C" {
     pub fn spvc_compiler_variable_is_depth_or_compare(
         compiler: spvc_compiler,
         id: VariableId,
-    ) -> crate::spvc_bool;
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     #[must_use]
     pub fn spvc_compiler_mask_stage_output_by_location(
         compiler: spvc_compiler,
-        location: ::std::os::raw::c_uint,
-        component: ::std::os::raw::c_uint,
+        location: crate::ctypes::c_uint,
+        component: crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
@@ -4453,34 +4450,42 @@ extern "C" {
     pub fn spvc_compiler_hlsl_is_resource_used(
         compiler: spvc_compiler,
         model: SpvExecutionModel,
-        set: ::std::os::raw::c_uint,
-        binding: ::std::os::raw::c_uint,
-    ) -> crate::spvc_bool;
+        set: crate::ctypes::c_uint,
+        binding: crate::ctypes::c_uint,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_compiler_msl_is_rasterization_disabled(compiler: spvc_compiler)
-        -> crate::spvc_bool;
+    pub fn spvc_compiler_msl_is_rasterization_disabled(
+        compiler: spvc_compiler,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_compiler_msl_needs_aux_buffer(compiler: spvc_compiler) -> crate::spvc_bool;
+    pub fn spvc_compiler_msl_needs_aux_buffer(compiler: spvc_compiler) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_compiler_msl_needs_swizzle_buffer(compiler: spvc_compiler) -> crate::spvc_bool;
+    pub fn spvc_compiler_msl_needs_swizzle_buffer(
+        compiler: spvc_compiler,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_compiler_msl_needs_buffer_size_buffer(compiler: spvc_compiler) -> crate::spvc_bool;
+    pub fn spvc_compiler_msl_needs_buffer_size_buffer(
+        compiler: spvc_compiler,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_compiler_msl_needs_output_buffer(compiler: spvc_compiler) -> crate::spvc_bool;
+    pub fn spvc_compiler_msl_needs_output_buffer(
+        compiler: spvc_compiler,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_compiler_msl_needs_patch_output_buffer(compiler: spvc_compiler)
-        -> crate::spvc_bool;
+    pub fn spvc_compiler_msl_needs_patch_output_buffer(
+        compiler: spvc_compiler,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_msl_needs_input_threadgroup_mem(
         compiler: spvc_compiler,
-    ) -> crate::spvc_bool;
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     #[must_use]
@@ -4535,42 +4540,42 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_add_discrete_descriptor_set(
         compiler: spvc_compiler,
-        desc_set: ::std::os::raw::c_uint,
+        desc_set: crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_set_argument_buffer_device_address_space(
         compiler: spvc_compiler,
-        desc_set: ::std::os::raw::c_uint,
-        device_address: crate::spvc_bool,
+        desc_set: crate::ctypes::c_uint,
+        device_address: crate::ctypes::spvc_bool,
     ) -> spvc_result;
 }
 extern "C" {
     pub fn spvc_compiler_msl_is_vertex_attribute_used(
         compiler: spvc_compiler,
-        location: ::std::os::raw::c_uint,
-    ) -> crate::spvc_bool;
+        location: crate::ctypes::c_uint,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_msl_is_shader_input_used(
         compiler: spvc_compiler,
-        location: ::std::os::raw::c_uint,
-    ) -> crate::spvc_bool;
+        location: crate::ctypes::c_uint,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_msl_is_shader_output_used(
         compiler: spvc_compiler,
-        location: ::std::os::raw::c_uint,
-    ) -> crate::spvc_bool;
+        location: crate::ctypes::c_uint,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_msl_is_resource_used(
         compiler: spvc_compiler,
         model: SpvExecutionModel,
-        set: ::std::os::raw::c_uint,
-        binding: ::std::os::raw::c_uint,
-    ) -> crate::spvc_bool;
+        set: crate::ctypes::c_uint,
+        binding: crate::ctypes::c_uint,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     #[must_use]
@@ -4584,8 +4589,8 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_remap_constexpr_sampler_by_binding(
         compiler: spvc_compiler,
-        desc_set: ::std::os::raw::c_uint,
-        binding: ::std::os::raw::c_uint,
+        desc_set: crate::ctypes::c_uint,
+        binding: crate::ctypes::c_uint,
         sampler: *const MslConstexprSampler,
     ) -> spvc_result;
 }
@@ -4602,8 +4607,8 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_remap_constexpr_sampler_by_binding_ycbcr(
         compiler: spvc_compiler,
-        desc_set: ::std::os::raw::c_uint,
-        binding: ::std::os::raw::c_uint,
+        desc_set: crate::ctypes::c_uint,
+        binding: crate::ctypes::c_uint,
         sampler: *const MslConstexprSampler,
         conv: *const MslSamplerYcbcrConversion,
     ) -> spvc_result;
@@ -4612,50 +4617,50 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_set_fragment_output_components(
         compiler: spvc_compiler,
-        location: ::std::os::raw::c_uint,
-        components: ::std::os::raw::c_uint,
+        location: crate::ctypes::c_uint,
+        components: crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
     pub fn spvc_compiler_msl_get_automatic_resource_binding(
         compiler: spvc_compiler,
         id: VariableId,
-    ) -> ::std::os::raw::c_uint;
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_compiler_msl_get_automatic_resource_binding_secondary(
         compiler: spvc_compiler,
         id: VariableId,
-    ) -> ::std::os::raw::c_uint;
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_add_dynamic_buffer(
         compiler: spvc_compiler,
-        desc_set: ::std::os::raw::c_uint,
-        binding: ::std::os::raw::c_uint,
-        index: ::std::os::raw::c_uint,
+        desc_set: crate::ctypes::c_uint,
+        binding: crate::ctypes::c_uint,
+        index: crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_add_inline_uniform_block(
         compiler: spvc_compiler,
-        desc_set: ::std::os::raw::c_uint,
-        binding: ::std::os::raw::c_uint,
+        desc_set: crate::ctypes::c_uint,
+        binding: crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
     #[must_use]
     pub fn spvc_compiler_msl_set_combined_sampler_suffix(
         compiler: spvc_compiler,
-        suffix: *const ::std::os::raw::c_char,
+        suffix: *const crate::ctypes::c_char,
     ) -> spvc_result;
 }
 extern "C" {
     pub fn spvc_compiler_msl_get_combined_sampler_suffix(
         compiler: spvc_compiler,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     #[must_use]
@@ -4709,7 +4714,7 @@ extern "C" {
         compiler: spvc_compiler,
         id: SpvId,
         decoration: SpvDecoration,
-        argument: ::std::os::raw::c_uint,
+        argument: crate::ctypes::c_uint,
     );
 }
 extern "C" {
@@ -4717,40 +4722,40 @@ extern "C" {
         compiler: spvc_compiler,
         id: SpvId,
         decoration: SpvDecoration,
-        argument: *const ::std::os::raw::c_char,
+        argument: *const crate::ctypes::c_char,
     );
 }
 extern "C" {
     pub fn spvc_compiler_set_name(
         compiler: spvc_compiler,
         id: SpvId,
-        argument: *const ::std::os::raw::c_char,
+        argument: *const crate::ctypes::c_char,
     );
 }
 extern "C" {
     pub fn spvc_compiler_set_member_decoration(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
+        member_index: crate::ctypes::c_uint,
         decoration: SpvDecoration,
-        argument: ::std::os::raw::c_uint,
+        argument: crate::ctypes::c_uint,
     );
 }
 extern "C" {
     pub fn spvc_compiler_set_member_decoration_string(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
+        member_index: crate::ctypes::c_uint,
         decoration: SpvDecoration,
-        argument: *const ::std::os::raw::c_char,
+        argument: *const crate::ctypes::c_char,
     );
 }
 extern "C" {
     pub fn spvc_compiler_set_member_name(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
-        argument: *const ::std::os::raw::c_char,
+        member_index: crate::ctypes::c_uint,
+        argument: *const crate::ctypes::c_char,
     );
 }
 extern "C" {
@@ -4764,7 +4769,7 @@ extern "C" {
     pub fn spvc_compiler_unset_member_decoration(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
+        member_index: crate::ctypes::c_uint,
         decoration: SpvDecoration,
     );
 }
@@ -4773,58 +4778,58 @@ extern "C" {
         compiler: spvc_compiler,
         id: SpvId,
         decoration: SpvDecoration,
-    ) -> crate::spvc_bool;
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_has_member_decoration(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
+        member_index: crate::ctypes::c_uint,
         decoration: SpvDecoration,
-    ) -> crate::spvc_bool;
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_get_name(
         compiler: spvc_compiler,
         id: SpvId,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     pub fn spvc_compiler_get_decoration(
         compiler: spvc_compiler,
         id: SpvId,
         decoration: SpvDecoration,
-    ) -> ::std::os::raw::c_uint;
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_compiler_get_decoration_string(
         compiler: spvc_compiler,
         id: SpvId,
         decoration: SpvDecoration,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     pub fn spvc_compiler_get_member_decoration(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
+        member_index: crate::ctypes::c_uint,
         decoration: SpvDecoration,
-    ) -> ::std::os::raw::c_uint;
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_compiler_get_member_decoration_string(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
+        member_index: crate::ctypes::c_uint,
         decoration: SpvDecoration,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     pub fn spvc_compiler_get_member_name(
         compiler: spvc_compiler,
         id: TypeId,
-        member_index: ::std::os::raw::c_uint,
-    ) -> *const ::std::os::raw::c_char;
+        member_index: crate::ctypes::c_uint,
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     #[must_use]
@@ -4838,7 +4843,7 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_set_entry_point(
         compiler: spvc_compiler,
-        name: *const ::std::os::raw::c_char,
+        name: *const crate::ctypes::c_char,
         model: SpvExecutionModel,
     ) -> spvc_result;
 }
@@ -4846,17 +4851,17 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_rename_entry_point(
         compiler: spvc_compiler,
-        old_name: *const ::std::os::raw::c_char,
-        new_name: *const ::std::os::raw::c_char,
+        old_name: *const crate::ctypes::c_char,
+        new_name: *const crate::ctypes::c_char,
         model: SpvExecutionModel,
     ) -> spvc_result;
 }
 extern "C" {
     pub fn spvc_compiler_get_cleansed_entry_point_name(
         compiler: spvc_compiler,
-        name: *const ::std::os::raw::c_char,
+        name: *const crate::ctypes::c_char,
         model: SpvExecutionModel,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     pub fn spvc_compiler_set_execution_mode(compiler: spvc_compiler, mode: SpvExecutionMode);
@@ -4868,9 +4873,9 @@ extern "C" {
     pub fn spvc_compiler_set_execution_mode_with_arguments(
         compiler: spvc_compiler,
         mode: SpvExecutionMode,
-        arg0: ::std::os::raw::c_uint,
-        arg1: ::std::os::raw::c_uint,
-        arg2: ::std::os::raw::c_uint,
+        arg0: crate::ctypes::c_uint,
+        arg1: crate::ctypes::c_uint,
+        arg2: crate::ctypes::c_uint,
     );
 }
 extern "C" {
@@ -4885,14 +4890,14 @@ extern "C" {
     pub fn spvc_compiler_get_execution_mode_argument(
         compiler: spvc_compiler,
         mode: SpvExecutionMode,
-    ) -> ::std::os::raw::c_uint;
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_compiler_get_execution_mode_argument_by_index(
         compiler: spvc_compiler,
         mode: SpvExecutionMode,
-        index: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_uint;
+        index: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_compiler_get_execution_model(compiler: spvc_compiler) -> SpvExecutionModel;
@@ -4905,7 +4910,7 @@ extern "C" {
         compiler: spvc_compiler,
         builtin: SpvBuiltIn,
         storage: SpvStorageClass,
-    ) -> crate::spvc_bool;
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_get_type_handle(compiler: spvc_compiler, id: TypeId) -> spvc_type;
@@ -4917,34 +4922,34 @@ extern "C" {
     pub fn spvc_type_get_basetype(type_: spvc_type) -> BaseType;
 }
 extern "C" {
-    pub fn spvc_type_get_bit_width(type_: spvc_type) -> ::std::os::raw::c_uint;
+    pub fn spvc_type_get_bit_width(type_: spvc_type) -> crate::ctypes::c_uint;
 }
 extern "C" {
-    pub fn spvc_type_get_vector_size(type_: spvc_type) -> ::std::os::raw::c_uint;
+    pub fn spvc_type_get_vector_size(type_: spvc_type) -> crate::ctypes::c_uint;
 }
 extern "C" {
-    pub fn spvc_type_get_columns(type_: spvc_type) -> ::std::os::raw::c_uint;
+    pub fn spvc_type_get_columns(type_: spvc_type) -> crate::ctypes::c_uint;
 }
 extern "C" {
-    pub fn spvc_type_get_num_array_dimensions(type_: spvc_type) -> ::std::os::raw::c_uint;
+    pub fn spvc_type_get_num_array_dimensions(type_: spvc_type) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_type_array_dimension_is_literal(
         type_: spvc_type,
-        dimension: ::std::os::raw::c_uint,
-    ) -> crate::spvc_bool;
+        dimension: crate::ctypes::c_uint,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_type_get_array_dimension(
         type_: spvc_type,
-        dimension: ::std::os::raw::c_uint,
+        dimension: crate::ctypes::c_uint,
     ) -> SpvId;
 }
 extern "C" {
-    pub fn spvc_type_get_num_member_types(type_: spvc_type) -> ::std::os::raw::c_uint;
+    pub fn spvc_type_get_num_member_types(type_: spvc_type) -> crate::ctypes::c_uint;
 }
 extern "C" {
-    pub fn spvc_type_get_member_type(type_: spvc_type, index: ::std::os::raw::c_uint) -> TypeId;
+    pub fn spvc_type_get_member_type(type_: spvc_type, index: crate::ctypes::c_uint) -> TypeId;
 }
 extern "C" {
     pub fn spvc_type_get_storage_class(type_: spvc_type) -> SpvStorageClass;
@@ -4956,16 +4961,16 @@ extern "C" {
     pub fn spvc_type_get_image_dimension(type_: spvc_type) -> SpvDim;
 }
 extern "C" {
-    pub fn spvc_type_get_image_is_depth(type_: spvc_type) -> crate::spvc_bool;
+    pub fn spvc_type_get_image_is_depth(type_: spvc_type) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_type_get_image_arrayed(type_: spvc_type) -> crate::spvc_bool;
+    pub fn spvc_type_get_image_arrayed(type_: spvc_type) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_type_get_image_multisampled(type_: spvc_type) -> crate::spvc_bool;
+    pub fn spvc_type_get_image_multisampled(type_: spvc_type) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
-    pub fn spvc_type_get_image_is_storage(type_: spvc_type) -> crate::spvc_bool;
+    pub fn spvc_type_get_image_is_storage(type_: spvc_type) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_type_get_image_storage_format(type_: spvc_type) -> SpvImageFormat;
@@ -4995,7 +5000,7 @@ extern "C" {
     pub fn spvc_compiler_get_declared_struct_member_size(
         compiler: spvc_compiler,
         type_: spvc_type,
-        index: ::std::os::raw::c_uint,
+        index: crate::ctypes::c_uint,
         size: *mut usize,
     ) -> spvc_result;
 }
@@ -5004,8 +5009,8 @@ extern "C" {
     pub fn spvc_compiler_type_struct_member_offset(
         compiler: spvc_compiler,
         type_: spvc_type,
-        index: ::std::os::raw::c_uint,
-        offset: *mut ::std::os::raw::c_uint,
+        index: crate::ctypes::c_uint,
+        offset: *mut crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
@@ -5013,8 +5018,8 @@ extern "C" {
     pub fn spvc_compiler_type_struct_member_array_stride(
         compiler: spvc_compiler,
         type_: spvc_type,
-        index: ::std::os::raw::c_uint,
-        stride: *mut ::std::os::raw::c_uint,
+        index: crate::ctypes::c_uint,
+        stride: *mut crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
@@ -5022,8 +5027,8 @@ extern "C" {
     pub fn spvc_compiler_type_struct_member_matrix_stride(
         compiler: spvc_compiler,
         type_: spvc_type,
-        index: ::std::os::raw::c_uint,
-        stride: *mut ::std::os::raw::c_uint,
+        index: crate::ctypes::c_uint,
+        stride: *mut crate::ctypes::c_uint,
     ) -> spvc_result;
 }
 extern "C" {
@@ -5079,65 +5084,65 @@ extern "C" {
 extern "C" {
     pub fn spvc_constant_get_scalar_fp16(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
     ) -> f32;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_fp32(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
     ) -> f32;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_fp64(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
     ) -> f64;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_u32(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_uint;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_i32(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_int;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_int;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_u16(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_uint;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_i16(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_int;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_int;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_u8(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_uint;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_uint;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_i8(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_int;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_int;
 }
 extern "C" {
     pub fn spvc_constant_get_subconstants(
@@ -5149,16 +5154,16 @@ extern "C" {
 extern "C" {
     pub fn spvc_constant_get_scalar_u64(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_ulonglong;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_ulonglong;
 }
 extern "C" {
     pub fn spvc_constant_get_scalar_i64(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-    ) -> ::std::os::raw::c_longlong;
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+    ) -> crate::ctypes::c_longlong;
 }
 extern "C" {
     pub fn spvc_constant_get_type(constant: spvc_constant) -> TypeId;
@@ -5166,89 +5171,89 @@ extern "C" {
 extern "C" {
     pub fn spvc_constant_set_scalar_fp16(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_ushort,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_ushort,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_fp32(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
         value: f32,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_fp64(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
         value: f64,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_u32(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_uint,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_uint,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_i32(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_int,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_int,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_u64(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_ulonglong,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_ulonglong,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_i64(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_longlong,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_longlong,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_u16(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_ushort,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_ushort,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_i16(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_short,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_short,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_u8(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_uchar,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_uchar,
     );
 }
 extern "C" {
     pub fn spvc_constant_set_scalar_i8(
         constant: spvc_constant,
-        column: ::std::os::raw::c_uint,
-        row: ::std::os::raw::c_uint,
-        value: ::std::os::raw::c_schar,
+        column: crate::ctypes::c_uint,
+        row: crate::ctypes::c_uint,
+        value: crate::ctypes::c_schar,
     );
 }
 extern "C" {
@@ -5256,21 +5261,21 @@ extern "C" {
         compiler: spvc_compiler,
         id: VariableId,
         decoration: SpvDecoration,
-        word_offset: *mut ::std::os::raw::c_uint,
-    ) -> crate::spvc_bool;
+        word_offset: *mut crate::ctypes::c_uint,
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_buffer_is_hlsl_counter_buffer(
         compiler: spvc_compiler,
         id: VariableId,
-    ) -> crate::spvc_bool;
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_compiler_buffer_get_hlsl_counter_buffer(
         compiler: spvc_compiler,
         id: VariableId,
         counter_id: *mut VariableId,
-    ) -> crate::spvc_bool;
+    ) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     #[must_use]
@@ -5284,7 +5289,7 @@ extern "C" {
     #[must_use]
     pub fn spvc_compiler_get_declared_extensions(
         compiler: spvc_compiler,
-        extensions: *mut *mut *const ::std::os::raw::c_char,
+        extensions: *mut *mut *const crate::ctypes::c_char,
         num_extensions: *mut usize,
     ) -> spvc_result;
 }
@@ -5292,7 +5297,7 @@ extern "C" {
     pub fn spvc_compiler_get_remapped_declared_block_name(
         compiler: spvc_compiler,
         id: VariableId,
-    ) -> *const ::std::os::raw::c_char;
+    ) -> *const crate::ctypes::c_char;
 }
 extern "C" {
     #[must_use]
@@ -5310,12 +5315,12 @@ extern "C" {
     #[must_use]
     pub fn spvc_rs_compiler_set_entry_point_safe(
         compiler: spvc_compiler,
-        name: *const ::std::os::raw::c_char,
+        name: *const crate::ctypes::c_char,
         model: SpvExecutionModel,
     ) -> spvc_result;
 }
 extern "C" {
-    pub fn spvc_rs_constant_is_scalar(constant: spvc_constant) -> crate::spvc_bool;
+    pub fn spvc_rs_constant_is_scalar(constant: spvc_constant) -> crate::ctypes::spvc_bool;
 }
 extern "C" {
     pub fn spvc_rs_constant_get_vecsize(constant: spvc_constant) -> u32;

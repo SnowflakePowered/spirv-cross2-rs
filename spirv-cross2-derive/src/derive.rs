@@ -109,7 +109,7 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
         } else {
             quote! {
                 ::spirv_cross_sys::spvc_compiler_options_set_uint(options, ::spirv_cross_sys::spvc_compiler_option::#path,
-                    ::std::os::raw::c_uint::from(self.#field))
+                    u32::from(self.#field))
                 .ok(root)?;
             }
         };

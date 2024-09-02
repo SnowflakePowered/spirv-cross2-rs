@@ -79,7 +79,7 @@ impl ParseCallbacks for SpirvCrossCallbacks {
             "spvc_resource_type" => "ResourceType",
 
             // While `spvc_bool` is typedefed to `unsigned char`, it is always `stdbool`, which is ABI compatible with Rust's `bool`
-            "spvc_bool" => "crate::spvc_bool",
+            "spvc_bool" => "crate::ctypes::spvc_bool",
             _ => return None,
         }))
     }

@@ -1,0 +1,37 @@
+name: Build and test spirv-cross2
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: ['windows-latest', 'ubuntu-latest', 'macos-latest', 'macos-14']
+        include:
+          - os: ubuntu-latest
+            output: x86_64-ubuntu
+          - os: windows-latest
+            output: x86_64-windows
+          - os: macos-latest
+            output: x86_64-macos
+          - os: macos-14
+            output: aarch64-macos
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.output }} (${{ matrix.profile }})
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - name: Test
+        run: cargo test -p spirv-cross2

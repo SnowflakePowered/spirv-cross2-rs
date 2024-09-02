@@ -647,7 +647,8 @@ mod test {
     #[test]
     pub fn get_stage_outputs() -> Result<(), SpirvCrossError> {
         let spv = SpirvCrossContext::new()?;
-        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
@@ -670,7 +671,8 @@ mod test {
     #[test]
     pub fn set_member_name_validity_test() -> Result<(), SpirvCrossError> {
         let spv = SpirvCrossContext::new()?;
-        let words = Module::from_words(bytemuck::cast_slice(BASIC_SPV));
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;

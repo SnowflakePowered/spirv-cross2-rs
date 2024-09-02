@@ -2,7 +2,7 @@ use glslang::SpirvVersion::{SPIRV1_0, SPIRV1_1, SPIRV1_6};
 use glslang::{
     CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion,
 };
-use spirv_cross2::error::SpirvCrossError;
+use spirv_cross2::SpirvCrossError;
 use spirv_cross2::reflect::TypeInner;
 use spirv_cross2::{spirv, Module};
 

@@ -129,12 +129,11 @@ pub enum GlslVersion {
 }
 
 impl ApplyCompilerOptions for GlslVersion {
-    #[allow(private_bounds)]
     unsafe fn apply(
         &self,
         options: spvc_compiler_options,
         root: impl ContextRooted + Copy,
-    ) -> crate::error::Result<()> {
+    ) -> error::Result<()> {
         let version = match self {
             GlslVersion::Glsl110 => 110,
             GlslVersion::Glsl120 => 120,

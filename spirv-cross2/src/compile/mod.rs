@@ -1,7 +1,7 @@
-use crate::error::{ContextRooted, Result, ToContextError};
+use crate::error::{Result, ToContextError};
 use crate::sealed::Sealed;
 use crate::targets::Target;
-use crate::{error, Compiler, ContextStr, SpirvCrossError};
+use crate::{error, Compiler, ContextRooted, ContextStr, SpirvCrossError};
 use spirv_cross_sys as sys;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
@@ -185,7 +185,6 @@ pub(crate) mod sealed {
 
     pub trait ApplyCompilerOptions: Sealed {
         #[doc(hidden)]
-        #[allow(private_bounds)]
         unsafe fn apply(
             &self,
             options: spvc_compiler_options,

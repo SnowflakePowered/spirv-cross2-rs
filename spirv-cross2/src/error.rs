@@ -56,10 +56,6 @@ pub enum SpirvCrossError {
     },
 }
 
-pub(crate) trait ContextRooted {
-    fn context(&self) -> NonNull<spvc_context_s>;
-}
-
 pub(crate) trait ToContextError {
     fn ok(self, context: impl ContextRooted) -> Result<()>;
 }
@@ -89,3 +85,5 @@ impl ToContextError for spvc_result {
         }
     }
 }
+
+pub(crate) use crate::sealed::ContextRooted;

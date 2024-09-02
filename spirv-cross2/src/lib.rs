@@ -90,9 +90,9 @@ use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, SpvId};
 use std::borrow::Borrow;
 
-use crate::error::{ContextRooted, ToContextError};
+use crate::error::{ToContextError};
 
-use crate::sealed::Sealed;
+use crate::sealed::{ContextRooted, Sealed};
 use crate::targets::Target;
 use std::marker::PhantomData;
 use std::ops::Deref;
@@ -121,7 +121,14 @@ pub(crate) mod error;
 pub(crate) mod string;
 
 pub(crate) mod sealed {
+    use std::ptr::NonNull;
+    use spirv_cross_sys::spvc_context_s;
+
     pub trait Sealed {}
+
+    pub trait ContextRooted {
+        fn context(&self) -> NonNull<spvc_context_s>;
+    }
 }
 
 pub use crate::error::SpirvCrossError;

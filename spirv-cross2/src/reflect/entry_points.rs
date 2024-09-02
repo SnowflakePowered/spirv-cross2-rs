@@ -185,7 +185,7 @@ impl<'a, T> Compiler<'a, T> {
                 return Err(SpirvCrossError::InvalidName(name.to_string()));
             };
 
-            sys::spvc_rs_compiler_set_entry_point_safe(self.ptr.as_ptr(), name.as_ptr(), model)
+            sys::spvc_compiler_set_entry_point(self.ptr.as_ptr(), name.as_ptr(), model)
                 .ok(&*self)
         }
     }

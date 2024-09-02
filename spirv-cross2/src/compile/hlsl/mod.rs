@@ -107,7 +107,13 @@ pub struct CompileOptions {
     /// Rather than emitting main() for the entry point, use the name in SPIR-V.
     #[option(SPVC_COMPILER_OPTION_HLSL_USE_ENTRY_POINT_NAME, false)]
     pub use_entry_point_name: bool,
-    // todo: preserve_structured_buffers
+
+    /// Preserve (RW)StructuredBuffer types if the input source was HLSL.
+    ///
+    /// This relies on UserTypeGOOGLE to encode the buffer type either as `structuredbuffer or `rwstructuredbuffer
+    /// whereas the type can be extended with an optional subtype, e.g. `structuredbuffer:int`.
+    #[option(SPVC_COMPILER_OPTION_HLSL_PRESERVE_STRUCTURED_BUFFERS, false)]
+    pub preserve_structured_buffers: bool,
 }
 
 /// HLSL Shader model.

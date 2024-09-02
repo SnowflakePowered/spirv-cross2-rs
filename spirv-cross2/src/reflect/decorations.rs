@@ -459,29 +459,16 @@ impl<'a, T> Compiler<'a, T> {
 
     /// Get the decorations for a buffer block resource.
     ///
-    /// If the resource is not a struct, returns None.
+    /// If the variable handle is not a handle to with struct
+    /// base type, returns [`SpirvCrossError::InvalidArgument`].
     pub fn buffer_block_decorations(
         &self,
-        block: &Resource<'a>,
+        variable: impl Into<Handle<VariableId>>,
     ) -> error::Result<Option<&'a [Decoration]>> {
-        // this API is weird because there's an assert in
-        // `get_block_buffer_flags`
-        // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_parsed_ir.cpp#L567
-        // that is not caught by the C API.
-        // so we need to pre-check the type.
-
-        let id = self.yield_id(block.id)?;
-        let base_type_id = self.yield_id(block.base_type_id)?;
+        let variable = variable.into();
+        let id = self.yield_id(variable)?;
 
         unsafe {
-            let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), base_type_id);
-
-            let base_ty = sys::spvc_type_get_basetype(ty);
-
-            if base_ty != BaseType::Struct {
-                return Ok(None);
-            }
-
             let mut size = 0;
             let mut buffer = std::ptr::null();
             sys::spvc_compiler_get_buffer_block_decorations(

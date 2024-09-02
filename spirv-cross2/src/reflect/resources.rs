@@ -289,8 +289,6 @@ pub struct AllResources<'a> {
     pub atomic_counters: Vec<Resource<'a>>,
     pub acceleration_structures: Vec<Resource<'a>>,
 
-    /// Currently unsupported.
-    #[deprecated = "Currently unsupported by the C API."]
     pub gl_plain_uniforms: Vec<Resource<'a>>,
 
     pub push_constant_buffers: Vec<Resource<'a>>,
@@ -454,7 +452,7 @@ impl<'a> ShaderResources<'a> {
                 sampled_images: self.resources_for_type(ResourceType::SampledImage)?.collect(),
                 atomic_counters: self.resources_for_type(ResourceType::AtomicCounter)?.collect(),
                 acceleration_structures: self.resources_for_type(ResourceType::AccelerationStructure)?.collect(),
-                gl_plain_uniforms: vec![],
+                gl_plain_uniforms: self.resources_for_type(ResourceType::GlPlainUniform)?.collect(),
                 push_constant_buffers: self.resources_for_type(ResourceType::PushConstant)?.collect(),
                 shader_record_buffers: self.resources_for_type(ResourceType::ShaderRecordBuffer)?.collect(),
                 separate_images: self.resources_for_type(ResourceType::SeparateImage)?.collect(),

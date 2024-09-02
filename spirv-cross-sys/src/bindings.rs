@@ -2720,6 +2720,7 @@ pub enum ResourceType {
     AccelerationStructure = 12,
     RayQuery = 13,
     ShaderRecordBuffer = 14,
+    GlPlainUniform = 15,
 }
 #[repr(i32)]
 #[derive(
@@ -2918,8 +2919,8 @@ extern "C" {
     pub fn spvc_msl_vertex_attribute_init(attr: *mut MslVertexAttribute);
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslShaderInterfaceVar {
     pub location: crate::ctypes::c_uint,
     pub format: MslVertexFormat,
@@ -2999,8 +3000,8 @@ pub enum MslShaderVariableRate {
     PerPatch = 2,
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslShaderInterfaceVar2 {
     pub location: crate::ctypes::c_uint,
     pub format: MslShaderVariableFormat,
@@ -3078,8 +3079,8 @@ extern "C" {
     pub fn spvc_msl_shader_interface_var_init_2(var: *mut MslShaderInterfaceVar2);
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslResourceBinding {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,
@@ -3164,8 +3165,8 @@ fn bindgen_test_layout_MslResourceBinding() {
     );
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslResourceBinding2 {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,
@@ -3378,6 +3379,7 @@ pub enum MslSamplerYcbcrRange {
     ItuNarrow = 1,
 }
 #[repr(C)]
+#[non_exhaustive]
 pub struct MslConstexprSampler {
     pub coord: MslSamplerCoord,
     pub min_filter: MslSamplerFilter,
@@ -3564,6 +3566,7 @@ extern "C" {
     pub fn spvc_msl_constexpr_sampler_init(sampler: *mut MslConstexprSampler);
 }
 #[repr(C)]
+#[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct MslSamplerYcbcrConversion {
     pub planes: crate::ctypes::c_uint,
@@ -3784,8 +3787,8 @@ fn bindgen_test_layout_HlslResourceBindingMapping() {
     );
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 #[non_exhaustive]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslResourceBinding {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,
@@ -4252,6 +4255,10 @@ impl spvc_compiler_option {
 impl spvc_compiler_option {
     pub const SPVC_COMPILER_OPTION_HLSL_USE_ENTRY_POINT_NAME: spvc_compiler_option =
         spvc_compiler_option(67108954);
+}
+impl spvc_compiler_option {
+    pub const SPVC_COMPILER_OPTION_HLSL_PRESERVE_STRUCTURED_BUFFERS: spvc_compiler_option =
+        spvc_compiler_option(67108955);
 }
 impl ::std::ops::BitOr<spvc_compiler_option> for spvc_compiler_option {
     type Output = Self;
@@ -5316,14 +5323,6 @@ extern "C" {
 }
 extern "C" {
     pub fn spvc_rs_expose_set(set: spvc_set, out: *mut u32, length: *mut usize);
-}
-extern "C" {
-    #[must_use]
-    pub fn spvc_rs_compiler_set_entry_point_safe(
-        compiler: spvc_compiler,
-        name: *const crate::ctypes::c_char,
-        model: SpvExecutionModel,
-    ) -> spvc_result;
 }
 extern "C" {
     pub fn spvc_rs_constant_is_scalar(constant: spvc_constant) -> crate::ctypes::spvc_bool;

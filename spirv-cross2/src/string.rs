@@ -92,11 +92,9 @@ impl<'a> From<&'a str> for ContextStr<'a> {
 
 impl<'a> From<&'a CStr> for ContextStr<'a> {
     fn from(value: &'a CStr) -> Self {
-        /// This is OK as long as the lifetime of the cstr is alive for the
-        /// lifetime of the ContextStr
-        unsafe {
-            Self::from_cstr(value)
-        }
+        // This is OK as long as the lifetime of the cstr is alive for the
+        // lifetime of the ContextStr
+        unsafe { Self::from_cstr(value) }
     }
 }
 

@@ -1,9 +1,10 @@
 use crate::error::{ContextRooted, Result, ToContextError};
 use crate::handle::Handle;
 use crate::targets::CompilableTarget;
-use crate::{error, spirv, Compiler};
+use crate::{error, spirv, Compiler, ContextStr};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_options, VariableId};
+use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 pub mod glsl;
 pub mod hlsl;
@@ -62,8 +63,32 @@ pub struct CommonCompileOptions {
     pub relax_nan_checks: bool,
 }
 
+/// The output of a SPIRV-Cross compilation.
+///
+/// [`CompiledArtifact`] implements [`Display`] with the
+/// value of the compiled source code, which can be copied
+/// to detach it from the lifetime '`a`.
+///
+/// If the [`Compiler`] instance is static, the source
+/// will also be static.
+///
+/// Reflection is still available, but the [`Compiler`]
+/// instance can no longer be mutated once compiled.
 pub struct CompiledArtifact<'a, T> {
     compiler: Compiler<'a, T>,
+    source: ContextStr<'a>,
+}
+
+impl<T> AsRef<str> for CompiledArtifact<'_, T> {
+    fn as_ref(&self) -> &str {
+        self.source.as_ref()
+    }
+}
+
+impl<T> Display for CompiledArtifact<'_, T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.source, f)
+    }
 }
 
 impl<'a, T> Deref for CompiledArtifact<'a, T> {
@@ -138,11 +163,17 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     /// Consume the compilation instance, and compile source code to the
     /// output target.
     pub fn compile(mut self, options: &T::Options) -> error::Result<CompiledArtifact<'a, T>> {
-        // todo: actually do the compilation.
-
         self.set_compiler_options(options)?;
 
-        Ok(CompiledArtifact { compiler: self })
+        unsafe {
+            let mut src = std::ptr::null();
+            sys::spvc_compiler_compile(self.ptr.as_ptr(), &mut src).ok(&self)?;
+            let src = ContextStr::from_ptr(src);
+            Ok(CompiledArtifact {
+                compiler: self,
+                source: src,
+            })
+        }
     }
 }
 

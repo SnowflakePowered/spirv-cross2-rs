@@ -256,6 +256,14 @@ mod test {
     }
 }
 
+/// An instance of a SPIRV-Cross compiler.
+///
+/// Depending on the target, different methods will be
+/// available.
+///
+/// Once compiled into a [`CompiledArtifact`](compile::CompiledArtifact),
+/// reflection methods will still remain available, but the instance will be frozen,
+/// and no more mutation will be available.
 pub struct Compiler<'a, T> {
     pub(crate) ptr: NonNull<spvc_compiler_s>,
     ctx: ContextRoot<'a>,

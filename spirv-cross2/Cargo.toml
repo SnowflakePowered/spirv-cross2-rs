@@ -1,11 +1,11 @@
 [package]
 name = "spirv-cross2"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 license = "MIT OR Apache-2.0"
 authors = ["Ronny Chan <ronny@ronnychan.ca>"]
-description = "Raw bindings to SPIRV-Cross"
+description = "Safe Rust bindings to SPIRV-Cross"
 categories = ["compilers", "rendering"]
 repository = "https://github.com/SnowflakePowered/spirv-cross2"
 keywords = ["spir-v", "glsl", "msl", "shaders", "spirv-cross"]

@@ -28,12 +28,15 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
         let name = input.ident;
         // Build the output, possibly using quasi-quotation
         let expanded = quote! {
-        impl CompilerOptions for #name {
-            unsafe fn apply<'a>(&self, _options: ::spirv_cross_sys::spvc_compiler_options, _root: impl ContextRooted + Copy)
-                -> crate::error::Result<()>
+            impl crate::compile::CompilerOptions for #name { }
+
+            impl crate::compile::sealed::ApplyCompilerOptions for #name {
+                unsafe fn apply<'a>(&self, _options: ::spirv_cross_sys::spvc_compiler_options, _root: impl ContextRooted + Copy)
+                    -> crate::error::Result<()>
                 { Ok(()) }
             }
         };
+
         return Ok(expanded);
     }
 
@@ -131,7 +134,7 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
     for expands in expands {
         let field = expands.field_name;
         let expander = quote! {
-            CompilerOptions::apply(&self.#field, options, root)?;
+            crate::compile::sealed::ApplyCompilerOptions::apply(&self.#field, options, root)?;
         };
         let default_setter = quote! {
              #field: Default::default(),
@@ -144,7 +147,7 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
     let name = input.ident;
     // Build the output, possibly using quasi-quotation
     let expanded = quote! {
-        impl CompilerOptions for #name {
+        impl crate::compile::sealed::ApplyCompilerOptions for #name {
             unsafe fn apply<'a>(&self, options: ::spirv_cross_sys::spvc_compiler_options, root: impl ContextRooted + Copy)
                 -> crate::error::Result<()>
             {
@@ -167,6 +170,8 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
                 }
             }
         }
+
+        impl crate::compile::CompilerOptions for #name { }
     };
 
     Ok(expanded)

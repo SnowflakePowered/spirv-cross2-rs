@@ -1,9 +1,10 @@
-use super::{CommonCompileOptions, CompilerOptions};
+use super::{CommonCompileOptions};
 use crate::error::ToContextError;
 use crate::sealed::Sealed;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options};
+use crate::compile::sealed::ApplyCompilerOptions;
 
 impl Sealed for CompileOptions {}
 /// GLSL compiler options.
@@ -125,7 +126,8 @@ pub enum GlslVersion {
     Glsl320Es,
 }
 
-impl CompilerOptions for GlslVersion {
+impl ApplyCompilerOptions for GlslVersion {
+    #[allow(private_bounds)]
     unsafe fn apply(
         &self,
         options: spvc_compiler_options,
@@ -181,7 +183,7 @@ impl CompilerOptions for GlslVersion {
 #[cfg(test)]
 mod test {
     use crate::compile::glsl::CompileOptions;
-    use crate::compile::CompilerOptions;
+    use crate::compile::ApplyCompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
     use crate::error::{SpirvCrossError, ToContextError};

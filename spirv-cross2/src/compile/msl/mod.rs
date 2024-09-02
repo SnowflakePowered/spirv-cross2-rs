@@ -21,7 +21,6 @@ pub use spirv_cross_sys::MslShaderVariableRate as ShaderVariableRate;
 
 use std::fmt::{Debug, Formatter};
 
-use crate::compile::CompilerOptions;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, VariableId};
 use crate::sealed::Sealed;
@@ -194,7 +193,7 @@ pub struct CompileOptions {
     #[option(SPVC_COMPILER_OPTION_MSL_MULTIVIEW, false)]
     pub multiview: bool,
 
-    /// If disabled, don't set [[render_target_array_index]] in multiview shaders.
+    /// If disabled, don't set `[[render_target_array_index]]` in multiview shaders.
     ///
     /// Useful for devices which don't support layered rendering.
     ///
@@ -256,7 +255,7 @@ pub struct CompileOptions {
     /// Forces the use of plain arrays, which works around certain driver bugs on certain versions
     /// of Intel Macbooks.
     ///
-    /// See https://github.com/KhronosGroup/SPIRV-Cross/issues/1210.
+    /// See <https://github.com/KhronosGroup/SPIRV-Cross/issues/1210>.
     /// May reduce performance in scenarios where arrays are copied around as value-types.
     #[option(SPVC_COMPILER_OPTION_MSL_FORCE_NATIVE_ARRAYS, false)]
     pub force_native_arrays: bool,
@@ -420,10 +419,10 @@ pub struct CompileOptions {
 
     /// Metal will discard fragments with side effects under certain circumstances prematurely.
     /// Example: CTS test dEQP-VK.fragment_operations.early_fragment.discard_no_early_fragment_tests_depth
-    /// Test will render a full screen quad with varying depth [0,1] for each fragment.
+    /// Test will render a full screen quad with varying depth `[0,1]` for each fragment.
     /// Each fragment will do an operation with side effects, modify the depth value and
     /// discard the fragment. The test expects the fragment to be run due to:
-    /// https://registry.khronos.org/vulkan/specs/1.0-extensions/html/vkspec.html#fragops-shader-depthreplacement
+    /// <https://registry.khronos.org/vulkan/specs/1.0-extensions/html/vkspec.html#fragops-shader-depthreplacement>
     /// which states that the fragment shader must be run due to replacing the depth in shader.
     ///
     /// However, Metal may prematurely discards fragments without executing them
@@ -893,7 +892,7 @@ impl<'a> CompiledArtifact<'a, Msl> {
 #[cfg(test)]
 mod test {
     use crate::compile::msl::CompileOptions;
-    use crate::compile::CompilerOptions;
+    use crate::compile::ApplyCompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
     use crate::error::{SpirvCrossError, ToContextError};

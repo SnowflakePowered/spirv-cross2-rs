@@ -7,7 +7,6 @@ pub use spirv_cross_sys::HlslResourceBinding as ResourceBinding;
 pub use spirv_cross_sys::HlslResourceBindingMapping as ResourceBindingMapping;
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 
-use crate::compile::CompilerOptions;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, VariableId};
 use crate::sealed::Sealed;
@@ -278,7 +277,7 @@ impl<'a> CompiledArtifact<'a, Hlsl> {
 #[cfg(test)]
 mod test {
     use crate::compile::hlsl::CompileOptions;
-    use crate::compile::CompilerOptions;
+    use crate::compile::ApplyCompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
     use crate::error::{SpirvCrossError, ToContextError};

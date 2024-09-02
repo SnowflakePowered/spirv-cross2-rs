@@ -20,8 +20,8 @@ pub struct CommonCompileOptions {
     #[option(SPVC_COMPILER_OPTION_FORCE_TEMPORARY, false)]
     pub force_temporary: bool,
 
-    /// Flattens multidimensional arrays, e.g. float foo[a][b][c] into single-dimensional arrays,
-    /// e.g. float foo[a * b * c].
+    /// Flattens multidimensional arrays, e.g. `float foo[a][b][c]` into single-dimensional arrays,
+    /// e.g. `float foo[a * b * c]`.
     /// This function does not change the actual type of any object.
     /// Only the generated code, including declarations of interface variables
     /// are changed to be single array dimension.
@@ -149,6 +149,7 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
 
     /// Apply the set of compiler options to the compiler instance.
     fn set_compiler_options(&mut self, options: &T::Options) -> error::Result<()> {
+        use crate::compile::sealed::ApplyCompilerOptions;
         unsafe {
             let mut handle = std::ptr::null_mut();
 
@@ -181,13 +182,23 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
 }
 
 /// Marker trait for compiler options.
-pub trait CompilerOptions: Sealed {
-    #[doc(hidden)]
-    unsafe fn apply(
-        &self,
-        options: spvc_compiler_options,
-        root: impl ContextRooted + Copy,
-    ) -> error::Result<()>;
+pub trait CompilerOptions: sealed::ApplyCompilerOptions {}
+
+pub(crate) mod sealed {
+    use spirv_cross_sys::spvc_compiler_options;
+    use crate::error;
+    use crate::error::ContextRooted;
+    use crate::sealed::Sealed;
+
+    pub trait ApplyCompilerOptions: Sealed {
+        #[doc(hidden)]
+        #[allow(private_bounds)]
+        unsafe fn apply(
+            &self,
+            options: spvc_compiler_options,
+            root: impl ContextRooted + Copy,
+        ) -> error::Result<()>;
+    }
 }
 
 #[cfg(test)]
@@ -236,6 +247,5 @@ pub struct NoOptions;
 
 /// A target that can have compiler outputs.
 pub trait CompilableTarget: Target {
-    #[allow(private_bounds)]
     type Options: CompilerOptions;
 }

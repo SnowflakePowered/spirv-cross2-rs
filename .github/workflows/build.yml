@@ -25,10 +25,12 @@ jobs:
             output: aarch64-macos
       fail-fast: false
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.output }} (${{ matrix.profile }})
+    name: ${{ matrix.output }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:

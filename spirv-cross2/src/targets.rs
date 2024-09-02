@@ -1,9 +1,7 @@
 use crate::compile;
-use crate::compile::CompilerOptions;
-use crate::error::ContextRooted;
+use crate::compile::{CompilableTarget, NoOptions};
 use crate::sealed::Sealed;
-use spirv_cross2_derive::CompilerOptions;
-use spirv_cross_sys::{spvc_compiler_options, CompilerBackend};
+use spirv_cross_sys::CompilerBackend;
 
 pub struct None;
 pub struct Glsl;
@@ -11,9 +9,6 @@ pub struct Msl;
 pub struct Hlsl;
 pub struct Cpp;
 pub struct Json;
-
-#[derive(Debug, Default, CompilerOptions)]
-pub struct NoOptions;
 
 impl Sealed for None {}
 impl Target for None {
@@ -61,13 +56,8 @@ impl Target for Cpp {
     const BACKEND: CompilerBackend = CompilerBackend::Cpp;
 }
 
-/// A target that can have compiler outputs.
-pub trait CompilableTarget: Target {
-    #[allow(private_bounds)]
-    type Options: CompilerOptions;
-}
-
-/// A compiler backend target.
+/// Marker trait for a compiler backend target.
 pub trait Target: Sealed {
+    #[doc(hidden)]
     const BACKEND: CompilerBackend;
 }

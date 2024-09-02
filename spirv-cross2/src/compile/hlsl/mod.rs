@@ -1,8 +1,8 @@
 use crate::compile::{CommonCompileOptions, CompiledArtifact};
 use crate::targets::Hlsl;
 use crate::{error, spirv, Compiler};
+use bitflags::bitflags;
 
-pub use spirv_cross_sys::HlslBindingFlagBits as BindingFlags;
 pub use spirv_cross_sys::HlslResourceBinding as ResourceBinding;
 pub use spirv_cross_sys::HlslResourceBindingMapping as ResourceBindingMapping;
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
@@ -13,8 +13,34 @@ use crate::handle::{Handle, VariableId};
 use crate::string::ContextStr;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{HlslBindingFlags, HlslVertexAttributeRemap};
+use spirv_cross_sys::{HlslBindingFlagBits, HlslBindingFlags, HlslVertexAttributeRemap};
 
+bitflags! {
+    /// Controls how resource bindings are declared in the output HLSL.
+    ///
+    /// For finer control, decorations may be removed from specific resources instead.
+    pub struct BindingFlags: u32 {
+        /// No auto binding of resources.
+        const AUTO_NONE = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_NONE_BIT.0 as u32;
+        /// Push constant (root constant) resources will be declared as CBVs (b-space) without a `register()` declaration.
+        ///
+        /// A register will be automatically assigned by the D3D compiler, but must therefore be reflected in D3D-land.
+        /// Push constants do not normally have a `DecorationBinding` set, but if they do, this can be used to ignore it.
+        const AUTO_PUSH_CONSTANT = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_PUSH_CONSTANT_BIT.0 as u32;
+        /// cbuffer resources will be declared as CBVs (b-space) without a `register()` declaration.
+        ///
+        /// A register will be automatically assigned, but must be reflected in D3D-land.
+        const AUTO_CBV = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_CBV_BIT.0 as u32;
+        /// All SRVs (t-space) will be declared without a `register()` declaration.
+        const AUTO_SRV = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_SRV_BIT.0 as u32;
+        /// All UAVs (u-space) will be declared without a `register()` declaration.
+        const AUTO_UAV = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_UAV_BIT.0 as u32;
+        /// All samplers (s-space) will be declared without a `register()` declaration.
+        const AUTO_SAMPLER = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_SAMPLER_BIT.0 as u32;
+        /// No resources will be declared with `register()`.
+        const AUTO_ALL = HlslBindingFlagBits::SPVC_HLSL_BINDING_AUTO_ALL.0 as u32;
+    }
+}
 // todo: make binding flags better.
 
 /// HLSL compiler options
@@ -192,9 +218,12 @@ impl<'a> Compiler<'a, Hlsl> {
     }
 
     pub fn set_resource_binding_flags(&mut self, flags: BindingFlags) -> error::Result<()> {
-        let flags = HlslBindingFlags(flags.0 as u32);
         unsafe {
-            sys::spvc_compiler_hlsl_set_resource_binding_flags(self.ptr.as_ptr(), flags).ok(&*self)
+            sys::spvc_compiler_hlsl_set_resource_binding_flags(
+                self.ptr.as_ptr(),
+                HlslBindingFlags(flags.bits()),
+            )
+            .ok(&*self)
         }
     }
 

@@ -36,7 +36,9 @@ pub struct CompileOptions {
     #[expand]
     pub common: CommonCompileOptions,
 
-    /// The MSL version
+    /// The MSL version to compile to.
+    ///
+    /// Defaults to MSL 1.2.
     #[option(SPVC_COMPILER_OPTION_MSL_VERSION)]
     pub version: MslVersion,
 
@@ -434,11 +436,21 @@ pub struct CompileOptions {
     pub force_fragment_with_side_effects_execution: bool,
 }
 
+/// The version of Metal Shading Language to compile to.
+///
+/// Defaults to MSL 1.2.
 #[derive(Copy, Clone)]
 pub struct MslVersion {
     major: u32,
     minor: u32,
     patch: u32,
+}
+
+impl MslVersion {
+    /// Create a new `MslVersion`.
+    pub fn new(major: u32, minor: u32, patch: u32) -> Self {
+        Self { major, minor, patch }
+    }
 }
 
 impl Default for MslVersion {

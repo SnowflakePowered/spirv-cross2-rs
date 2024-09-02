@@ -1,11 +1,13 @@
 use crate::error::{ContextRooted, Result, ToContextError};
 use crate::handle::Handle;
-use crate::targets::CompilableTarget;
+use crate::targets::Target;
 use crate::{error, spirv, Compiler, ContextStr};
+use spirv_cross2_derive::CompilerOptions;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_options, VariableId};
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
+
 pub mod glsl;
 pub mod hlsl;
 pub mod msl;
@@ -223,4 +225,13 @@ mod test {
         compiler.set_enabled_interface_variables(vars)?;
         Ok(())
     }
+}
+
+#[derive(Debug, Default, CompilerOptions)]
+pub struct NoOptions;
+
+/// A target that can have compiler outputs.
+pub trait CompilableTarget: Target {
+    #[allow(private_bounds)]
+    type Options: CompilerOptions;
 }

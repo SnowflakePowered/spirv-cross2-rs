@@ -9,7 +9,8 @@ spirv-cross2-derive = { version = "0.1.0", path = "../spirv-cross2-derive" }
 
 bytemuck = "1.17.1"
 thiserror = "1.0.63"
-self_cell = "1.0.4"
+bitflags = "2.6.0"
+
 half = { version = "2.4.1", optional = true }
 gfx-maths = { version = "0.2.9", optional = true}
 

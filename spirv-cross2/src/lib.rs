@@ -38,6 +38,18 @@
 //! that produced them. References to these short-lived strings can not be alive before calling a
 //! mutating function.
 //!
+//! ## Handles
+//! All reflected SPIR-V IDs are returned as [`Handle<T>`](handle::Handle), where the `u32` ID part can
+//! be retrieved with [`Handle::id`](handle::Handle::id). Handles are tagged with the pointer of the
+//! compiler instance they came from, and are required to ensure safety such that reflection queries
+//! aren't made between different SPIR-V modules.
+//!
+//! Any function that takes or returns SPIR-V handles in the SPIRV-Cross API has been wrapped to accept
+//! [`Handle<T>`](handle::Handle) in this crate.
+//!
+//! Handles can be unsafely forged with [`Compiler::create_handle`], but there are very few if any
+//! situations where this would be needed.
+//!
 //! ## Usage
 //! Here is an example of using the API to do some reflection and compile to GLSL.
 //!
@@ -90,7 +102,7 @@ use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, SpvId};
 use std::borrow::Borrow;
 
-use crate::error::{ToContextError};
+use crate::error::ToContextError;
 
 use crate::sealed::{ContextRooted, Sealed};
 use crate::targets::Target;
@@ -121,8 +133,8 @@ pub(crate) mod error;
 pub(crate) mod string;
 
 pub(crate) mod sealed {
-    use std::ptr::NonNull;
     use spirv_cross_sys::spvc_context_s;
+    use std::ptr::NonNull;
 
     pub trait Sealed {}
 

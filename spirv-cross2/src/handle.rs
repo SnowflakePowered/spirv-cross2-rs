@@ -5,7 +5,15 @@ use std::fmt::{Debug, Formatter};
 use std::ptr::NonNull;
 
 use crate::sealed::Sealed;
-pub use spirv_cross_sys::{ConstantId, TypeId, VariableId};
+
+/// A SPIR-V ID to a specialization constant.
+pub use spirv_cross_sys::ConstantId;
+
+/// A SPIR-V ID to a type.
+pub use spirv_cross_sys::TypeId;
+
+/// A SPIR-V ID to a variable.
+pub use spirv_cross_sys::VariableId;
 
 #[derive(Copy, Clone)]
 #[repr(transparent)]
@@ -54,7 +62,7 @@ impl<T: Id> Handle<T> {
     }
 }
 
-/// Trait for SPIRV-Cross Ids.
+/// Trait for SPIRV-Cross ID types.
 pub trait Id: Sealed + Debug + 'static {
     /// Return the `u32` part of the Id.
     fn id(&self) -> u32;

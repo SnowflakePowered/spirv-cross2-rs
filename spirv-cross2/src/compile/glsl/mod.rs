@@ -4,9 +4,10 @@ use crate::error::ToContextError;
 use crate::handle::Handle;
 use crate::sealed::Sealed;
 use crate::targets::Glsl;
-use crate::{error, Compiler, ContextRooted};
+use crate::{error, Compiler, ContextRooted, ContextStr, PhantomCompiler};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options, VariableId};
+use std::ops::Range;
 
 impl Sealed for CompileOptions {}
 /// GLSL compiler options.
@@ -194,6 +195,51 @@ impl Compiler<'_, Glsl> {
 
         unsafe { sys::spvc_compiler_flatten_buffer_block(self.ptr.as_ptr(), block).ok(self) }
     }
+
+    /// Returns the list of required extensions in a GLSL shader.
+    ///
+    /// If called after compilation this will contain any other extensions that the compiler
+    /// used automatically, in addition to the user specified ones.
+    pub fn required_extensions(&self) -> GlslExtensionsIter {
+        // SAFETY:
+        // It is **not sound** to return 'ctx here, the returned strings
+        // are from the compiler instance and can be mutated with require_extension
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L874
+        unsafe {
+            let extension_nums = sys::spvc_compiler_get_num_required_extensions(self.ptr.as_ptr());
+            let range = 0..extension_nums;
+            GlslExtensionsIter(range, self.phantom())
+        }
+    }
+}
+
+/// Iterator for required GLSL extensions, created by [`Compiler<Glsl>::require_extension`].
+pub struct GlslExtensionsIter<'a>(
+    // 'a is 'compiler.
+    Range<usize>,
+    // this is strictly speaking an abuse of PhantomCompiler,
+    // which should be invariant in 'ctx, but as long as its properly returned in
+    // required_extensions we should be safe.
+    PhantomCompiler<'a>,
+);
+
+impl<'comp> Iterator for GlslExtensionsIter<'comp> {
+    type Item = ContextStr<'comp>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+            .and_then(|index| unsafe {
+                let extension = sys::spvc_compiler_get_required_extension(self.1.ptr.as_ptr(), index);
+                if extension.is_null() {
+                    if cfg!(debug_assertions) {
+                        panic!("Unexpected null string returned by `spvc_compiler_get_required_extension`. The index of `spvc_compiler_get_num_required_extensions` did not match, complain to SPIRV-Cross.")
+                    };
+                    None
+                } else {
+                    Some(ContextStr::from_ptr(extension, self.1.ctx.clone()))
+                }
+            })
+    }
 }
 
 #[cfg(test)]
@@ -202,8 +248,10 @@ mod test {
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
     use crate::compile::sealed::ApplyCompilerOptions;
+    use crate::compile::CompilableTarget;
     use crate::error::{SpirvCrossError, ToContextError};
-    use crate::Compiler;
+    use crate::targets::Glsl;
+    use crate::{spirv, Compiler};
     use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");
@@ -230,13 +278,42 @@ mod test {
             opts.apply(opts_ptr, &compiler)?;
         }
 
-        // match ty.inner {
-        //     TypeInner::Struct(ty) => {
-        //         compiler.get_type(ty.members[0].id)?;
-        //     }
-        //     TypeInner::Vector { .. } => {}
-        //     _ => {}
-        // }
+        Ok(())
+    }
+
+    #[test]
+    pub fn required_extensions() -> Result<(), SpirvCrossError> {
+        let spv = SpirvCrossContext::new()?;
+        let words = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&words));
+
+        let mut compiler: Compiler<targets::Glsl> = spv.create_compiler(words)?;
+
+        compiler.require_extension("GL_KHR_my_Extension")?;
+        let extensions = compiler.required_extensions();
+        assert_eq!(
+            &["GL_KHR_my_Extension"],
+            extensions.collect::<Vec<_>>().as_slice()
+        );
+
+        compiler.require_extension("GL_KHR_my_ExtensionS")?;
+        compiler.require_extension("GL_KHR_my_ExtensionS")?;
+
+        let extensions: Vec<_> = compiler.required_extensions().collect();
+        assert_eq!(
+            &["GL_KHR_my_Extension", "GL_KHR_my_ExtensionS"],
+            extensions.as_slice()
+        );
+
+        let extensions = compiler.required_extensions();
+        let artifact = compiler.compile(&Glsl::options())?;
+        let extensions = artifact.required_extensions();
+
+        assert_eq!(
+            &["GL_KHR_my_Extension", "GL_KHR_my_ExtensionS"],
+            extensions.collect::<Vec<_>>().as_slice()
+        );
+
         Ok(())
     }
 }

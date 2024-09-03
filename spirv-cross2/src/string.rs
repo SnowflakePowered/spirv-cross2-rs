@@ -25,6 +25,13 @@ use std::ops::Deref;
 /// If the provenance of the string is an owned Rust `String`, or
 /// a `&str` with lifetime longer than `'a`, then an allocation will
 /// occur when passing the string to FFI.
+///
+/// If the provenance of the string is a `&CStr`, or
+/// with lifetime longer than `'a`, then an allocation will not occur
+/// when passing the string to FFI.
+///
+/// Using [C-string literals](https://doc.rust-lang.org/edition-guide/rust-2021/c-string-literals.html)
+/// where possible can be used to avoid an allocation.
 pub struct ContextStr<'a, T = SpirvCrossContext> {
     pointer: Option<ContextPointer<'a, T>>,
     cow: Cow<'a, str>,
@@ -39,17 +46,32 @@ impl<T> Clone for ContextStr<'_, T> {
     }
 }
 
-pub(crate) struct ContextPointer<'a, T> {
-    // the lifetime of pointer should be 'a.
-    pointer: *const c_char,
-    context: ContextRoot<'a, T>,
+pub(crate) enum ContextPointer<'a, T> {
+    FromContext {
+        // the lifetime of pointer should be 'a.
+        pointer: *const c_char,
+        context: ContextRoot<'a, T>,
+    },
+    BorrowedCStr(&'a CStr),
+}
+
+impl<T> ContextPointer<'_, T> {
+    pub const fn pointer(&self) -> *const c_char {
+        match self {
+            ContextPointer::FromContext { pointer, .. } => *pointer,
+            ContextPointer::BorrowedCStr(cstr) => cstr.as_ptr(),
+        }
+    }
 }
 
 impl<T> Clone for ContextPointer<'_, T> {
     fn clone(&self) -> Self {
-        Self {
-            pointer: self.pointer.clone(),
-            context: self.context.clone(),
+        match self {
+            ContextPointer::FromContext { pointer, context } => ContextPointer::FromContext {
+                pointer: pointer.clone(),
+                context: context.clone(),
+            },
+            ContextPointer::BorrowedCStr(cstr) => ContextPointer::BorrowedCStr(*cstr),
         }
     }
 }
@@ -78,7 +100,7 @@ impl<T> MaybeOwnedCString<'_, T> {
     pub fn as_ptr(&self) -> *const c_char {
         match self {
             MaybeOwnedCString::Owned(c) => c.as_ptr(),
-            MaybeOwnedCString::Borrowed(ptr) => ptr.pointer,
+            MaybeOwnedCString::Borrowed(ptr) => ptr.pointer(),
         }
     }
 }
@@ -152,6 +174,12 @@ impl<'a, T> From<&'a str> for ContextStr<'a, T> {
     }
 }
 
+impl<'a, T> From<&'a CStr> for ContextStr<'a, T> {
+    fn from(value: &'a CStr) -> Self {
+        Self::from_cstr(value)
+    }
+}
+
 /// # Safety
 /// Returning `ContextStr<'a>` where `'a` is the lifetime of the
 /// [`SpirvCrossContext`](crate::SpirvCrossContext) is only correct if the
@@ -204,7 +232,7 @@ impl<'a, T> ContextStr<'a, T> {
         let maybe = cstr.to_string_lossy();
         if matches!(&maybe, &Cow::Borrowed(_)) {
             Self {
-                pointer: Some(ContextPointer {
+                pointer: Some(ContextPointer::FromContext {
                     pointer: ptr,
                     context,
                 }),
@@ -238,11 +266,19 @@ impl<'a, T> ContextStr<'a, T> {
         }
     }
 
+    pub(crate) fn from_cstr(cstr: &'a CStr) -> Self {
+        Self {
+            pointer: Some(ContextPointer::BorrowedCStr(cstr)),
+            cow: cstr.to_string_lossy(),
+        }
+    }
+
     /// Allocate if necessary, if not then return a pointer to the original cstring.
     ///
     /// The returned pointer will be valid for the lifetime `'a`.
     pub(crate) fn to_cstring_ptr(&self) -> Result<MaybeOwnedCString<'a, T>, NulError> {
         if let Some(ptr) = &self.pointer {
+            // this is either free or very cheap (Rc incr at most)
             Ok(MaybeOwnedCString::Borrowed(ptr.clone()))
         } else {
             let cstring = CString::new(self.cow.to_string())?;

@@ -41,6 +41,14 @@
 //! that produced them. References to these short-lived strings can not be alive before calling a
 //! mutating function.
 //!
+//! Strings will automatically allocate as needed when passed to FFI. Rust [`String`] and [`&str`](str)
+//! will allocate to create a nul-terminated string. Strings coming from FFI will not reallocate,
+//! and the pointer will be passed directly back. Rust [`&CStr`](std::ffi::CStr) will not reallocate.
+//!
+//! If you are just passing in a string constant using a [C-string literal](https://doc.rust-lang.org/edition-guide/rust-2021/c-string-literals.html)
+//! will be the most efficient. Otherwise it is always better to work with Rust [`String`] and [`&str`](str),
+//! if you are dynamically building up a string.
+//!
 //! ## Handles
 //! All reflected SPIR-V IDs are returned as [`Handle<T>`](handle::Handle), where the `u32` ID part can
 //! be retrieved with [`Handle::id`](handle::Handle::id). Handles are tagged with the pointer of the

@@ -692,7 +692,7 @@ mod test {
         let name = compiler.member_name(id, 0)?;
         assert_eq!(Some("MVP"), name.as_deref());
 
-        compiler.set_member_name(ty.id, 0, "NotMVP")?;
+        compiler.set_member_name(ty.id, 0, c"NotMVP")?;
         // assert_eq!(Some("MVP"), name.as_deref());
 
         let name = compiler.member_name(id, 0)?;

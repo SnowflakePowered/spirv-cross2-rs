@@ -19,11 +19,12 @@
 //!
 //! ## Context
 //! The entry point to the library is [`SpirvCrossContext`], which owns all foreign allocations.
-//! Hence, all wrapper structs have a lifetime parameter that refers to the lifetime of the context.
+//! Hence, structs wrapping SPIRV-Cross objects have a lifetime parameter that refers to the
+//! lifetime of the context.
 //!
 //! [`Compiler`] instances can share a context, in which case the context must outlive all associated
-//! objects, or it can take ownership of a context and have a `'static` lifetime, where all associated
-//! objects will be dropped only when the compiler instance is dropped.
+//! objects, or it can take ownership of a context and have a `'static` lifetime, in which case the
+//! context becomes internally ref-counted and will be dropped when the last child resource is dropped.
 //!
 //! ## Strings
 //! Methods on [`Compiler`] return and accept [`ContextStr`] instead of a normal string type. A
@@ -33,7 +34,9 @@
 //!
 //! If a returned [`ContextStr`] is owned by the context and is immutable,
 //! it will share the lifetime of the context. Some functions return _short lived_ strings which
-//! are owned by the underlying compiler instance. These strings can be modified by `set_` functions,
+//! are owned by the compiler instance, rather than the context.
+//!
+//! The underlying string data could possibly be modified by `set_` functions,
 //! thus they only have a lifetime corresponding to the lifetime of the immutable borrow of the [`Compiler`]
 //! that produced them. References to these short-lived strings can not be alive before calling a
 //! mutating function.
@@ -151,6 +154,26 @@ pub use crate::string::ContextStr;
 #[repr(transparent)]
 pub struct SpirvCrossContext(NonNull<spvc_context_s>);
 
+/// The root lifetime of a SPIRV-Cross context.
+///
+/// There are mainly two lifetimes to worry about in the entire crate,
+/// the context lifetime (`'ctx`), and the compiler lifetime, (unnamed, `'_`).
+///
+/// The context lifetime must outlive every compiler. That is, every compiler-lifetimed value
+/// has lifetime at least 'ctx, **for drop purposes**. In qcell terminology, the drop-owner for
+/// every value is `SpirvCrossContext`. This is because the lifetime of the compiler is rooted
+/// at the lifetime of the context.
+///
+/// However, particularly strings, can be borrow-owned by either the context, or the compiler.
+/// Values that are borrow-owned by the context are moved into [`spvc_context_s::allocations`](https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L115).
+/// Note that compiler instances are borrow-owned by the context, which is why the compiler needs to carry
+/// a reference in the form of a borrow or Rc to the context to maintain its liveness. It can not **own**
+/// a context, because that would lead to a self-referential struct; a compiler can not be borrow-owned
+/// by itself.
+///
+/// Values that are borrow-owned by the compiler are those that do not get copied into a buffer, and
+/// can be mutated by `set` functions. These need to ensure that the lifetime of the value returned
+/// matches the lifetime of the immutable borrow of the compiler.
 enum ContextRoot<'a, T = SpirvCrossContext> {
     Borrowed(&'a T),
     RefCounted(Rc<T>),
@@ -432,12 +455,11 @@ impl<T> ContextRooted for &mut Compiler<'_, T> {
 ///
 /// The only thing a [`PhantomCompiler`] is able to do is create handles or
 /// refer to the root context. It's lifetime should be the same as the lifetime
-/// of the compiler.
+/// of the **context**, or **shorter**, but at least the lifetime of the compiler.
 #[derive(Clone)]
-pub(crate) struct PhantomCompiler<'a> {
+pub(crate) struct PhantomCompiler<'ctx> {
     pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: ContextRoot<'a>,
-    _pd: PhantomData<&'a ()>,
+    ctx: ContextRoot<'ctx>,
 }
 
 impl ContextRooted for PhantomCompiler<'_> {
@@ -447,16 +469,15 @@ impl ContextRooted for PhantomCompiler<'_> {
     }
 }
 
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Create a type erased phantom for lifetime tracking purposes.
     ///
     /// This function is unsafe because a [`PhantomCompiler`] can be used to
     /// **safely** create handles originating from the compiler.
-    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'a> {
+    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'ctx> {
         PhantomCompiler {
             ptr: self.ptr,
             ctx: self.ctx.clone(),
-            _pd: PhantomData,
         }
     }
 }

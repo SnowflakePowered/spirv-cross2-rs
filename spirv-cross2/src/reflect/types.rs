@@ -654,7 +654,7 @@ mod test {
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None> = spv.into_compiler(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         // println!("{:#?}", resources);
@@ -662,6 +662,9 @@ mod test {
         let ty = compiler.type_description(resources.uniform_buffers[0].base_type_id)?;
         eprintln!("{ty:?}");
 
+        drop(compiler);
+        eprintln!("{resources:?}");
+        eprintln!("{resources:?}");
         // match ty.inner {
         //     TypeInner::Struct(ty) => {
         //         compiler.get_type(ty.members[0].id)?;

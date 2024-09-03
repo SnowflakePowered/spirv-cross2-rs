@@ -308,13 +308,16 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 DecorationValue::Present => {
                     sys::spvc_compiler_set_decoration(self.ptr.as_ptr(), id, decoration, 1);
                 }
-                DecorationValue::String(ref string) => {
-                    let Ok(cstring) = string.to_cstring_ptr() else {
-                        return Err(SpirvCrossError::InvalidDecorationInput(
+                DecorationValue::String(string) => {
+                    let cstring = string.into_cstring_ptr().map_err(|e| {
+                        let SpirvCrossError::InvalidString(string) = e else {
+                            unreachable!("into_cstring_ptr only errors InvalidString")
+                        };
+                        SpirvCrossError::InvalidDecorationInput(
                             decoration,
-                            DecorationValue::to_static(&value),
-                        ));
-                    };
+                            DecorationValue::String(string.into()),
+                        )
+                    })?;
 
                     sys::spvc_compiler_set_decoration_string(
                         self.ptr.as_ptr(),
@@ -441,13 +444,16 @@ impl<'ctx, T> Compiler<'ctx, T> {
                         1,
                     );
                 }
-                DecorationValue::String(ref string) => {
-                    let Ok(cstring) = string.to_cstring_ptr() else {
-                        return Err(SpirvCrossError::InvalidDecorationInput(
+                DecorationValue::String(string) => {
+                    let cstring = string.into_cstring_ptr().map_err(|e| {
+                        let SpirvCrossError::InvalidString(string) = e else {
+                            unreachable!("into_cstring_ptr only errors InvalidString")
+                        };
+                        SpirvCrossError::InvalidDecorationInput(
                             decoration,
-                            DecorationValue::to_static(&value),
-                        ));
-                    };
+                            DecorationValue::String(string.into()),
+                        )
+                    })?;
 
                     sys::spvc_compiler_set_member_decoration_string(
                         self.ptr.as_ptr(),

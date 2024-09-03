@@ -7,7 +7,7 @@ pub use spirv_cross_sys::HlslResourceBinding as ResourceBinding;
 pub use spirv_cross_sys::HlslResourceBindingMapping as ResourceBindingMapping;
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 
-use crate::error::{SpirvCrossError, ToContextError};
+use crate::error::ToContextError;
 use crate::handle::{Handle, VariableId};
 use crate::sealed::Sealed;
 use crate::string::ContextStr;
@@ -219,9 +219,7 @@ impl Compiler<'_, Hlsl> {
         semantic: impl Into<ContextStr<'str>>,
     ) -> error::Result<()> {
         let str = semantic.into();
-        let Ok(semantic) = str.to_cstring_ptr() else {
-            return Err(SpirvCrossError::InvalidString(String::from(str.as_ref())));
-        };
+        let semantic = str.into_cstring_ptr()?;
 
         let remap = HlslVertexAttributeRemap {
             location,

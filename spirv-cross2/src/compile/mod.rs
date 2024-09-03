@@ -1,7 +1,7 @@
 use crate::error::{Result, ToContextError};
 use crate::sealed::Sealed;
 use crate::targets::Target;
-use crate::{error, Compiler, ContextRooted, ContextStr, SpirvCrossError};
+use crate::{error, Compiler, ContextRooted, ContextStr};
 use spirv_cross_sys as sys;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
@@ -123,9 +123,7 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     /// avoid creating collisions with SPIRV-Cross generated extensions.
     pub fn add_header_line<'str>(&mut self, line: impl Into<ContextStr<'str>>) -> Result<()> {
         let line = line.into();
-        let Ok(cstring) = line.to_cstring_ptr() else {
-            return Err(SpirvCrossError::InvalidString(String::from(line.as_ref())));
-        };
+        let cstring = line.into_cstring_ptr()?;
         unsafe { sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), cstring.as_ptr()).ok(self) }
     }
 
@@ -133,9 +131,8 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     /// `require_extension("GL_KHR_my_extension");`
     pub fn require_extension<'str>(&mut self, ext: impl Into<ContextStr<'str>>) -> Result<()> {
         let ext = ext.into();
-        let Ok(cstring) = ext.to_cstring_ptr() else {
-            return Err(SpirvCrossError::InvalidString(String::from(ext.as_ref())));
-        };
+        let cstring = ext.into_cstring_ptr()?;
+
         unsafe {
             sys::spvc_compiler_require_extension(self.ptr.as_ptr(), cstring.as_ptr().cast())
                 .ok(self)

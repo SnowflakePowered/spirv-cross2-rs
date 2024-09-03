@@ -171,12 +171,9 @@ impl<'ctx, T> Compiler<'ctx, T> {
         // SAFETY: 'ctx is sound here
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2217
         let name = name.into();
+        let name = name.into_cstring_ptr()?;
 
         unsafe {
-            let Ok(name) = name.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidString(name.to_string()));
-            };
-
             let name = sys::spvc_compiler_get_cleansed_entry_point_name(
                 self.ptr.as_ptr(),
                 name.as_ptr(),
@@ -216,9 +213,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     ) -> error::Result<()> {
         let name = name.into();
         unsafe {
-            let Ok(name) = name.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidString(name.to_string()));
-            };
+            let name = name.into_cstring_ptr()?;
 
             sys::spvc_compiler_set_entry_point(self.ptr.as_ptr(), name.as_ptr(), model).ok(&*self)
         }
@@ -240,13 +235,8 @@ impl<'ctx, T> Compiler<'ctx, T> {
         let to = to.into();
 
         unsafe {
-            let Ok(from) = from.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidString(from.as_ref().to_string()));
-            };
-
-            let Ok(to) = to.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidString(to.as_ref().to_string()));
-            };
+            let from = from.into_cstring_ptr()?;
+            let to = to.into_cstring_ptr()?;
 
             sys::spvc_compiler_rename_entry_point(
                 self.ptr.as_ptr(),

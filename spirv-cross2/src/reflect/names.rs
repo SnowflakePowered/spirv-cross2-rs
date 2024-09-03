@@ -2,7 +2,6 @@ use crate::error;
 use crate::handle::{Handle, Id};
 use crate::Compiler;
 
-use crate::error::SpirvCrossError;
 use crate::string::ContextStr;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{SpvId, TypeId, VariableId};
@@ -35,11 +34,7 @@ impl<T> Compiler<'_, T> {
         let string = string.into();
 
         unsafe {
-            let Ok(cstring) = string.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidString(String::from(
-                    string.as_ref(),
-                )));
-            };
+            let cstring = string.into_cstring_ptr()?;
 
             sys::spvc_compiler_set_name(self.ptr.as_ptr(), SpvId(id.id()), cstring.as_ptr());
 
@@ -83,11 +78,7 @@ impl<T> Compiler<'_, T> {
         let string = string.into();
 
         unsafe {
-            let Ok(cstring) = string.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidString(String::from(
-                    string.as_ref(),
-                )));
-            };
+            let cstring = string.into_cstring_ptr()?;
 
             sys::spvc_compiler_set_member_name(
                 self.ptr.as_ptr(),

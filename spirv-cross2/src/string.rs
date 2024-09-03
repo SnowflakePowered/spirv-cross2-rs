@@ -1,6 +1,6 @@
-use crate::{ContextRoot, SpirvCrossContext};
+use crate::{ContextRoot, SpirvCrossContext, SpirvCrossError};
 use std::borrow::Cow;
-use std::ffi::{c_char, CStr, CString, NulError};
+use std::ffi::{c_char, CStr, CString};
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
 
@@ -22,9 +22,11 @@ use std::ops::Deref;
 /// such that when being read by FFI there are no extra allocations
 /// required.
 ///
-/// If the provenance of the string is an owned Rust `String`, or
-/// a `&str` with lifetime longer than `'a`, then an allocation will
-/// occur when passing the string to FFI.
+/// If the provenance of the string is a `&str` with lifetime longer than `'a`,
+/// then an allocation will occur when passing the string to FFI.
+///
+/// If the provenance of the string is an owned Rust `String`, then an allocation
+/// will occur only if necessary to append a nul byte.
 ///
 /// If the provenance of the string is a `&CStr`, or
 /// with lifetime longer than `'a`, then an allocation will not occur
@@ -276,13 +278,26 @@ impl<'a, T> ContextStr<'a, T> {
     /// Allocate if necessary, if not then return a pointer to the original cstring.
     ///
     /// The returned pointer will be valid for the lifetime `'a`.
-    pub(crate) fn to_cstring_ptr(&self) -> Result<MaybeOwnedCString<'a, T>, NulError> {
+    pub(crate) fn into_cstring_ptr(self) -> Result<MaybeOwnedCString<'a, T>, SpirvCrossError> {
         if let Some(ptr) = &self.pointer {
             // this is either free or very cheap (Rc incr at most)
             Ok(MaybeOwnedCString::Borrowed(ptr.clone()))
         } else {
-            let cstring = CString::new(self.cow.to_string())?;
-            Ok(MaybeOwnedCString::Owned(cstring))
+            let cstring = match self.cow {
+                Cow::Borrowed(s) => CString::new(s.to_string()),
+                Cow::Owned(s) => CString::new(s),
+            };
+
+            match cstring {
+                Ok(cstring) => Ok(MaybeOwnedCString::Owned(cstring)),
+                Err(e) => {
+                    let string = e.into_vec();
+                    // SAFETY: This string *came* from UTF-8 as its source was the Cow,
+                    // which was preverified UTF-8.
+                    let string = unsafe { String::from_utf8_unchecked(string) };
+                    Err(SpirvCrossError::InvalidString(string))
+                }
+            }
         }
     }
 }
@@ -317,8 +332,8 @@ mod test {
             unsafe { ContextStr::from_ptr(self.0.as_ref().0, self.0.clone()) }
         }
 
-        pub fn set(&mut self, cstr: &ContextStr<'a, LifetimeContext>) {
-            println!("{:p}", cstr.to_cstring_ptr().unwrap().as_ptr())
+        pub fn set(&mut self, cstr: ContextStr<'a, LifetimeContext>) {
+            println!("{:p}", cstr.into_cstring_ptr().unwrap().as_ptr())
         }
     }
 
@@ -332,7 +347,7 @@ mod test {
 
         // let mut lt = Rc::new(LifetimeTest(PhantomData));
         let cstr = lt.get();
-        lt.set(&cstr);
+        lt.set(cstr);
 
         drop(lt);
 

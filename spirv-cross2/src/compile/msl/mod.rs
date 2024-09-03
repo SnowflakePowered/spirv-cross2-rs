@@ -45,7 +45,7 @@ pub const MAX_ARGUMENT_BUFFERS: u32 = 8;
 
 use std::fmt::{Debug, Formatter};
 
-use crate::error::{SpirvCrossError, ToContextError};
+use crate::error::ToContextError;
 use crate::handle::{Handle, VariableId};
 use crate::sealed::Sealed;
 use crate::string::ContextStr;
@@ -834,9 +834,7 @@ impl Compiler<'_, Msl> {
         unsafe {
             let str = str.into();
 
-            let Ok(suffix) = str.to_cstring_ptr() else {
-                return Err(SpirvCrossError::InvalidString(String::from(str.as_ref())));
-            };
+            let suffix = str.into_cstring_ptr()?;
 
             sys::spvc_compiler_msl_set_combined_sampler_suffix(self.ptr.as_ptr(), suffix.as_ptr())
                 .ok(&*self)

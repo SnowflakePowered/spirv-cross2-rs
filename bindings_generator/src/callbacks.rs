@@ -1,5 +1,6 @@
 use bindgen::callbacks::{
-    DeriveInfo, EnumVariantCustomBehavior, EnumVariantValue, ParseCallbacks, TypeKind,
+    AttributeInfo, DeriveInfo, EnumVariantCustomBehavior, EnumVariantValue, ParseCallbacks,
+    TypeKind,
 };
 use cruet::Inflector;
 
@@ -41,6 +42,17 @@ const SPVC_MSL_TYPES: &[&str] = &[
     "spvc_msl_shader_variable_rate",
     "spvc_msl_vertex_format",
     "spvc_msl_shader_input",
+];
+
+const NON_EXHAUSTIVE_TYPES: &[&str] = &[
+    "MslVertexAttribute",
+    "MslShaderInterfaceVar",
+    "MslShaderInterfaceVar2",
+    "MslResourceBinding",
+    "MslResourceBinding2",
+    "MslConstexprSampler",
+    "MslSamplerYcbcrConversion",
+    "HlslResourceBinding",
 ];
 
 impl ParseCallbacks for SpirvCrossCallbacks {
@@ -154,7 +166,7 @@ impl ParseCallbacks for SpirvCrossCallbacks {
             return Some(EnumVariantCustomBehavior::Hide);
         };
 
-        return None;
+        None
     }
 
     fn add_derives(&self, info: &DeriveInfo<'_>) -> Vec<String> {
@@ -164,6 +176,14 @@ impl ParseCallbacks for SpirvCrossCallbacks {
                 String::from("num_derive::ToPrimitive"),
             ];
         }
+
+        vec![]
+    }
+
+    fn add_attributes(&self, info: &AttributeInfo<'_>) -> Vec<String> {
+        if NON_EXHAUSTIVE_TYPES.contains(&info.name) {
+            return vec![String::from("#[non_exhaustive]")];
+        };
 
         vec![]
     }

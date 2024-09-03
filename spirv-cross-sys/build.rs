@@ -1,19 +1,4 @@
-use glob::glob;
 use std::env;
-
-pub fn add_subdirectory(build: &mut cc::Build) {
-    for entry in glob(&*format!("native/SPIRV-Cross/*.cpp")).expect("failed to read glob") {
-        if let Ok(path) = entry {
-            build.file(path);
-        }
-    }
-
-    for entry in glob(&*format!("native/SPIRV-Cross/*.c")).expect("failed to read glob") {
-        if let Ok(path) = entry {
-            build.file(path);
-        }
-    }
-}
 
 pub fn main() {
     if env::var("DOCS_RS").is_ok() {
@@ -32,9 +17,18 @@ pub fn main() {
         .define("SPIRV_CROSS_C_API_CPP", "1")
         .define("SPIRV_CROSS_C_API_REFLECT", "1")
         .includes(&["native/SPIRV-Cross", "native/SPIRV-CROSS/include"])
-        .file("native/spvc_set.cpp");
+        .file("native/SPIRV-Cross/spirv_cfg.cpp")
+        .file("native/SPIRV-Cross/spirv_cpp.cpp")
+        .file("native/SPIRV-Cross/spirv_cross.cpp")
+        .file("native/SPIRV-Cross/spirv_cross_parsed_ir.cpp")
+        .file("native/SPIRV-Cross/spirv_cross_util.cpp")
+        .file("native/SPIRV-Cross/spirv_glsl.cpp")
+        .file("native/SPIRV-Cross/spirv_hlsl.cpp")
+        .file("native/SPIRV-Cross/spirv_msl.cpp")
+        .file("native/SPIRV-Cross/spirv_parser.cpp")
+        .file("native/SPIRV-Cross/spirv_reflect.cpp")
+        .file("native/spirv_cross_c_ext_rs.cpp");
 
-    add_subdirectory(&mut spvc_build);
     spvc_build.compile("spirv-cross");
     println!("cargo:rustc-link-lib=static=spirv-cross");
 }

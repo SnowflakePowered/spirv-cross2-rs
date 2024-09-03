@@ -34,7 +34,7 @@ use std::ops::Deref;
 /// and can not be modified by a `set_`. function.
 ///
 /// In most cases, the returned lifetime should be the lifetime of the mutable borrow,
-/// if returning a string from the [`Compiler`].
+/// if returning a string from the [`Compiler`](crate::Compiler).
 ///
 /// [`ContextStr::from_ptr`] takes a context argument, and the context must be
 /// the source of provenance for the `ContextStr`.
@@ -67,13 +67,13 @@ impl<T> Clone for ContextPointer<'_, T> {
     }
 }
 
-impl<'a> Display for ContextStr<'a> {
+impl<'a, T> Display for ContextStr<'a, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.cow)
     }
 }
 
-impl<'a> Debug for ContextStr<'a> {
+impl<'a, T> Debug for ContextStr<'a, T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.cow)
     }
@@ -215,22 +215,35 @@ impl<'a, T> ContextStr<'a, T> {
 mod test {
     use crate::string::ContextStr;
     use crate::ContextRoot;
-    use std::ffi::CString;
-    use std::marker::PhantomData;
+    use std::ffi::{c_char, CString};
     use std::rc::Rc;
 
-    struct LifetimeTest<'a>(PhantomData<&'a ()>);
-    impl<'a> LifetimeTest<'a> {
-        pub fn get(self: &Rc<Self>) -> ContextStr<'a, LifetimeTest> {
+    struct LifetimeContext(*mut c_char);
+    impl LifetimeContext {
+        pub fn new() -> Self {
             let cstring = CString::new(String::from("hello"))
                 .unwrap()
-                .into_raw()
-                .cast_const();
+                .into_raw();
 
-            unsafe { ContextStr::from_ptr(cstring, ContextRoot::RefCounted(Rc::clone(&self))) }
+            Self(cstring)
+        }
+    }
+
+    impl Drop for LifetimeContext {
+        fn drop(&mut self) {
+            unsafe {
+                drop(CString::from_raw(self.0));
+            }
+        }
+    }
+
+    struct LifetimeTest<'a>(ContextRoot<'a, LifetimeContext>);
+    impl<'a> LifetimeTest<'a> {
+        pub fn get(&self) -> ContextStr<'a, LifetimeContext> {
+            unsafe { ContextStr::from_ptr(self.0.as_ref().0, self.0.clone()) }
         }
 
-        pub fn set(&mut self, cstr: ContextStr<'a, LifetimeTest>) {
+        pub fn set(&mut self, cstr: &ContextStr<'a, LifetimeContext>) {
             println!("{:p}", cstr.to_cstring_ptr().unwrap().as_ptr())
         }
     }
@@ -238,8 +251,19 @@ mod test {
     #[test]
     fn test_string() {
         // use std::borrow::BorrowMut;
+        let lc = LifetimeContext::new();
+        let ctx = ContextRoot::RefCounted(Rc::new(lc));
+
+        let mut lt = LifetimeTest(ctx);
+
         // let mut lt = Rc::new(LifetimeTest(PhantomData));
-        // let cstr = lt.get();
+        let cstr = lt.get();
+        lt.set(&cstr);
+
+        drop(lt);
+
+        assert_eq!("hello", cstr.as_ref());
+        println!("{}", cstr);
         // lt.borrow_mut().set(cstr)
     }
 }

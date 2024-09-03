@@ -6,11 +6,11 @@ use std::ffi::c_char;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::string::ContextStr;
-use crate::Compiler;
 use crate::{error, spirv};
+use crate::{Compiler, ContextRoot};
 
 /// Iterator for declared extensions, created by [`Compiler::declared_extensions`].
-pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>);
+pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>, ContextRoot<'a>);
 
 impl<'a> Iterator for ExtensionsIter<'a> {
     type Item = ContextStr<'a>;
@@ -18,7 +18,7 @@ impl<'a> Iterator for ExtensionsIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.0
             .next()
-            .map(|ptr| unsafe { ContextStr::from_ptr(*ptr) })
+            .map(|ptr| unsafe { ContextStr::from_ptr(*ptr, self.1.clone()) })
     }
 }
 
@@ -50,7 +50,7 @@ impl<'a, T> Compiler<'a, T> {
 
             let ptr_slice = slice::from_raw_parts(caps, size);
 
-            Ok(ExtensionsIter(ptr_slice.iter()))
+            Ok(ExtensionsIter(ptr_slice.iter(), self.ctx.clone()))
         }
     }
 
@@ -101,7 +101,7 @@ impl<T> Compiler<'_, T> {
 }
 
 /// Iterator type created by [`Compiler::entry_points`].
-pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>);
+pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>, ContextRoot<'a>);
 
 /// A SPIR-V entry point.
 #[derive(Debug)]
@@ -117,7 +117,7 @@ impl<'a> Iterator for EntryPointIter<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|entry| unsafe {
-            let name = ContextStr::from_ptr(entry.name);
+            let name = ContextStr::from_ptr(entry.name, self.1.clone());
             EntryPoint {
                 name,
                 execution_model: entry.execution_model,
@@ -157,6 +157,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             Ok(EntryPointIter(
                 slice::from_raw_parts(entry_points, size).iter(),
+                self.ctx.clone(),
             ))
         }
     }
@@ -185,7 +186,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             if name.is_null() {
                 return Ok(None);
             }
-            Ok(Some(ContextStr::from_ptr(name)))
+            Ok(Some(ContextStr::from_ptr(name, self.ctx.clone())))
         }
     }
 
@@ -289,6 +290,27 @@ mod test {
             compiler.cleansed_entry_point_name("new_main", spirv::ExecutionModel::Fragment)?;
 
         assert_eq!(Some("new_main"), new_name.as_deref());
+
+        Ok(())
+    }
+
+    #[test]
+    pub fn entry_point_soundness() -> Result<(), SpirvCrossError> {
+        let spv = SpirvCrossContext::new()?;
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
+
+        let mut compiler: Compiler<targets::None> = spv.into_compiler(words)?;
+
+        let name = compiler
+            .cleansed_entry_point_name("main", spirv::ExecutionModel::Fragment)?
+            .unwrap();
+
+        assert_eq!("main", name.as_ref());
+
+        drop(compiler);
+
+        assert_eq!("main", name.as_ref());
 
         Ok(())
     }

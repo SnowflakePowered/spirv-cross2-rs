@@ -308,11 +308,10 @@ impl<T> Compiler<'_, T> {
             let mut members = Vec::with_capacity(member_type_len as usize);
             for i in 0..member_type_len {
                 let id = sys::spvc_type_get_member_type(ty, i);
-                let name = ContextStr::from_ptr(sys::spvc_compiler_get_member_name(
-                    self.ptr.as_ptr(),
-                    struct_ty_id,
-                    i,
-                ));
+                let name = ContextStr::from_ptr(
+                    sys::spvc_compiler_get_member_name(self.ptr.as_ptr(), struct_ty_id, i),
+                    self.ctx.clone(),
+                );
 
                 let name = if name.as_ref().is_empty() {
                     None
@@ -496,7 +495,10 @@ impl<T> Compiler<'_, T> {
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
 
             let base_ty = sys::spvc_type_get_basetype(ty);
-            let name = ContextStr::from_ptr(sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0));
+            let name = ContextStr::from_ptr(
+                sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0),
+                self.ctx.clone(),
+            );
 
             let name = if name.as_ref().is_empty() {
                 None

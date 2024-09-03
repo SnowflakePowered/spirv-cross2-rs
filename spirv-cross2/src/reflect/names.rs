@@ -13,7 +13,7 @@ impl<T> Compiler<'_, T> {
         let id = self.yield_id(handle)?;
         unsafe {
             let name = sys::spvc_compiler_get_name(self.ptr.as_ptr(), SpvId(id.id()));
-            let name = ContextStr::from_ptr(name);
+            let name = ContextStr::from_ptr(name, self.ctx.clone());
             if name.is_empty() {
                 Ok(None)
             } else {
@@ -62,7 +62,7 @@ impl<T> Compiler<'_, T> {
 
         unsafe {
             let name = sys::spvc_compiler_get_member_name(self.ptr.as_ptr(), struct_type_id, index);
-            let name = ContextStr::from_ptr(name);
+            let name = ContextStr::from_ptr(name, self.ctx.clone());
             if name.is_empty() {
                 Ok(None)
             } else {
@@ -130,7 +130,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
         unsafe {
             let name =
                 sys::spvc_compiler_get_remapped_declared_block_name(self.ptr.as_ptr(), handle);
-            let name = ContextStr::from_ptr(name);
+            let name = ContextStr::from_ptr(name, self.ctx.clone());
             if name.is_empty() {
                 Ok(None)
             } else {

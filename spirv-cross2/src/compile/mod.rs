@@ -165,7 +165,7 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
 
             // SAFETY: 'a is OK to return here
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1782
-            let src = ContextStr::from_ptr(src);
+            let src = ContextStr::from_ptr(src, self.ctx.clone());
             Ok(CompiledArtifact {
                 compiler: self,
                 source: src,
@@ -228,10 +228,7 @@ mod test {
             .collect::<Vec<_>>();
         handles.sort();
 
-        assert_eq!(
-            &[9, 13],
-            &handles.as_slice()
-        );
+        assert_eq!(&[9, 13], &handles.as_slice());
 
         compiler.set_enabled_interface_variables(vars)?;
         Ok(())

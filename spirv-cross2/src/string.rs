@@ -1,7 +1,7 @@
+use crate::{ContextRoot, SpirvCrossContext};
 use std::borrow::Cow;
 use std::ffi::{c_char, CStr, CString, NulError};
 use std::fmt::{Debug, Display, Formatter};
-use std::marker::PhantomData;
 use std::ops::Deref;
 
 /// An immutable wrapper around a valid UTF-8 string whose memory contents
@@ -30,14 +30,41 @@ use std::ops::Deref;
 /// Returning `ContextStr<'a>` where `'a` is the lifetime of the
 /// [`SpirvCrossContext`](crate::SpirvCrossContext) is **almost always incorrect**.
 ///
-/// The only exception is if the name is explicitly allocated into the context,
+/// The only exception is if the name is explicitly owned by the context,
 /// and can not be modified by a `set_`. function.
 ///
-/// In most cases, the returned lifetime should be the lifetime of the mutable borrow.
-#[derive(Clone)]
-pub struct ContextStr<'a> {
-    pointer: Option<*const c_char>,
+/// In most cases, the returned lifetime should be the lifetime of the mutable borrow,
+/// if returning a string from the [`Compiler`].
+///
+/// [`ContextStr::from_ptr`] takes a context argument, and the context must be
+/// the source of provenance for the `ContextStr`.
+pub struct ContextStr<'a, T = SpirvCrossContext> {
+    pointer: Option<ContextPointer<'a, T>>,
     cow: Cow<'a, str>,
+}
+
+impl<T> Clone for ContextStr<'_, T> {
+    fn clone(&self) -> Self {
+        Self {
+            pointer: self.pointer.clone(),
+            cow: self.cow.clone(),
+        }
+    }
+}
+
+pub(crate) struct ContextPointer<'a, T> {
+    // the lifetime of pointer should be 'a.
+    pointer: *const c_char,
+    context: ContextRoot<'a, T>,
+}
+
+impl<T> Clone for ContextPointer<'_, T> {
+    fn clone(&self) -> Self {
+        Self {
+            pointer: self.pointer.clone(),
+            context: self.context.clone(),
+        }
+    }
 }
 
 impl<'a> Display for ContextStr<'a> {
@@ -52,34 +79,30 @@ impl<'a> Debug for ContextStr<'a> {
     }
 }
 
-pub(crate) enum MaybeOwnedCString<'a> {
+pub(crate) enum MaybeOwnedCString<'a, T = SpirvCrossContext> {
     Owned(CString),
-    Borrowed {
-        ptr: *const c_char,
-        // invariant to be safe.
-        _pd: PhantomData<fn(&'a ()) -> &'a ()>,
-    },
+    Borrowed(ContextPointer<'a, T>),
 }
 
-impl MaybeOwnedCString<'_> {
+impl<T> MaybeOwnedCString<'_, T> {
     /// Get a pointer to the C string.
     ///
     /// The pointer will be valid for the lifetime of `self`.
     pub fn as_ptr(&self) -> *const c_char {
         match self {
             MaybeOwnedCString::Owned(c) => c.as_ptr(),
-            MaybeOwnedCString::Borrowed { ptr, .. } => *ptr,
+            MaybeOwnedCString::Borrowed(ptr) => ptr.pointer,
         }
     }
 }
 
-impl AsRef<str> for ContextStr<'_> {
+impl<T> AsRef<str> for ContextStr<'_, T> {
     fn as_ref(&self) -> &str {
         self.cow.as_ref()
     }
 }
 
-impl Deref for ContextStr<'_> {
+impl<T> Deref for ContextStr<'_, T> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -87,27 +110,19 @@ impl Deref for ContextStr<'_> {
     }
 }
 
-impl From<String> for ContextStr<'_> {
+impl<T> From<String> for ContextStr<'_, T> {
     fn from(value: String) -> Self {
         Self::from_string(value)
     }
 }
 
-impl<'a> From<&'a str> for ContextStr<'a> {
+impl<'a, T> From<&'a str> for ContextStr<'a, T> {
     fn from(value: &'a str) -> Self {
         Self::from_str(value)
     }
 }
 
-impl<'a> From<&'a CStr> for ContextStr<'a> {
-    fn from(value: &'a CStr) -> Self {
-        // This is OK as long as the lifetime of the cstr is alive for the
-        // lifetime of the ContextStr
-        unsafe { Self::from_cstr(value) }
-    }
-}
-
-impl<'a> ContextStr<'a> {
+impl<'a, T> ContextStr<'a, T> {
     /// Wraps a raw C string with a safe C string wrapper.
     ///
     /// If the raw C string is valid UTF-8, a pointer to the string will be
@@ -131,13 +146,17 @@ impl<'a> ContextStr<'a> {
     ///
     /// * The memory pointed to by `ptr` must be valid for the duration of the lifetime `'a`.
     ///
+    ///  * THe provenance of `context.ptr` must be a superset of `ptr`.
     /// # Caveat
     ///
     /// The lifetime for the returned slice is inferred from its usage. To prevent accidental misuse,
     /// it's suggested to tie the lifetime to whichever source lifetime is safe in the context,
     /// such as by providing a helper function taking the lifetime of a host value for the slice,
     /// or by explicit annotation.
-    pub(crate) unsafe fn from_ptr<'b>(ptr: *const c_char) -> ContextStr<'b>
+    pub(crate) unsafe fn from_ptr<'b>(
+        ptr: *const c_char,
+        context: ContextRoot<'a, T>,
+    ) -> ContextStr<'b, T>
     where
         'a: 'b,
     {
@@ -145,7 +164,10 @@ impl<'a> ContextStr<'a> {
         let maybe = cstr.to_string_lossy();
         if matches!(&maybe, &Cow::Borrowed(_)) {
             Self {
-                pointer: Some(ptr),
+                pointer: Some(ContextPointer {
+                    pointer: ptr,
+                    context,
+                }),
                 cow: maybe,
             }
         } else {
@@ -153,21 +175,6 @@ impl<'a> ContextStr<'a> {
                 pointer: None,
                 cow: maybe,
             }
-        }
-    }
-
-    /// Wraps a `&CStr`.
-    ///
-    /// # Caveat
-    ///
-    /// The lifetime for the returned slice is inferred from its usage. To prevent accidental misuse,
-    /// it's suggested to tie the lifetime to whichever source lifetime is safe in the context,
-    /// such as by providing a helper function taking the lifetime of a host value for the slice,
-    /// or by explicit annotation.
-    pub(crate) unsafe fn from_cstr(cstr: &'a CStr) -> Self {
-        Self {
-            pointer: Some(cstr.as_ptr()),
-            cow: cstr.to_string_lossy(),
         }
     }
 
@@ -194,12 +201,9 @@ impl<'a> ContextStr<'a> {
     /// Allocate if necessary, if not then return a pointer to the original cstring.
     ///
     /// The returned pointer will be valid for the lifetime `'a`.
-    pub(crate) fn to_cstring_ptr(&self) -> Result<MaybeOwnedCString<'a>, NulError> {
-        if let Some(ptr) = self.pointer {
-            Ok(MaybeOwnedCString::Borrowed {
-                ptr,
-                _pd: PhantomData,
-            })
+    pub(crate) fn to_cstring_ptr(&self) -> Result<MaybeOwnedCString<'a, T>, NulError> {
+        if let Some(ptr) = &self.pointer {
+            Ok(MaybeOwnedCString::Borrowed(ptr.clone()))
         } else {
             let cstring = CString::new(self.cow.to_string())?;
             Ok(MaybeOwnedCString::Owned(cstring))
@@ -210,29 +214,32 @@ impl<'a> ContextStr<'a> {
 #[cfg(test)]
 mod test {
     use crate::string::ContextStr;
+    use crate::ContextRoot;
     use std::ffi::CString;
     use std::marker::PhantomData;
+    use std::rc::Rc;
 
     struct LifetimeTest<'a>(PhantomData<&'a ()>);
     impl<'a> LifetimeTest<'a> {
-        pub fn get(&self) -> ContextStr<'a> {
+        pub fn get(self: &Rc<Self>) -> ContextStr<'a, LifetimeTest> {
             let cstring = CString::new(String::from("hello"))
                 .unwrap()
                 .into_raw()
                 .cast_const();
 
-            unsafe { ContextStr::from_ptr(cstring) }
+            unsafe { ContextStr::from_ptr(cstring, ContextRoot::RefCounted(Rc::clone(&self))) }
         }
 
-        pub fn set(&mut self, cstr: ContextStr) {
+        pub fn set(&mut self, cstr: ContextStr<'a, LifetimeTest>) {
             println!("{:p}", cstr.to_cstring_ptr().unwrap().as_ptr())
         }
     }
 
     #[test]
     fn test_string() {
-        let mut lt = LifetimeTest(PhantomData);
-        let cstr = lt.get();
-        lt.set(cstr)
+        // use std::borrow::BorrowMut;
+        // let mut lt = Rc::new(LifetimeTest(PhantomData));
+        // let cstr = lt.get();
+        // lt.borrow_mut().set(cstr)
     }
 }

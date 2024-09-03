@@ -151,36 +151,41 @@ pub use crate::string::ContextStr;
 #[repr(transparent)]
 pub struct SpirvCrossContext(NonNull<spvc_context_s>);
 
-enum ContextRoot<'a> {
-    Owned(SpirvCrossContext),
-    Borrowed(&'a SpirvCrossContext),
-    RefCounted(Rc<SpirvCrossContext>),
+enum ContextRoot<'a, T = SpirvCrossContext> {
+    Borrowed(&'a T),
+    RefCounted(Rc<T>),
 }
 
-impl<'a> Borrow<SpirvCrossContext> for ContextRoot<'a> {
-    fn borrow(&self) -> &SpirvCrossContext {
+impl<'a, T> Clone for ContextRoot<'a, T> {
+    fn clone(&self) -> Self {
         match self {
-            ContextRoot::Owned(a) => a,
+            &ContextRoot::Borrowed(a) => ContextRoot::Borrowed(a),
+            ContextRoot::RefCounted(rc) => ContextRoot::RefCounted(Rc::clone(rc)),
+        }
+    }
+}
+
+impl<'a, T> Borrow<T> for ContextRoot<'a, T> {
+    fn borrow(&self) -> &T {
+        match self {
             ContextRoot::Borrowed(a) => a,
             ContextRoot::RefCounted(a) => a.deref(),
         }
     }
 }
 
-impl<'a> AsRef<SpirvCrossContext> for ContextRoot<'a> {
-    fn as_ref(&self) -> &SpirvCrossContext {
+impl<'a, T> AsRef<T> for ContextRoot<'a, T> {
+    fn as_ref(&self) -> &T {
         match self {
-            ContextRoot::Owned(a) => a,
             ContextRoot::Borrowed(a) => a,
             ContextRoot::RefCounted(a) => a.deref(),
         }
     }
 }
 
-impl ContextRoot<'_> {
+impl ContextRoot<'_, SpirvCrossContext> {
     fn ptr(&self) -> NonNull<spvc_context_s> {
         match self {
-            ContextRoot::Owned(a) => a.0,
             ContextRoot::Borrowed(a) => a.0,
             ContextRoot::RefCounted(a) => a.0,
         }
@@ -331,7 +336,10 @@ impl SpirvCrossContext {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
             };
 
-            Ok(Compiler::new_from_raw(compiler, ContextRoot::Owned(self)))
+            Ok(Compiler::new_from_raw(
+                compiler,
+                ContextRoot::RefCounted(Rc::new(self)),
+            ))
         }
     }
 }
@@ -425,17 +433,17 @@ impl<T> ContextRooted for &mut Compiler<'_, T> {
 /// The only thing a [`PhantomCompiler`] is able to do is create handles or
 /// refer to the root context. It's lifetime should be the same as the lifetime
 /// of the compiler.
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub(crate) struct PhantomCompiler<'a> {
     pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: NonNull<spvc_context_s>,
+    ctx: ContextRoot<'a>,
     _pd: PhantomData<&'a ()>,
 }
 
 impl ContextRooted for PhantomCompiler<'_> {
     #[inline(always)]
     fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx
+        self.ctx.ptr()
     }
 }
 
@@ -447,7 +455,7 @@ impl<'a, T> Compiler<'a, T> {
     pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'a> {
         PhantomCompiler {
             ptr: self.ptr,
-            ctx: self.context(),
+            ctx: self.ctx.clone(),
             _pd: PhantomData,
         }
     }

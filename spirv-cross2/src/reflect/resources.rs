@@ -89,7 +89,8 @@ impl<'a> InterfaceVariableSet<'a> {
             let mut vec = vec![0; length];
             spirv_cross_sys::spvc_rs_expose_set(self.0, vec.as_mut_ptr(), &mut length);
 
-            let mut handles: Vec<Handle<VariableId>> = vec.into_iter()
+            let mut handles: Vec<Handle<VariableId>> = vec
+                .into_iter()
                 .map(|id| self.2.create_handle(VariableId::from(id)))
                 .collect();
 
@@ -157,7 +158,7 @@ impl<'a> Iterator for ResourceIter<'a> {
     type Item = Resource<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.1.next().map(|o| Resource::from_raw(self.0, o))
+        self.1.next().map(|o| Resource::from_raw(self.0.clone(), o))
     }
 }
 
@@ -171,7 +172,9 @@ impl<'a> Iterator for BuiltinResourceIter<'a> {
     type Item = BuiltinResource<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.1.next().map(|o| BuiltinResource::from_raw(self.0, o))
+        self.1
+            .next()
+            .map(|o| BuiltinResource::from_raw(self.0.clone(), o))
     }
 }
 
@@ -198,7 +201,7 @@ impl<'a> Resource<'a> {
             // There should never be invalid UTF-8 in a shader.
             // as per SPIR-V spec: The character set is Unicode in the UTF-8 encoding scheme.
             // so this will be free 100% of the time.
-            name: unsafe { ContextStr::from_ptr(value.name) },
+            name: unsafe { ContextStr::from_ptr(value.name, comp.ctx.clone()) },
         }
     }
 }
@@ -457,7 +460,7 @@ impl<'a> ShaderResources<'a> {
 
         let slice = unsafe { std::slice::from_raw_parts(out, count) };
 
-        Ok(ResourceIter(self.1, slice.iter()))
+        Ok(ResourceIter(self.1.clone(), slice.iter()))
     }
 
     /// Get an iterator for all builtin resources of the given type.
@@ -482,7 +485,7 @@ impl<'a> ShaderResources<'a> {
 
         let slice = unsafe { std::slice::from_raw_parts(out, count) };
 
-        Ok(BuiltinResourceIter(self.1, slice.iter()))
+        Ok(BuiltinResourceIter(self.1.clone(), slice.iter()))
     }
 
     /// Get all resources declared in the shader.

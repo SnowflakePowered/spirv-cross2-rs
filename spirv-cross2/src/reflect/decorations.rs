@@ -175,7 +175,10 @@ impl<'a, T> Compiler<'a, T> {
             if decoration_is_string(decoration) {
                 let str =
                     sys::spvc_compiler_get_decoration_string(self.ptr.as_ptr(), id, decoration);
-                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(str))));
+                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(
+                    str,
+                    self.ctx.clone(),
+                ))));
             }
 
             let value = sys::spvc_compiler_get_decoration(self.ptr.as_ptr(), id, decoration);
@@ -212,7 +215,10 @@ impl<'a, T> Compiler<'a, T> {
                     index,
                     decoration,
                 );
-                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(str))));
+                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(
+                    str,
+                    self.ctx.clone(),
+                ))));
             }
 
             let value = sys::spvc_compiler_get_member_decoration(

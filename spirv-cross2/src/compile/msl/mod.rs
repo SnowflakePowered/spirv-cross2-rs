@@ -847,7 +847,7 @@ impl<'a> Compiler<'a, Msl> {
     pub fn get_combined_sampler_suffix(&self) -> ContextStr {
         unsafe {
             let suffix = sys::spvc_compiler_msl_get_combined_sampler_suffix(self.ptr.as_ptr());
-            ContextStr::from_ptr(suffix)
+            ContextStr::from_ptr(suffix, self.ctx.clone())
         }
     }
 

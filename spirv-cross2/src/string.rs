@@ -25,19 +25,6 @@ use std::ops::Deref;
 /// If the provenance of the string is an owned Rust `String`, or
 /// a `&str` with lifetime longer than `'a`, then an allocation will
 /// occur when passing the string to FFI.
-///
-/// # Safety
-/// Returning `ContextStr<'a>` where `'a` is the lifetime of the
-/// [`SpirvCrossContext`](crate::SpirvCrossContext) is **almost always incorrect**.
-///
-/// The only exception is if the name is explicitly owned by the context,
-/// and can not be modified by a `set_`. function.
-///
-/// In most cases, the returned lifetime should be the lifetime of the mutable borrow,
-/// if returning a string from the [`Compiler`](crate::Compiler).
-///
-/// [`ContextStr::from_ptr`] takes a context argument, and the context must be
-/// the source of provenance for the `ContextStr`.
 pub struct ContextStr<'a, T = SpirvCrossContext> {
     pointer: Option<ContextPointer<'a, T>>,
     cow: Cow<'a, str>,
@@ -165,6 +152,16 @@ impl<'a, T> From<&'a str> for ContextStr<'a, T> {
     }
 }
 
+/// # Safety
+/// Returning `ContextStr<'a>` where `'a` is the lifetime of the
+/// [`SpirvCrossContext`](crate::SpirvCrossContext) is only correct if the
+/// string is borrow-owned by the context.
+///
+/// In most cases, the returned lifetime should be the lifetime of the mutable borrow,
+/// if returning a string from the [`Compiler`](crate::Compiler).
+///
+/// [`ContextStr::from_ptr`] takes a context argument, and the context must be
+/// the source of provenance for the `ContextStr`.
 impl<'a, T> ContextStr<'a, T> {
     /// Wraps a raw C string with a safe C string wrapper.
     ///

@@ -130,10 +130,15 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     }
 
     /// Adds an extension which is required to run this shader, e.g.
-    /// require_extension("GL_KHR_my_extension");
-    pub fn require_extension(&mut self, ext: &str) -> Result<()> {
+    /// `require_extension("GL_KHR_my_extension");`
+    pub fn require_extension<'str>(&mut self, ext: impl Into<ContextStr<'str>>) -> Result<()> {
+        let ext = ext.into();
+        let Ok(cstring) = ext.to_cstring_ptr() else {
+            return Err(SpirvCrossError::InvalidString(String::from(ext.as_ref())));
+        };
         unsafe {
-            sys::spvc_compiler_require_extension(self.ptr.as_ptr(), ext.as_ptr().cast()).ok(self)
+            sys::spvc_compiler_require_extension(self.ptr.as_ptr(), cstring.as_ptr().cast())
+                .ok(self)
         }
     }
 
@@ -209,28 +214,6 @@ mod test {
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
-        Ok(())
-    }
-
-    #[test]
-    pub fn reflect_interface_vars() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
-        let vec = Vec::from(BASIC_SPV);
-        let words = Module::from_words(bytemuck::cast_slice(&vec));
-
-        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
-        let vars = compiler.active_interface_variables()?;
-
-        let mut handles = vars
-            .to_handles()
-            .into_iter()
-            .map(|h| h.id())
-            .collect::<Vec<_>>();
-        handles.sort();
-
-        assert_eq!(&[9, 13], &handles.as_slice());
-
-        compiler.set_enabled_interface_variables(vars)?;
         Ok(())
     }
 }

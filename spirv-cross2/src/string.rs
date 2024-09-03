@@ -110,6 +110,49 @@ impl<T> Deref for ContextStr<'_, T> {
     }
 }
 
+impl<T> PartialEq for ContextStr<'_, T> {
+    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+        self.cow.eq(&other.cow)
+    }
+}
+
+impl<'a, T> PartialEq<&'a str> for ContextStr<'_, T> {
+    fn eq(&self, other: &&'a str) -> bool {
+        self.cow.eq(other)
+    }
+}
+
+impl<'a, T> PartialEq<ContextStr<'_, T>> for &'a str {
+    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+        self.eq(&other.cow)
+    }
+}
+
+impl<T> PartialEq<str> for ContextStr<'_, T> {
+    fn eq(&self, other: &str) -> bool {
+        self.cow.eq(other)
+    }
+}
+
+impl<T> PartialEq<ContextStr<'_, T>> for str {
+    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+        self.eq(&other.cow)
+    }
+}
+
+impl<T> PartialEq<ContextStr<'_, T>> for String {
+    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+        self.eq(&other.cow)
+    }
+}
+impl<T> PartialEq<String> for ContextStr<'_, T> {
+    fn eq(&self, other: &String) -> bool {
+        self.cow.eq(other)
+    }
+}
+
+impl<T> Eq for ContextStr<'_, T> {}
+
 impl<T> From<String> for ContextStr<'_, T> {
     fn from(value: String) -> Self {
         Self::from_string(value)
@@ -221,9 +264,7 @@ mod test {
     struct LifetimeContext(*mut c_char);
     impl LifetimeContext {
         pub fn new() -> Self {
-            let cstring = CString::new(String::from("hello"))
-                .unwrap()
-                .into_raw();
+            let cstring = CString::new(String::from("hello")).unwrap().into_raw();
 
             Self(cstring)
         }

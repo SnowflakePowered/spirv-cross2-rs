@@ -1,6 +1,6 @@
 use crate::Compiler;
 use crate::{error, spirv};
-use spirv_cross_sys::BaseType;
+use spirv_cross_sys::{BaseType, SpvId, VariableId};
 
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
@@ -239,6 +239,8 @@ pub enum TypeInner<'a> {
         /// Atomics are represented as [`TypeInner::Pointer`] with
         /// the storage class [`StorageClass::AtomicCounter`].
         storage: StorageClass,
+        /// Whether this pointer is a forward pointer (i.e. `base` is another pointer type).
+        forward: bool,
     },
     /// A struct type.
     Struct(StructType<'a>),
@@ -514,18 +516,18 @@ impl<T> Compiler<'_, T> {
                 return self.process_array(id, name);
             }
 
-            // If it is not an array, has a proper storage class, and the base type id,
-            // is not the type id, then it is an `OpTypePointer`.
-            //
-            // I wish there was a better way to expose this in the C API.
-            let storage_class = sys::spvc_type_get_storage_class(ty);
-            if storage_class != StorageClass::Generic && base_type_id != id {
+            // pointer types
+            if sys::spvc_rs_type_is_pointer(ty) {
+                let storage_class = sys::spvc_type_get_storage_class(ty);
+                let forward = sys::spvc_rs_type_is_forward_pointer(ty);
+
                 return Ok(Type {
                     name,
                     id: self.create_handle(id),
                     inner: TypeInner::Pointer {
                         base: self.create_handle(base_type_id),
                         storage: storage_class,
+                        forward,
                     },
                 });
             }
@@ -586,12 +588,16 @@ impl<T> Compiler<'_, T> {
 
                 BaseType::AtomicCounter => {
                     // This should be covered by the pointer type above.
+                    let storage_class = sys::spvc_type_get_storage_class(ty);
+                    let forward = sys::spvc_rs_type_is_forward_pointer(ty);
+
                     return Ok(Type {
-                        id: self.create_handle(id),
                         name,
+                        id: self.create_handle(id),
                         inner: TypeInner::Pointer {
                             base: self.create_handle(base_type_id),
                             storage: storage_class,
+                            forward,
                         },
                     });
                 }
@@ -637,6 +643,19 @@ impl<T> Compiler<'_, T> {
         }
 
         Ok(size)
+    }
+
+    /// Get the underlying type of the variable.
+    pub fn variable_type(&self, variable: Handle<VariableId>) -> error::Result<Handle<TypeId>> {
+        let variable_id = self.yield_id(variable)?;
+
+        unsafe {
+            let mut type_id = TypeId(SpvId(0));
+            sys::spvc_rs_compiler_variable_get_type(self.ptr.as_ptr(), variable_id, &mut type_id)
+                .ok(self)?;
+
+            Ok(self.create_handle(type_id))
+        }
     }
 }
 
@@ -692,7 +711,7 @@ mod test {
         let name = compiler.member_name(id, 0)?;
         assert_eq!(Some("MVP"), name.as_deref());
 
-        compiler.set_member_name(ty.id, 0, c"NotMVP")?;
+        compiler.set_member_name(ty.id, 0, "NotMVP")?;
         // assert_eq!(Some("MVP"), name.as_deref());
 
         let name = compiler.member_name(id, 0)?;
@@ -708,6 +727,23 @@ mod test {
         //     TypeInner::Vector { .. } => {}
         //     _ => {}
         // }
+        Ok(())
+    }
+
+    #[test]
+    pub fn get_variable_type_test() -> Result<(), SpirvCrossError> {
+        let spv = SpirvCrossContext::new()?;
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
+
+        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let resources = compiler.shader_resources()?.all_resources()?;
+
+        let variable = resources.uniform_buffers[0].id;
+        assert_eq!(
+            resources.uniform_buffers[0].type_id.id(),
+            compiler.variable_type(variable)?.id()
+        );
         Ok(())
     }
 }

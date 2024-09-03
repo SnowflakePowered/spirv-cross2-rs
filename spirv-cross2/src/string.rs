@@ -306,7 +306,7 @@ impl<'a, T> ContextStr<'a, T> {
 mod test {
     use crate::string::ContextStr;
     use crate::ContextRoot;
-    use std::ffi::{c_char, CString};
+    use std::ffi::{c_char, CStr, CString};
     use std::rc::Rc;
 
     struct LifetimeContext(*mut c_char);
@@ -347,12 +347,53 @@ mod test {
 
         // let mut lt = Rc::new(LifetimeTest(PhantomData));
         let cstr = lt.get();
-        lt.set(cstr);
+        lt.set(cstr.clone());
 
+        let original_ptr = cstr.clone().into_cstring_ptr().unwrap().as_ptr();
         drop(lt);
 
         assert_eq!("hello", cstr.as_ref());
         println!("{}", cstr);
+
+        assert_eq!(original_ptr as usize, cstr.as_ptr() as usize);
+        // lt.borrow_mut().set(cstr)
+    }
+
+    #[test]
+    fn test_string_does_not_allocate() {
+        // one past the end
+        let mut test = String::with_capacity(6);
+        test.push_str("Hello");
+
+        let original_ptr = test.as_ptr() as usize;
+        let ctxstr = ContextStr::<LifetimeContext>::from(test);
+
+        let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
+        assert_eq!(original_ptr, new_ptr as usize);
+        // lt.borrow_mut().set(cstr)
+    }
+
+    #[test]
+    fn test_str_does_allocate() {
+        let str = "Hello";
+        let original_ptr = str.as_ptr() as usize;
+        let ctxstr = ContextStr::<LifetimeContext>::from(str);
+
+        let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
+        assert_ne!(original_ptr, new_ptr as usize);
+        // lt.borrow_mut().set(cstr)
+    }
+
+    #[test]
+    fn test_cstr_does_not_allocate() {
+        // can't use cstring literals until 1.77
+        let str = unsafe { CStr::from_ptr(b"Hello\0".as_ptr().cast()) };
+
+        let original_ptr = str.as_ptr() as usize;
+        let ctxstr = ContextStr::<LifetimeContext>::from(str);
+
+        let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
+        assert_eq!(original_ptr, new_ptr as usize);
         // lt.borrow_mut().set(cstr)
     }
 }

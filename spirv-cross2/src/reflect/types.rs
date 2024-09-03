@@ -294,6 +294,9 @@ pub enum TypeInner<'a> {
 
 /// Reflection of SPIR-V types.
 impl<T> Compiler<'_, T> {
+    // None of the names here belong to the context, they belong to the compiler.
+    // so 'ctx is unsound to return.
+
     fn process_struct(&self, struct_ty_id: TypeId) -> error::Result<StructType> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), struct_ty_id);

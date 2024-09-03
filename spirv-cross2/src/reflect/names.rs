@@ -130,6 +130,9 @@ impl<'ctx, T> Compiler<'ctx, T> {
         unsafe {
             let name =
                 sys::spvc_compiler_get_remapped_declared_block_name(self.ptr.as_ptr(), handle);
+
+            // SAFETY: 'ctx is sound here
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2773
             let name = ContextStr::from_ptr(name, self.ctx.clone());
             if name.is_empty() {
                 Ok(None)

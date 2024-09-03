@@ -605,7 +605,7 @@ pub struct BufferRequirements {
 }
 
 /// MSL specific APIs.
-impl<'a> Compiler<'a, Msl> {
+impl Compiler<'_, Msl> {
     /// Get whether the vertex shader requires rasterization to be disabled.
     pub fn is_rasterization_disabled(&self) -> bool {
         unsafe { sys::spvc_compiler_msl_is_rasterization_disabled(self.ptr.as_ptr()) }
@@ -679,7 +679,7 @@ impl<'a> Compiler<'a, Msl> {
     }
 
     /// This function marks a resource as using a dynamic offset
-    /// (``VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC` or `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC`).
+    /// (`VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC` or `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC`).
     ///
     /// `desc_set` and `binding` are the SPIR-V descriptor set and binding of a buffer resource
     /// in this shader.
@@ -912,7 +912,7 @@ pub enum AutomaticResourceBindingTier {
     Secondary,
 }
 
-impl<'a> CompiledArtifact<'a, Msl> {
+impl CompiledArtifact<'_, Msl> {
     /// Returns whether the set/binding combination provided in [`Compiler<Msl>::add_resource_binding`]
     /// was used.
     pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {

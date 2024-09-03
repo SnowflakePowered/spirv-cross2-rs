@@ -102,7 +102,7 @@ impl Iterator for SpecializationConstantIter<'_> {
 }
 
 /// Reflection of specialization constants.
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     // check bounds of the constant, otherwise you can write to arbitrary memory.
     unsafe fn bounds_check_constant(
         handle: spvc_constant,
@@ -181,7 +181,7 @@ impl<'a, T> Compiler<'a, T> {
     }
 
     /// Query declared specialization constants.
-    pub fn specialization_constants(&self) -> error::Result<SpecializationConstantIter<'a>> {
+    pub fn specialization_constants(&self) -> error::Result<SpecializationConstantIter<'ctx>> {
         unsafe {
             let mut constants = std::ptr::null();
             let mut size = 0;
@@ -192,6 +192,8 @@ impl<'a, T> Compiler<'a, T> {
             )
             .ok(self)?;
 
+            // SAFETY: 'ctx is sound here.
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2522
             let slice = slice::from_raw_parts(constants, size);
             Ok(SpecializationConstantIter(self.phantom(), slice.iter()))
         }

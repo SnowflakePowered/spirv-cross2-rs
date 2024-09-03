@@ -148,7 +148,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     /// To disambiguate, we must pass along with the entry point names the execution model.
     pub fn entry_points(&self) -> error::Result<EntryPointIter<'ctx>> {
         unsafe {
-            // SAFETY: 'ctx is OK to return here
+            // SAFETY: 'ctx is sound here
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2170
             let mut entry_points = std::ptr::null();
             let mut size = 0;
@@ -168,7 +168,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
         name: impl Into<ContextStr<'str>>,
         model: spirv::ExecutionModel,
     ) -> error::Result<Option<ContextStr<'ctx>>> {
-        // SAFETY: 'ctx is OK to return here
+        // SAFETY: 'ctx is sound here
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2217
         let name = name.into();
 

@@ -9,14 +9,14 @@ use spirv_cross_sys::{SpvId, VariableId};
 pub use spirv_cross_sys::BufferRange;
 
 /// Reflection of buffers (UBO, SSBOs, and PushConstant blocks).
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Returns a list of which members of a struct are potentially in use by a
     /// SPIR-V shader. The granularity of this analysis is per-member of a struct.
     /// This can be used for Buffer (UBO), BufferBlock/StorageBuffer (SSBO) and PushConstant blocks.
     pub fn active_buffer_ranges(
         &self,
         handle: impl Into<Handle<VariableId>>,
-    ) -> error::Result<&'a [BufferRange]> {
+    ) -> error::Result<&'ctx [BufferRange]> {
         let handle = handle.into();
         let handle = self.yield_id(handle)?;
 
@@ -31,6 +31,8 @@ impl<'a, T> Compiler<'a, T> {
             )
             .ok(self)?;
 
+            // SAFETY: 'ctx is sound here
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2575
             Ok(std::slice::from_raw_parts(ranges, size))
         }
     }

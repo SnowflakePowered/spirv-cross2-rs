@@ -183,7 +183,7 @@ impl From<HlslShaderModel> for u32 {
 }
 
 /// HLSL specific APIs.
-impl<'a> Compiler<'a, Hlsl> {
+impl Compiler<'_, Hlsl> {
     /// Add a resource binding to the HLSL compilation.
     ///
     /// By matching `stage`, `desc_set` and `binding` for a SPIR-V resource,
@@ -202,7 +202,7 @@ impl<'a> Compiler<'a, Hlsl> {
     ///
     /// If resource bindings are provided, [`CompiledArtifact<Hlsl>::is_resource_used`] will return true if
     /// the set/binding combination was used by the HLSL code.
-    pub fn add_resource_binding<'str>(&mut self, binding: &ResourceBinding) -> error::Result<()> {
+    pub fn add_resource_binding(&mut self, binding: &ResourceBinding) -> error::Result<()> {
         unsafe {
             sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), binding).ok(&*self)
         }
@@ -337,7 +337,7 @@ impl<'a> Compiler<'a, Hlsl> {
     }
 }
 
-impl<'a> CompiledArtifact<'a, Hlsl> {
+impl CompiledArtifact<'_, Hlsl> {
     /// Returns whether the set/binding combination provided in [`Compiler<Hlsl>::add_resource_binding`]
     /// was used.
     pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {

@@ -46,7 +46,7 @@ impl ExecutionModeArguments {
     }
 }
 
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Set or unset execution modes and arguments.
     ///
     /// If arguments is `None`, unsets the execution mode. To set an execution mode that does not
@@ -68,7 +68,7 @@ impl<'a, T> Compiler<'a, T> {
     }
 
     /// Query `OpExecutionMode`.
-    pub fn execution_modes(&self) -> error::Result<&'a [spirv::ExecutionMode]> {
+    pub fn execution_modes(&self) -> error::Result<&'ctx [spirv::ExecutionMode]> {
         unsafe {
             let mut size = 0;
             let mut modes = std::ptr::null();
@@ -76,6 +76,8 @@ impl<'a, T> Compiler<'a, T> {
             sys::spvc_compiler_get_execution_modes(self.ptr.as_ptr(), &mut modes, &mut size)
                 .ok(self)?;
 
+            // SAFETY: 'ctx is sound here.
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2250
             Ok(slice::from_raw_parts(modes, size))
         }
     }

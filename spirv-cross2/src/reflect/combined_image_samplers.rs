@@ -46,7 +46,7 @@ pub struct CombinedImageSampler {
     pub sampler_id: Handle<VariableId>,
 }
 
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Analyzes all OpImageFetch (texelFetch) opcodes and checks if there are instances where
     /// said instruction is used without a combined image sampler.
     /// GLSL targets do not support the use of texelFetch without a sampler.
@@ -117,10 +117,13 @@ impl<'a, T> Compiler<'a, T> {
     }
 
     /// Gets a remapping for the combined image samplers.
-    pub fn combined_image_samplers(&self) -> error::Result<CombinedImageSamplerIter> {
+    pub fn combined_image_samplers(&self) -> error::Result<CombinedImageSamplerIter<'ctx>> {
         unsafe {
             let mut samplers = std::ptr::null();
             let mut size = 0;
+
+            // SAFETY: 'ctx is sound here.
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2497
             sys::spvc_compiler_get_combined_image_samplers(
                 self.ptr.as_ptr(),
                 &mut samplers,

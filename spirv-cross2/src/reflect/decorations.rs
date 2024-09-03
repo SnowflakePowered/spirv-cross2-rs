@@ -156,13 +156,16 @@ fn decoration_is_string(decoration: Decoration) -> bool {
     }
 }
 
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Gets the value for decorations which take arguments.
     pub fn decoration<I: Id>(
         &self,
         id: Handle<I>,
         decoration: Decoration,
     ) -> error::Result<Option<DecorationValue>> {
+        // SAFETY: 'ctx is not sound to return here!
+        //  https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2154
+
         // SAFETY: id is yielded by the instance so it's safe to use.
         let id = SpvId(self.yield_id(id)?.id());
         unsafe {
@@ -234,7 +237,7 @@ impl<'a, T> Compiler<'a, T> {
     /// Gets the value for member decorations which take arguments.
     pub fn member_decoration<I: Id>(
         &self,
-        member: &StructMember<'a>,
+        member: &StructMember<'ctx>,
         decoration: Decoration,
     ) -> error::Result<Option<DecorationValue>> {
         self.member_decoration_by_handle(member.struct_type, member.index as u32, decoration)
@@ -333,7 +336,7 @@ impl<'a, T> Compiler<'a, T> {
     /// Set the value of a decoration for a struct member.
     pub fn set_member_decoration<'value>(
         &mut self,
-        member: &StructMember<'a>,
+        member: &StructMember<'ctx>,
         decoration: Decoration,
         value: Option<impl Into<DecorationValue<'value>>>,
     ) -> error::Result<()> {
@@ -539,7 +542,7 @@ impl<'a, T> Compiler<'a, T> {
     pub fn buffer_block_decorations(
         &self,
         variable: impl Into<Handle<VariableId>>,
-    ) -> error::Result<Option<&'a [Decoration]>> {
+    ) -> error::Result<Option<&'ctx [Decoration]>> {
         let variable = variable.into();
         let id = self.yield_id(variable)?;
 
@@ -554,6 +557,8 @@ impl<'a, T> Compiler<'a, T> {
             )
             .ok(self)?;
 
+            // SAFETY: 'ctx is sound here.
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2790
             let slice = slice::from_raw_parts(buffer, size);
             if slice.is_empty() {
                 Ok(None)

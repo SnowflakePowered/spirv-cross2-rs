@@ -12,10 +12,14 @@ use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
 
-pub use spirv_cross_sys::{BuiltinResourceType, ResourceType};
+/// The type of built-in resources to query.
+pub use spirv_cross_sys::BuiltinResourceType;
+
+/// The type of resource to query.
+pub use spirv_cross_sys::ResourceType;
 
 /// A handle to shader resources.
-pub struct ShaderResources<'a>(NonNull<spvc_resources_s>, PhantomCompiler<'a>);
+pub struct ShaderResources<'ctx>(NonNull<spvc_resources_s>, PhantomCompiler<'ctx>);
 
 impl ContextRooted for &ShaderResources<'_> {
     #[inline(always)]
@@ -102,7 +106,7 @@ impl<'a> InterfaceVariableSet<'a> {
 }
 
 // reflection
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Returns a set of all global variables which are statically accessed
     /// by the control flow graph from the current entry point.
     /// Only variables which change the interface for a shader are returned, that is,
@@ -114,9 +118,13 @@ impl<'a, T> Compiler<'a, T> {
     ///
     /// The return object is opaque to Rust, but its contents inspected by using [`InterfaceVariableSet::to_handles`].
     /// There is no way to modify the contents or use your own `InterfaceVariableSet`.
-    pub fn active_interface_variables(&self) -> error::Result<InterfaceVariableSet<'a>> {
+    pub fn active_interface_variables(&self) -> error::Result<InterfaceVariableSet<'ctx>> {
         unsafe {
             let mut set = std::ptr::null();
+
+            // SAFETY: 'ctx is sound here
+            // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1888
+
             sys::spvc_compiler_get_active_interface_variables(self.ptr.as_ptr(), &mut set)
                 .ok(self)?;
 
@@ -441,11 +449,13 @@ impl Clone for AllResources<'_> {
     }
 }
 
-impl<'a> ShaderResources<'a> {
+impl<'ctx> ShaderResources<'ctx> {
     /// Get an iterator for all resources of the given type.
-    pub fn resources_for_type(&self, ty: ResourceType) -> error::Result<ResourceIter<'a>> {
-        // SAFETY: 'a is OK to return here:
+    pub fn resources_for_type(&self, ty: ResourceType) -> error::Result<ResourceIter<'ctx>> {
+        // SAFETY: 'ctx is sound here,
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1802
+        // Furthermore, once allocated, the lifetime of spvc_resources_s is tied to that of the context.
+        // so all child resources inherit the lifetime.
         let mut count = 0;
         let mut out = std::ptr::null();
         unsafe {
@@ -467,12 +477,14 @@ impl<'a> ShaderResources<'a> {
     pub fn builtin_resources_for_type(
         &self,
         ty: BuiltinResourceType,
-    ) -> error::Result<BuiltinResourceIter<'a>> {
+    ) -> error::Result<BuiltinResourceIter<'ctx>> {
         let mut count = 0;
         let mut out = std::ptr::null();
 
-        // SAFETY: 'a is OK to return here:
+        // SAFETY: 'ctx is sound here,
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1826
+        // Furthermore, once allocated, the lifetime of spvc_resources_s is tied to that of the context.
+        // so all child resources inherit the lifetime.
         unsafe {
             spirv_cross_sys::spvc_resources_get_builtin_resource_list_for_type(
                 self.0.as_ptr(),
@@ -490,7 +502,8 @@ impl<'a> ShaderResources<'a> {
 
     /// Get all resources declared in the shader.
     #[rustfmt::skip]
-    pub fn all_resources(&self) -> error::Result<AllResources<'a>> {
+    pub fn all_resources(&self) -> error::Result<AllResources<'ctx>> {
+          // SAFETY: 'ctx is sound by transitive property of resources_for_type
         Ok(AllResources {
                 uniform_buffers: self.resources_for_type(ResourceType::UniformBuffer)?.collect(),
                 storage_buffers: self.resources_for_type(ResourceType::StorageBuffer)?.collect(),

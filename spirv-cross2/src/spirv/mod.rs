@@ -1,15 +1,28 @@
+/// [BuiltIn](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_builtin)
 pub use spirv_cross_sys::SpvBuiltIn as BuiltIn;
+/// [Capability](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_capability)
 pub use spirv_cross_sys::SpvCapability as Capability;
+/// [Decoration](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_decoration)
 pub use spirv_cross_sys::SpvDecoration as Decoration;
+/// [Dim](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_dim)
 pub use spirv_cross_sys::SpvDim as Dim;
+/// [Execution Mode](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_execution_mode)
 pub use spirv_cross_sys::SpvExecutionMode as ExecutionMode;
+/// [Execution Model](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_execution_model) (i.e. shader stage)
 pub use spirv_cross_sys::SpvExecutionModel as ExecutionModel;
+/// [FP Denorm Mode](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_fp_denorm_mode)
 pub use spirv_cross_sys::SpvFPDenormMode as FPDenormMode;
+/// [FP Fast Math Mode](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_fp_fast_math_mode)
 pub use spirv_cross_sys::SpvFPFastMathModeMask as FPFastMathModeMask;
+/// [FP Fast Math Mode](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_fp_fast_math_mode)
 pub use spirv_cross_sys::SpvFPFastMathModeShift as FPFastMathModeShift;
+/// [FP Operation Mode](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_fp_operation_mode)
 pub use spirv_cross_sys::SpvFPOperationMode as FPOperationMode;
+/// [FP Rounding Mode](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_fp_rounding_mode)
 pub use spirv_cross_sys::SpvFPRoundingMode as FPRoundingMode;
+/// [Image Format](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_image_format)
 pub use spirv_cross_sys::SpvImageFormat as ImageFormat;
+/// [Storage Class](https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_storage_class)
 pub use spirv_cross_sys::SpvStorageClass as StorageClass;
 
 // These are unused.

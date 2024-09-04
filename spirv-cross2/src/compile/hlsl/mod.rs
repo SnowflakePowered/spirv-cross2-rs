@@ -3,8 +3,10 @@ use crate::targets::Hlsl;
 use crate::{error, spirv, Compiler};
 use bitflags::bitflags;
 
-pub use spirv_cross_sys::HlslResourceBinding as ResourceBinding;
-pub use spirv_cross_sys::HlslResourceBindingMapping as ResourceBindingMapping;
+use spirv_cross_sys::HlslResourceBinding;
+use spirv_cross_sys::HlslResourceBindingMapping;
+
+/// HLSL Root Constant Layout
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 
 use crate::error::ToContextError;
@@ -14,12 +16,6 @@ use crate::string::ContextStr;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{HlslBindingFlagBits, HlslBindingFlags, HlslVertexAttributeRemap};
-
-/// Special constant used in a [`ResourceBinding`] desc_set.
-pub const PUSH_CONSTANT_DESCRIPTOR_SET: u32 = !0;
-
-/// Special constant used in a [`ResourceBinding`] binding.
-pub const PUSH_CONSTANT_BINDING: u32 = 0;
 
 bitflags! {
     /// Controls how resource bindings are declared in the output HLSL.
@@ -182,6 +178,88 @@ impl From<HlslShaderModel> for u32 {
     }
 }
 
+/// Pipeline binding information for a resource.
+///
+/// Used to map a SPIR-V resource to an HLSL buffer.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum ResourceBinding {
+    /// A resource with a qualified layout.
+    ///
+    /// i.e. `layout(set = 0, binding = 1)` in GLSL.
+    Qualified {
+        /// The descriptor set of the qualified layout.
+        set: u32,
+        /// The binding number of the qualified layout.
+        binding: u32,
+    },
+    /// The push constant buffer.
+    PushConstant,
+}
+
+impl ResourceBinding {
+    /// Create a resource binding for a qualified SPIR-V layout
+    /// specifier.
+    pub const fn from_qualified(set: u32, binding: u32) -> Self {
+        Self::Qualified { set, binding }
+    }
+
+    const fn descriptor_set(&self) -> u32 {
+        const PUSH_CONSTANT_DESCRIPTOR_SET: u32 = !0;
+        match self {
+            ResourceBinding::Qualified { set, .. } => *set,
+            ResourceBinding::PushConstant => PUSH_CONSTANT_DESCRIPTOR_SET,
+        }
+    }
+
+    const fn binding(&self) -> u32 {
+        const PUSH_CONSTANT_BINDING: u32 = 0;
+        match self {
+            ResourceBinding::Qualified { binding, .. } => *binding,
+            ResourceBinding::PushConstant => PUSH_CONSTANT_BINDING,
+        }
+    }
+}
+
+/// The HLSL buffer to bind a resource to.
+///
+/// A single SPIR-V binding may bind to multiple
+/// registers for multiple resource types.
+///
+/// For example, for combined image samplers, both the `srv` and `sampler`
+/// bindings will be considered.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BindTarget {
+    /// Bind to a constant buffer view register.
+    pub cbv: Option<RegisterBinding>,
+    /// Bind to an unordered access view register.
+    pub uav: Option<RegisterBinding>,
+    /// Bind to a shader resource view register.
+    pub srv: Option<RegisterBinding>,
+    /// Bind to a sampler register.
+    pub sampler: Option<RegisterBinding>,
+}
+
+/// An HLSL register location.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub struct RegisterBinding {
+    /// The register for this binding.
+    pub register: u32,
+    /// The address space index for this binding.
+    ///
+    /// This is ignored on Shader Model 5.0 and below.
+    pub space: u32,
+}
+
+impl From<RegisterBinding> for HlslResourceBindingMapping {
+    #[inline(always)]
+    fn from(value: RegisterBinding) -> Self {
+        HlslResourceBindingMapping {
+            register_space: value.space,
+            register_binding: value.register,
+        }
+    }
+}
+
 /// HLSL specific APIs.
 impl Compiler<'_, Hlsl> {
     /// Add a resource binding to the HLSL compilation.
@@ -195,16 +273,34 @@ impl Compiler<'_, Hlsl> {
     ///
     /// On SM 5.0 and lower, `register_space` is ignored.
     ///
-    /// To remap a push constant block which does not have any `desc_set` and `binding` associated with it,
-    /// use [`PUSH_CONSTANT_DESCRIPTOR_SET`] and [`PUSH_CONSTANT_BINDING`] as values for `desc_set` and `binding`.
-    ///
     /// For deeper control of push constants, [`Compiler<Hlsl>::set_root_constant_layout`] can be used instead.
     ///
     /// If resource bindings are provided, [`CompiledArtifact<Hlsl>::is_resource_used`] will return true if
     /// the set/binding combination was used by the HLSL code.
-    pub fn add_resource_binding(&mut self, binding: &ResourceBinding) -> error::Result<()> {
+    pub fn add_resource_binding(
+        &mut self,
+        stage: spirv::ExecutionModel,
+        binding: ResourceBinding,
+        bind_target: &BindTarget,
+    ) -> error::Result<()> {
+        const DEFAULT_BINDING: HlslResourceBindingMapping = HlslResourceBindingMapping {
+            register_space: 0,
+            register_binding: 0,
+        };
+
+        let hlsl_resource_binding = HlslResourceBinding {
+            stage,
+            desc_set: binding.descriptor_set(),
+            binding: binding.binding(),
+            cbv: bind_target.cbv.map_or(DEFAULT_BINDING, From::from),
+            uav: bind_target.uav.map_or(DEFAULT_BINDING, From::from),
+            srv: bind_target.srv.map_or(DEFAULT_BINDING, From::from),
+            sampler: bind_target.sampler.map_or(DEFAULT_BINDING, From::from),
+        };
+
         unsafe {
-            sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), binding).ok(&*self)
+            sys::spvc_compiler_hlsl_add_resource_binding(self.ptr.as_ptr(), &hlsl_resource_binding)
+                .ok(&*self)
         }
     }
 
@@ -338,13 +434,13 @@ impl Compiler<'_, Hlsl> {
 impl CompiledArtifact<'_, Hlsl> {
     /// Returns whether the set/binding combination provided in [`Compiler<Hlsl>::add_resource_binding`]
     /// was used.
-    pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {
+    pub fn is_resource_used(&self, model: spirv::ExecutionModel, binding: ResourceBinding) -> bool {
         unsafe {
             sys::spvc_compiler_hlsl_is_resource_used(
                 self.compiler.ptr.as_ptr(),
                 model,
-                set,
-                binding,
+                binding.descriptor_set(),
+                binding.binding(),
             )
         }
     }

@@ -213,7 +213,7 @@ impl Compiler<'_, Glsl> {
     }
 }
 
-/// Iterator for required GLSL extensions, created by [`Compiler<Glsl>::require_extension`].
+/// Iterator for required GLSL extensions, created by [`Compiler<Glsl>::required_extensions`].
 pub struct GlslExtensionsIter<'a>(
     // 'a is 'compiler.
     Range<usize>,

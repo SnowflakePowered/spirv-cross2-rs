@@ -1,13 +1,14 @@
-use core::slice;
-use spirv_cross_sys as sys;
-use spirv_cross_sys::spvc_entry_point;
-use std::ffi::c_char;
-
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::string::ContextStr;
 use crate::{error, spirv};
 use crate::{Compiler, ContextRoot};
+use core::slice;
+use spirv_cross_sys as sys;
+use spirv_cross_sys::spvc_entry_point;
+use std::ffi::c_char;
+use std::mem::MaybeUninit;
+use std::ptr;
 
 /// Iterator for declared extensions, created by [`Compiler::declared_extensions`].
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>, ContextRoot<'a>);
@@ -101,7 +102,10 @@ impl<T> Compiler<'_, T> {
 }
 
 /// Iterator type created by [`Compiler::entry_points`].
-pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>, ContextRoot<'a>);
+pub struct EntryPointIter<'a>(
+    slice::Iter<'a, MaybeUninit<spvc_entry_point>>,
+    ContextRoot<'a>,
+);
 
 /// A SPIR-V entry point.
 #[derive(Debug)]
@@ -116,12 +120,23 @@ impl<'a> Iterator for EntryPointIter<'a> {
     type Item = EntryPoint<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.next().map(|entry| unsafe {
+        self.0.next().and_then(|entry| unsafe {
+            // execution_model is potentially uninit, we need to check.
+            let exec_model = ptr::addr_of!((*entry.as_ptr()).execution_model);
+            if exec_model.cast::<u32>().read() == u32::MAX {
+                if cfg!(debug_assertions) {
+                    panic!("Unexpected SpvExecutionModelMax in valid entry point!")
+                } else {
+                    return None;
+                }
+            }
+
+            let entry = entry.assume_init();
             let name = ContextStr::from_ptr(entry.name, self.1.clone());
-            EntryPoint {
+            Some(EntryPoint {
                 name,
                 execution_model: entry.execution_model,
-            }
+            })
         })
     }
 }
@@ -156,7 +171,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 .ok(self)?;
 
             Ok(EntryPointIter(
-                slice::from_raw_parts(entry_points, size).iter(),
+                slice::from_raw_parts(entry_points.cast(), size).iter(),
                 self.ctx.clone(),
             ))
         }
@@ -266,6 +281,8 @@ mod test {
         let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let old_entry_points: Vec<_> = compiler.entry_points()?.collect();
         let main = &old_entry_points[0];
+
+        eprintln!("{:?}", main);
 
         assert_eq!("main", main.name.as_ref());
         compiler.rename_entry_point("main", "new_main", spirv::ExecutionModel::Fragment)?;

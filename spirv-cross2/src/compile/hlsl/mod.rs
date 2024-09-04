@@ -44,11 +44,11 @@ bitflags! {
     }
 }
 
-impl Sealed for CompileOptions {}
+impl Sealed for CompilerOptions {}
 /// HLSL compiler options
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
-pub struct CompileOptions {
+pub struct CompilerOptions {
     /// Compile options common to GLSL, HLSL, and MSL.
     #[expand]
     pub common: CommonOptions,
@@ -447,7 +447,7 @@ impl CompiledArtifact<'_, Hlsl> {
 
 #[cfg(test)]
 mod test {
-    use crate::compile::hlsl::CompileOptions;
+    use crate::compile::hlsl::CompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
     use crate::compile::sealed::ApplyCompilerOptions;
@@ -474,7 +474,7 @@ mod test {
         }
 
         // println!("{:#?}", resources);
-        let opts = CompileOptions::default();
+        let opts = CompilerOptions::default();
         unsafe {
             opts.apply(opts_ptr, &compiler)?;
         }

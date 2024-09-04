@@ -28,7 +28,7 @@ impl Target for None {
 }
 
 impl CompilableTarget for Glsl {
-    type Options = compile::glsl::CompileOptions;
+    type Options = compile::glsl::CompilerOptions;
 }
 impl Sealed for Glsl {}
 impl Target for Glsl {
@@ -36,7 +36,7 @@ impl Target for Glsl {
 }
 
 impl CompilableTarget for Hlsl {
-    type Options = compile::hlsl::CompileOptions;
+    type Options = compile::hlsl::CompilerOptions;
 }
 impl Sealed for Hlsl {}
 impl Target for Hlsl {
@@ -44,7 +44,7 @@ impl Target for Hlsl {
 }
 
 impl CompilableTarget for Msl {
-    type Options = compile::msl::CompileOptions;
+    type Options = compile::msl::CompilerOptions;
 }
 impl Sealed for Msl {}
 impl Target for Msl {

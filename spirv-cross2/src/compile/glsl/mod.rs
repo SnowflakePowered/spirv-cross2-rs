@@ -9,11 +9,11 @@ use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options, VariableId};
 use std::ops::Range;
 
-impl Sealed for CompileOptions {}
+impl Sealed for CompilerOptions {}
 /// GLSL compiler options.
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
-pub struct CompileOptions {
+pub struct CompilerOptions {
     /// Compile options common to GLSL, HLSL, and MSL.
     #[expand]
     pub common: CommonOptions,
@@ -244,10 +244,9 @@ impl<'comp> Iterator for GlslExtensionsIter<'comp> {
 
 #[cfg(test)]
 mod test {
-    use crate::compile::glsl::CompileOptions;
+    use crate::compile::glsl::CompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
-    use crate::compile::sealed::ApplyCompilerOptions;
     use crate::compile::CompilableTarget;
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::targets::Glsl;
@@ -258,6 +257,8 @@ mod test {
 
     #[test]
     pub fn glsl_opts() -> Result<(), SpirvCrossError> {
+        use crate::compile::sealed::ApplyCompilerOptions;
+
         let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
@@ -273,7 +274,7 @@ mod test {
         }
 
         // println!("{:#?}", resources);
-        let opts = CompileOptions::default();
+        let opts = CompilerOptions::default();
         unsafe {
             opts.apply(opts_ptr, &compiler)?;
         }

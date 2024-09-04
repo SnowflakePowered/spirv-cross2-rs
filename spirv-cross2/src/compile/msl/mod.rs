@@ -55,11 +55,11 @@ use std::mem::MaybeUninit;
 use std::num::NonZeroU32;
 use std::ptr::addr_of_mut;
 
-impl Sealed for CompileOptions {}
+impl Sealed for CompilerOptions {}
 /// MSL compiler options
 #[non_exhaustive]
 #[derive(Debug, spirv_cross2_derive::CompilerOptions)]
-pub struct CompileOptions {
+pub struct CompilerOptions {
     /// Compile options common to GLSL, HLSL, and MSL.
     #[expand]
     pub common: CommonOptions,
@@ -224,7 +224,7 @@ pub struct CompileOptions {
     ///
     /// Useful for devices which don't support layered rendering.
     ///
-    /// Only effective when [`CompileOptions::multiview`] is enabled.
+    /// Only effective when [`CompilerOptions::multiview`] is enabled.
     #[option(SPVC_COMPILER_OPTION_MSL_MULTIVIEW_LAYERED_RENDERING, true)]
     pub multiview_layered_rendering: bool,
 
@@ -988,7 +988,7 @@ impl Compiler<'_, Msl> {
         }
     }
 
-    /// If using [`CompileOptions::pad_fragment_output_components`], override the number of components we expect
+    /// If using [`CompilerOptions::pad_fragment_output_components`], override the number of components we expect
     /// to use for a particular location. The default is 4 if number of components is not overridden.
     pub fn set_fragment_output_components(
         &mut self,
@@ -1177,7 +1177,7 @@ impl CompiledArtifact<'_, Msl> {
 
 #[cfg(test)]
 mod test {
-    use crate::compile::msl::CompileOptions;
+    use crate::compile::msl::CompilerOptions;
     use spirv_cross_sys::spvc_compiler_create_compiler_options;
 
     use crate::compile::sealed::ApplyCompilerOptions;
@@ -1204,7 +1204,7 @@ mod test {
         }
 
         // println!("{:#?}", resources);
-        let opts = CompileOptions::default();
+        let opts = CompilerOptions::default();
         unsafe {
             opts.apply(opts_ptr, &compiler)?;
         }

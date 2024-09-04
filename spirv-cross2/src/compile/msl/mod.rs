@@ -1,69 +1,34 @@
 use crate::compile::{CommonOptions, CompiledArtifact};
 use spirv_cross_sys as sys;
-pub use spirv_cross_sys::MslChromaLocation as ChromaLocation;
-pub use spirv_cross_sys::MslComponentSwizzle as ComponentSwizzle;
+
 pub use spirv_cross_sys::MslConstexprSampler as ConstexprSampler;
-pub use spirv_cross_sys::MslFormatResolution as FormatResolution;
+
 pub use spirv_cross_sys::MslSamplerAddress as SamplerAddress;
 pub use spirv_cross_sys::MslSamplerBorderColor as SamplerBorderColor;
 pub use spirv_cross_sys::MslSamplerCompareFunc as SamplerCompareFunc;
 pub use spirv_cross_sys::MslSamplerCoord as SamplerCoord;
 pub use spirv_cross_sys::MslSamplerFilter as SamplerFilter;
 pub use spirv_cross_sys::MslSamplerMipFilter as SamplerMipFilter;
+
+pub use spirv_cross_sys::MslSamplerYcbcrModelConversion as YcbcrModelConversion;
+
+pub use spirv_cross_sys::MslChromaLocation as ChromaLocation;
+pub use spirv_cross_sys::MslComponentSwizzle as ComponentSwizzle;
+pub use spirv_cross_sys::MslFormatResolution as FormatResolution;
 pub use spirv_cross_sys::MslSamplerYcbcrConversion as SamplerYcbcrConversion;
-pub use spirv_cross_sys::MslSamplerYcbcrModelConversion as SamplerYcbcrModelConversion;
 pub use spirv_cross_sys::MslSamplerYcbcrRange as SamplerYcbcrRange;
-pub use spirv_cross_sys::MslShaderInput as ShaderInput;
-pub use spirv_cross_sys::MslShaderInterfaceVar2 as ShaderInterfaceVar;
+
+/// Indicates the format of a shader interface variable. Currently limited to specifying
+/// if the input is an 8-bit unsigned integer, 16-bit unsigned integer, or
+/// some other format.
 pub use spirv_cross_sys::MslShaderVariableFormat as ShaderVariableFormat;
+
+/// Indicates the rate at which a variable changes value, one of: per-vertex,
+/// per-primitive, or per-patch.
 pub use spirv_cross_sys::MslShaderVariableRate as ShaderVariableRate;
-
-/// Special constant used in a [`ResourceBinding`] desc_set.
-pub const PUSH_CONSTANT_DESCRIPTOR_SET: u32 = !0;
-
-/// Special constant used in a [`ResourceBinding`] binding.
-pub const PUSH_CONSTANT_BINDING: u32 = 0;
-
-/// Special constant used in a [`ResourceBinding`] binding
-/// element to indicate the buffer binding for swizzle buffers.
-pub const SWIZZLE_BUFFER_BINDING: u32 = !1;
-
-/// Special constant used in a [`ResourceBinding`] binding
-/// element to indicate the buffer binding for buffer size buffers to support `OpArrayLength`.
-pub const BUFFER_SIZE_BUFFER_BINDING: u32 = !2;
-
-/// Special constant used in a [`ResourceBinding`] binding
-/// element to indicate the buffer binding used for the argument buffer itself.
-///
-/// This buffer binding should be kept as small as possible as all automatic bindings for buffers
-/// will start at `max(ARGUMENT_BUFFER_BINDING) + 1`.
-pub const ARGUMENT_BUFFER_BINDING: u32 = !3;
 
 /// Maximum number of argument buffers supported.
 pub const MAX_ARGUMENT_BUFFERS: u32 = 8;
-
-use spirv_cross_sys::MslResourceBinding2;
-
-
-/// Pipeline binding information for a resource.
-///
-/// Used to map a SPIR-V resource to an MSL buffer.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum ResourceBinding {
-    /// A resource with a qualified layout.
-    ///
-    /// i.e. `layout(set = 0, binding = 1)` in GLSL.
-    Qualified {
-        /// The descriptor set of the qualified layout.
-        set: u32,
-        /// The binding number of the qualified layout.
-        binding: u32,
-    },
-    /// The push constant buffer.
-    PushConstant,
-}
-
-use std::fmt::{Debug, Formatter};
 
 use crate::error::ToContextError;
 use crate::handle::{Handle, VariableId};
@@ -71,6 +36,11 @@ use crate::sealed::Sealed;
 use crate::string::ContextStr;
 use crate::targets::Msl;
 use crate::{error, spirv, Compiler, ContextRooted};
+use spirv_cross_sys::{MslResourceBinding2, MslShaderInterfaceVar2};
+use std::fmt::{Debug, Formatter};
+use std::mem::MaybeUninit;
+use std::num::NonZeroU32;
+use std::ptr::addr_of_mut;
 
 impl Sealed for CompileOptions {}
 /// MSL compiler options
@@ -493,7 +463,7 @@ pub struct MslVersion {
 
 impl MslVersion {
     /// Create a new `MslVersion`.
-    pub fn new(major: u32, minor: u32, patch: u32) -> Self {
+    pub const fn new(major: u32, minor: u32, patch: u32) -> Self {
         Self {
             major,
             minor,
@@ -624,6 +594,153 @@ pub struct BufferRequirements {
     pub needs_input_threadgroup_buffer: bool,
 }
 
+/// Pipeline binding information for a resource.
+///
+/// Used to map a SPIR-V resource to an MSL buffer.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum ResourceBinding {
+    /// A resource with a qualified layout.
+    ///
+    /// i.e. `layout(set = 0, binding = 1)` in GLSL.
+    Qualified {
+        /// The descriptor set of the qualified layout.
+        set: u32,
+        /// The binding number of the qualified layout.
+        binding: u32,
+    },
+    /// The push constant buffer.
+    PushConstant,
+    /// The swizzle buffer, at the given index.
+    SwizzleBuffer(u32),
+    /// The buffer binding for buffer size
+    /// buffers to support `OpArrayLength`.
+    BufferSizeBuffer(u32),
+    /// The argument buffer, at the given index.
+    ///
+    /// This buffer binding should be kept as small as possible as all automatic bindings for buffers
+    /// will start at `max(ResourceBinding::ArgumentBuffer) + 1`.
+    ArgumentBuffer(u32),
+}
+
+impl ResourceBinding {
+    /// Create a resource binding for a qualified SPIR-V layout
+    /// specifier.
+    pub const fn from_qualified(set: u32, binding: u32) -> Self {
+        ResourceBinding::Qualified { set, binding }
+    }
+
+    const fn descriptor_set(&self) -> u32 {
+        const PUSH_CONSTANT_DESCRIPTOR_SET: u32 = !0;
+        match self {
+            ResourceBinding::Qualified { set, .. }
+            | ResourceBinding::SwizzleBuffer(set)
+            | ResourceBinding::BufferSizeBuffer(set)
+            | ResourceBinding::ArgumentBuffer(set) => *set,
+            ResourceBinding::PushConstant => PUSH_CONSTANT_DESCRIPTOR_SET,
+        }
+    }
+
+    const fn binding(&self) -> u32 {
+        const PUSH_CONSTANT_BINDING: u32 = 0;
+        const SWIZZLE_BUFFER_BINDING: u32 = !1;
+        const BUFFER_SIZE_BUFFER_BINDING: u32 = !2;
+        const ARGUMENT_BUFFER_BINDING: u32 = !3;
+
+        match self {
+            ResourceBinding::Qualified { binding, .. } => *binding,
+            ResourceBinding::PushConstant => PUSH_CONSTANT_BINDING,
+            ResourceBinding::SwizzleBuffer(_) => SWIZZLE_BUFFER_BINDING,
+            ResourceBinding::BufferSizeBuffer(_) => BUFFER_SIZE_BUFFER_BINDING,
+            ResourceBinding::ArgumentBuffer(_) => ARGUMENT_BUFFER_BINDING,
+        }
+    }
+}
+
+/// The MSL target to bind a resource to.
+///
+/// A single SPIR-V binding may bind to multiple
+/// registers for multiple resource types.
+///
+/// The count field indicates the number of resources consumed by this binding, if the binding
+/// represents an array of resources.
+///
+/// If the resource array is a run-time-sized array, which are legal in GLSL or SPIR-V, this value
+/// will be used to declare the array size in MSL, which does not support run-time-sized arrays.
+///
+/// If using MSL 2.0 argument buffers (for iOS only) the resource is not a storage image,
+/// the binding reference we remap to will become an `[[id(N)]]` attribute within
+/// the argument buffer index specified in
+/// [`ResourceBinding::ArgumentBuffer`].
+///
+/// For resources which are bound in the "classic" MSL 1.0 way or discrete descriptors, the remap will
+/// become a `[[buffer(N)]]`, `[[texture(N)]]` or `[[sampler(N)]]` depending on the resource types used.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BindTarget {
+    /// The buffer index to bind to, if applicable.
+    pub buffer: u32,
+    /// The texture index to bind to, if applicable.
+    pub texture: u32,
+    /// The sampler index to bind to, if applicable.
+    pub sampler: u32,
+    /// The number of resources consumed by this binding,
+    /// if the binding is an array of resources.
+    pub count: Option<NonZeroU32>,
+}
+
+/// Defines MSL characteristics of a shader interface variable.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ShaderInterfaceVariable {
+    /// The builtin for the variable, if any.
+    pub builtin: Option<spirv::BuiltIn>,
+    /// The `vecsize` for this variable, if applicable.
+    ///
+    /// If `vecsize` is Some, it must be greater than or equal to the `vecsize` declared in the shader,
+    /// or behavior in the generated shader is undefined.
+    pub vecsize: Option<NonZeroU32>,
+    /// The format of a shader interface variable.
+    pub format: ShaderVariableFormat,
+    /// Indicates the rate at which a variable changes value.
+    pub rate: ShaderVariableRate,
+}
+
+impl ShaderInterfaceVariable {
+    /// We need to be maybeuninit, because None builtin is represented by u32::MAX,
+    /// which is invalid in Rust. I don't want to expose it just for this, so we'll just
+    /// do some magic.
+    #[must_use]
+    fn to_raw(&self, location: u32) -> MaybeUninit<MslShaderInterfaceVar2> {
+        let mut base = MslShaderInterfaceVar2 {
+            location,
+            format: self.format,
+            builtin: spirv::BuiltIn::Position,
+            vecsize: self.vecsize.map_or(0, NonZeroU32::get),
+            rate: self.rate,
+        };
+
+        if let Some(builtin) = self.builtin {
+            // happy path, we can just set the builtin.
+            base.builtin = builtin;
+            MaybeUninit::new(base)
+        } else {
+            // sad path...
+
+            // ensure layout
+            const _: () = assert!(size_of::<spirv::BuiltIn>() == size_of::<u32>());
+
+            let mut base = MaybeUninit::new(base);
+            unsafe {
+                let base_ptr = base.as_mut_ptr();
+                let builtin_ptr = addr_of_mut!((*base_ptr).builtin).cast::<u32>();
+
+                // from this point forward, the MslShaderInterfaceVar2 is a hot potato.
+                builtin_ptr.write(u32::MAX)
+            }
+
+            base
+        }
+    }
+}
+
 /// MSL specific APIs.
 impl Compiler<'_, Msl> {
     /// Get whether the vertex shader requires rasterization to be disabled.
@@ -661,8 +778,16 @@ impl Compiler<'_, Msl> {
     ///
     /// Note: this covers the functionality implemented by the SPIR-V Cross
     /// C API `spvc_compiler_msl_add_vertex_attribute`.
-    pub fn add_shader_input(&mut self, input: &ShaderInterfaceVar) -> error::Result<()> {
-        unsafe { sys::spvc_compiler_msl_add_shader_input_2(self.ptr.as_ptr(), input).ok(&*self) }
+    pub fn add_shader_input(
+        &mut self,
+        location: u32,
+        variable: &ShaderInterfaceVariable,
+    ) -> error::Result<()> {
+        let variable = variable.to_raw(location);
+        unsafe {
+            sys::spvc_compiler_msl_add_shader_input_2(self.ptr.as_ptr(), variable.as_ptr())
+                .ok(&*self)
+        }
     }
 
     /// Add a shader interface variable description used to fix up shader output variables.
@@ -672,20 +797,41 @@ impl Compiler<'_, Msl> {
     ///
     /// Note: this covers the functionality implemented by the SPIR-V Cross
     /// C API `spvc_compiler_msl_add_vertex_attribute`.
-    pub fn add_shader_output(&mut self, input: &ShaderInterfaceVar) -> error::Result<()> {
-        unsafe { sys::spvc_compiler_msl_add_shader_output_2(self.ptr.as_ptr(), input).ok(&*self) }
+    pub fn add_shader_output(
+        &mut self,
+        location: u32,
+        variable: &ShaderInterfaceVariable,
+    ) -> error::Result<()> {
+        let variable = variable.to_raw(location);
+        unsafe {
+            sys::spvc_compiler_msl_add_shader_output_2(self.ptr.as_ptr(), variable.as_ptr())
+                .ok(&*self)
+        }
     }
 
-    /// Add a resource binding to indicate the MSL buffer,
-    /// texture or sampler index to use for a particular SPIR-V description set
-    /// and binding.
+    /// Add a resource binding to indicate the MSL buffer, texture or sampler index to use for a
+    /// particular resource.
     ///
     /// If resource bindings are provided,
     /// [`CompiledArtifact<Msl>::is_resource_used`] will return true after [`Compiler::compile`] if
     /// the set/binding combination was used by the MSL code.
-    pub fn add_resource_binding(&mut self, binding: &ResourceBinding) -> error::Result<()> {
+    pub fn add_resource_binding(
+        &mut self,
+        stage: spirv::ExecutionModel,
+        binding: ResourceBinding,
+        bind_target: &BindTarget,
+    ) -> error::Result<()> {
+        let binding = MslResourceBinding2 {
+            stage,
+            desc_set: binding.descriptor_set(),
+            binding: binding.binding(),
+            count: bind_target.count.map_or(0, NonZeroU32::get),
+            msl_buffer: bind_target.buffer,
+            msl_texture: bind_target.texture,
+            msl_sampler: bind_target.sampler,
+        };
         unsafe {
-            sys::spvc_compiler_msl_add_resource_binding_2(self.ptr.as_ptr(), binding).ok(&*self)
+            sys::spvc_compiler_msl_add_resource_binding_2(self.ptr.as_ptr(), &binding).ok(&*self)
         }
     }
 
@@ -738,7 +884,7 @@ impl Compiler<'_, Msl> {
     }
 
     /// If an argument buffer is large enough, it may need to be in the device storage space rather than
-    /// constant. Opt-in to this behavior here on a per set basis.
+    /// constant. Opt-in to this behavior here on a per-set basis.
     pub fn set_argument_buffer_device_address_space(
         &mut self,
         desc_set: u32,
@@ -933,9 +1079,14 @@ pub enum AutomaticResourceBindingTier {
 impl CompiledArtifact<'_, Msl> {
     /// Returns whether the set/binding combination provided in [`Compiler<Msl>::add_resource_binding`]
     /// was used.
-    pub fn is_resource_used(&self, model: spirv::ExecutionModel, set: u32, binding: u32) -> bool {
+    pub fn is_resource_used(&self, model: spirv::ExecutionModel, binding: ResourceBinding) -> bool {
         unsafe {
-            sys::spvc_compiler_msl_is_resource_used(self.compiler.ptr.as_ptr(), model, set, binding)
+            sys::spvc_compiler_msl_is_resource_used(
+                self.compiler.ptr.as_ptr(),
+                model,
+                binding.descriptor_set(),
+                binding.binding(),
+            )
         }
     }
 
@@ -955,8 +1106,8 @@ impl CompiledArtifact<'_, Msl> {
 
     /// For a variable resource ID, report the automatically assigned resource index.
     ///
-    /// If the descriptor set was part of an argument buffer, report the [[id(N)]],
-    /// or [[buffer/texture/sampler]] binding for other resources.
+    /// If the descriptor set was part of an argument buffer, report the `[[id(N)]]`,
+    /// or `[[buffer/texture/sampler]]` binding for other resources.
     ///
     /// If the resource was a combined image sampler, report the image binding for [`AutomaticResourceBindingTier::Primary`],
     /// or the sampler half for [`AutomaticResourceBindingTier::Secondary`].

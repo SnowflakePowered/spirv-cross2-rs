@@ -338,7 +338,7 @@ dependencies = [
 
 [[package]]
 name = "spirv-cross2"
-version = "0.3.1"
+version = "0.3.3"
 dependencies = [
  "bitflags",
  "bytemuck",

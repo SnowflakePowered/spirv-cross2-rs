@@ -45,7 +45,7 @@ impl<T> Debug for PointerOnlyForComparison<T> {
 ///
 /// The usage of `Handle<T>` ensures that item IDs can not be forged from
 /// a different compiler instance or from a `u32`.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Handle<T> {
     id: T,
     tag: PointerOnlyForComparison<spvc_compiler_s>,

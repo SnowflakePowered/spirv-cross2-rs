@@ -10,7 +10,7 @@ use crate::string::ContextStr;
 use spirv_cross_sys as sys;
 
 /// The kind of scalar
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[repr(u8)]
 pub enum ScalarKind {
     /// Signed integer.
@@ -24,7 +24,7 @@ pub enum ScalarKind {
 }
 
 /// The bit width of a scalar.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[repr(u8)]
 pub enum BitWidth {
     /// 1 bit
@@ -40,7 +40,7 @@ pub enum BitWidth {
 }
 
 /// A scalar type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Scalar {
     /// How the value’s bits are to be interpreted.
     pub kind: ScalarKind,
@@ -123,7 +123,7 @@ pub struct Type<'a> {
 }
 
 /// Type definition for a struct member.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct StructMember<'a> {
     /// The type ID of the struct member.
     pub id: Handle<TypeId>,
@@ -148,7 +148,7 @@ pub struct StructMember<'a> {
 }
 
 /// Type definition for a struct.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct StructType<'a> {
     /// The type ID of the struct.
     pub id: Handle<TypeId>,
@@ -163,7 +163,7 @@ pub struct StructType<'a> {
 /// Most of the time, these will be [`ArrayDimension::Literal`].
 /// If an array dimension is specified as a specialization constant,
 /// then the dimension will be [`ArrayDimension::Constant`].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ArrayDimension {
     /// A literal array dimension, i.e. `array[4]`.
     Literal(u32),
@@ -179,7 +179,7 @@ pub enum ArrayDimension {
 }
 
 /// Class of image or texture handle.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ImageClass {
     /// Combined image samplers.
     Sampled {
@@ -205,7 +205,7 @@ pub enum ImageClass {
 }
 
 /// Type definition for an image or texture handle.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ImageType {
     /// The id of the type.
     pub id: Handle<TypeId>,
@@ -221,7 +221,7 @@ pub struct ImageType {
 ///
 /// The design of this API is inspired heavily by [`naga::TypeInner`](https://docs.rs/naga/latest/naga/enum.TypeInner.html),
 /// with some changes to fit SPIR-V.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum TypeInner<'a> {
     /// Unknown type.
     Unknown,

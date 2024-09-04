@@ -345,6 +345,7 @@ dependencies = [
  "gfx-maths",
  "glslang",
  "half",
+ "memchr",
  "spirv-cross-sys",
  "spirv-cross2-derive",
  "thiserror",

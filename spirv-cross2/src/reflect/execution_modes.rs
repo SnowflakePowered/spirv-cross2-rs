@@ -1,10 +1,10 @@
 use crate::error::ToContextError;
 use crate::handle::Handle;
+use crate::reflect::try_valid_slice;
 use crate::Compiler;
 use crate::{error, spirv};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::ConstantId;
-use std::slice;
 
 /// Arguments to an `OpExecutionMode`.
 #[derive(Debug)]
@@ -78,7 +78,9 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             // SAFETY: 'ctx is sound here.
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2250
-            Ok(slice::from_raw_parts(modes, size))
+
+            const _: () = assert!(size_of::<spirv::ExecutionMode>() == size_of::<u32>());
+            try_valid_slice(modes, size)
         }
     }
 
@@ -186,21 +188,9 @@ mod test {
         let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
-        // println!("{:#?}", resources);
-
         let ty = compiler.execution_modes()?;
         assert_eq!([spirv::ExecutionMode::OriginUpperLeft], ty);
 
-        let args = compiler.work_group_size_specialization_constants();
-        eprintln!("{:?}", args);
-
-        // match ty.inner {
-        //     TypeInner::Struct(ty) => {
-        //         compiler.get_type(ty.members[0].id)?;
-        //     }
-        //     TypeInner::Vector { .. } => {}
-        //     _ => {}
-        // }
         Ok(())
     }
 }

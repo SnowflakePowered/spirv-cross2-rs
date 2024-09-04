@@ -54,6 +54,9 @@ pub enum SpirvCrossError {
         /// The column accessed.
         column: u32,
     },
+    #[error("An unexpected enum value was found.")]
+    /// An unexpected enum value was found.
+    InvalidEnum,
 }
 
 pub(crate) trait ToContextError {

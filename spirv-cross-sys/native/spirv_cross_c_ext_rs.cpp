@@ -72,4 +72,8 @@ spvc_bool spvc_rs_type_is_forward_pointer(spvc_type type) {
     return type->forward_pointer;
 }
 
+void spvc_rs_compiler_get_execution_model_indirect(spvc_compiler compiler, SpvExecutionModel* out) {
+    *out = spvc_compiler_get_execution_model(compiler);
+}
+
 } // extern "C"

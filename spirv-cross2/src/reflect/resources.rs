@@ -9,8 +9,9 @@ use spirv_cross_sys::{
     spvc_set,
 };
 use std::marker::PhantomData;
+use std::mem::MaybeUninit;
 use std::ptr::NonNull;
-use std::slice;
+use std::{ptr, slice};
 
 /// The type of built-in resources to query.
 pub use spirv_cross_sys::BuiltinResourceType;
@@ -173,7 +174,7 @@ impl<'a> Iterator for ResourceIter<'a> {
 /// Iterator over reflected builtin resources, created by [`ShaderResources::builtin_resources_for_type`].
 pub struct BuiltinResourceIter<'a>(
     PhantomCompiler<'a>,
-    slice::Iter<'a, spvc_reflected_builtin_resource>,
+    slice::Iter<'a, MaybeUninit<spvc_reflected_builtin_resource>>,
 );
 
 impl<'a> Iterator for BuiltinResourceIter<'a> {
@@ -182,7 +183,7 @@ impl<'a> Iterator for BuiltinResourceIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.1
             .next()
-            .map(|o| BuiltinResource::from_raw(self.0.clone(), o))
+            .and_then(|o| BuiltinResource::from_raw(self.0.clone(), o))
     }
 }
 
@@ -276,12 +277,29 @@ impl From<BuiltinResource<'_>> for Handle<VariableId> {
 }
 
 impl<'a> BuiltinResource<'a> {
-    fn from_raw(comp: PhantomCompiler<'a>, value: &'a spvc_reflected_builtin_resource) -> Self {
-        Self {
+    fn from_raw(
+        comp: PhantomCompiler<'a>,
+        value: &'a MaybeUninit<spvc_reflected_builtin_resource>,
+    ) -> Option<Self> {
+        // builtin is potentially uninit, we need to check.
+        let value = unsafe {
+            let builtin = ptr::addr_of!((*value.as_ptr()).builtin);
+            if builtin.cast::<u32>().read() == u32::MAX {
+                if cfg!(debug_assertions) {
+                    panic!("Unexpected SpvBuiltIn in spvc_reflected_builtin_resource!")
+                } else {
+                    return None;
+                }
+            }
+
+            value.assume_init_ref()
+        };
+
+        Some(Self {
             builtin: value.builtin,
             value_type_id: comp.create_handle(value.value_type_id),
             resource: Resource::from_raw(comp, &value.resource),
-        }
+        })
     }
 }
 
@@ -468,7 +486,7 @@ impl<'ctx> ShaderResources<'ctx> {
             .ok(self)?;
         }
 
-        let slice = unsafe { std::slice::from_raw_parts(out, count) };
+        let slice = unsafe { slice::from_raw_parts(out, count) };
 
         Ok(ResourceIter(self.1.clone(), slice.iter()))
     }
@@ -495,12 +513,14 @@ impl<'ctx> ShaderResources<'ctx> {
             .ok(self)?;
         }
 
-        let slice = unsafe { std::slice::from_raw_parts(out, count) };
+        let slice = unsafe { slice::from_raw_parts(out.cast(), count) };
 
         Ok(BuiltinResourceIter(self.1.clone(), slice.iter()))
     }
 
     /// Get all resources declared in the shader.
+    ///
+    /// This will allocate a `Vec` for every resource type.
     #[rustfmt::skip]
     pub fn all_resources(&self) -> error::Result<AllResources<'ctx>> {
           // SAFETY: 'ctx is sound by transitive property of resources_for_type

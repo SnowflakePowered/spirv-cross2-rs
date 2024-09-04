@@ -8,6 +8,9 @@
 //!
 //! Always go through `MaybeUninit` for anything that sets an enum,
 //! then check for `u32::MAX`.
+//!
+//! `spvc_rs` functions are unstable and are meant for consumption by [spirv-cross2](https://crates.io/crates/spirv-cross2)
+//! only.
 
 mod bindings;
 

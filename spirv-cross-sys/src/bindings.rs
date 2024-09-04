@@ -4226,3 +4226,9 @@ extern "C" {
 extern "C" {
     pub fn spvc_rs_type_is_forward_pointer(type_: spvc_type) -> crate::ctypes::spvc_bool;
 }
+extern "C" {
+    pub fn spvc_rs_compiler_get_execution_model_indirect(
+        compiler: spvc_compiler,
+        out: *mut SpvExecutionModel,
+    );
+}

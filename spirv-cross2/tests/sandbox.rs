@@ -216,6 +216,7 @@ void main() {
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
+    eprintln!("{:?}", res.builtin_inputs);
     let counter = &res.storage_buffers[0];
 
     let TypeInner::Struct(struct_ty) = compiler.type_description(counter.base_type_id)?.inner

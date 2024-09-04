@@ -1,5 +1,6 @@
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
+use crate::reflect::try_valid_slice;
 use crate::string::ContextStr;
 use crate::{error, spirv};
 use crate::{Compiler, ContextRoot};
@@ -24,9 +25,9 @@ impl<'a> Iterator for ExtensionsIter<'a> {
 }
 
 /// Querying declared properties of the SPIR-V module.
-impl<'a, T> Compiler<'a, T> {
+impl<'ctx, T> Compiler<'ctx, T> {
     /// Gets the list of all SPIR-V Capabilities which were declared in the SPIR-V module.
-    pub fn declared_capabilities(&self) -> error::Result<&'a [spirv::Capability]> {
+    pub fn declared_capabilities(&self) -> error::Result<&'ctx [spirv::Capability]> {
         unsafe {
             let mut caps = std::ptr::null();
             let mut size = 0;
@@ -34,12 +35,13 @@ impl<'a, T> Compiler<'a, T> {
             sys::spvc_compiler_get_declared_capabilities(self.ptr.as_ptr(), &mut caps, &mut size)
                 .ok(self)?;
 
-            Ok(slice::from_raw_parts(caps, size))
+            const _: () = assert!(size_of::<spirv::Capability>() == size_of::<u32>());
+            try_valid_slice(caps, size)
         }
     }
 
     /// Gets the list of all SPIR-V extensions which were declared in the SPIR-V module.
-    pub fn declared_extensions(&self) -> error::Result<ExtensionsIter<'a>> {
+    pub fn declared_extensions(&self) -> error::Result<ExtensionsIter<'ctx>> {
         // SAFETY: 'a is OK to return here
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2756
         unsafe {
@@ -56,8 +58,20 @@ impl<'a, T> Compiler<'a, T> {
     }
 
     /// Get the execution model of the module.
-    pub fn execution_model(&self) -> spirv::ExecutionModel {
-        unsafe { sys::spvc_compiler_get_execution_model(self.ptr.as_ptr()) }
+    pub fn execution_model(&self) -> error::Result<spirv::ExecutionModel> {
+        unsafe {
+            let mut exec_model = MaybeUninit::zeroed();
+            sys::spvc_rs_compiler_get_execution_model_indirect(
+                self.ptr.as_ptr(),
+                exec_model.as_mut_ptr(),
+            );
+
+            if exec_model.as_ptr().cast::<u32>().read() == u32::MAX {
+                Err(SpirvCrossError::InvalidEnum)
+            } else {
+                Ok(exec_model.assume_init())
+            }
+        }
     }
 }
 
@@ -321,6 +335,21 @@ mod test {
         drop(compiler);
 
         assert_eq!("main", name.as_ref());
+
+        Ok(())
+    }
+
+    #[test]
+    pub fn capabilities() -> Result<(), SpirvCrossError> {
+        let spv = SpirvCrossContext::new()?;
+        let vec = Vec::from(BASIC_SPV);
+        let words = Module::from_words(bytemuck::cast_slice(&vec));
+
+        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let resources = compiler.shader_resources()?.all_resources()?;
+
+        let ty = compiler.declared_capabilities()?;
+        assert_eq!([spirv::Capability::Shader], ty);
 
         Ok(())
     }

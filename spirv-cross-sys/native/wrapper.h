@@ -14,3 +14,5 @@ spvc_result spvc_rs_compiler_variable_get_type(spvc_compiler compiler, spvc_vari
 spvc_bool spvc_rs_type_is_pointer(spvc_type type);
 
 spvc_bool spvc_rs_type_is_forward_pointer(spvc_type type);
+
+void spvc_rs_compiler_get_execution_model_indirect(spvc_compiler compiler, SpvExecutionModel* out);

@@ -1,22 +1,35 @@
 use crate::compile::{CommonOptions, CompiledArtifact};
 use spirv_cross_sys as sys;
 
+/// An MSL `constexpr` inlined sampler.
 pub use spirv_cross_sys::MslConstexprSampler as ConstexprSampler;
 
+/// Sampler addressing mode for inlined samplers.
 pub use spirv_cross_sys::MslSamplerAddress as SamplerAddress;
+/// Sampler border color for inlined samplers.
 pub use spirv_cross_sys::MslSamplerBorderColor as SamplerBorderColor;
+/// Sampler compare function for inline samplers.
 pub use spirv_cross_sys::MslSamplerCompareFunc as SamplerCompareFunc;
+/// Whether texture coordinates are normalized or not for inline samplers.
 pub use spirv_cross_sys::MslSamplerCoord as SamplerCoord;
+/// Mag and min filter mode for inline samplers.
 pub use spirv_cross_sys::MslSamplerFilter as SamplerFilter;
+/// Mip filtering mode for inline samplers.
 pub use spirv_cross_sys::MslSamplerMipFilter as SamplerMipFilter;
 
-pub use spirv_cross_sys::MslSamplerYcbcrModelConversion as YcbcrModelConversion;
-
-pub use spirv_cross_sys::MslChromaLocation as ChromaLocation;
-pub use spirv_cross_sys::MslComponentSwizzle as ComponentSwizzle;
-pub use spirv_cross_sys::MslFormatResolution as FormatResolution;
+/// Y′CbCr chroma location.
+pub use spirv_cross_sys::MslChromaLocation as YcbcrChromaLocation;
+/// Y′CbCr conversion component swizzle.
+pub use spirv_cross_sys::MslComponentSwizzle as YcbcrComponentSwizzle;
+/// Y′CbCr conversion format resolution.
+pub use spirv_cross_sys::MslFormatResolution as YcbcrFormatResolution;
+/// Y′CbCr model conversion options for inline samplers.
 pub use spirv_cross_sys::MslSamplerYcbcrConversion as SamplerYcbcrConversion;
-pub use spirv_cross_sys::MslSamplerYcbcrRange as SamplerYcbcrRange;
+/// Format to convert when converting Y′CbCr.
+pub use spirv_cross_sys::MslSamplerYcbcrModelConversion as YcbcrTargetFormat;
+
+/// Conversion range for Y′CbCr.
+pub use spirv_cross_sys::MslSamplerYcbcrRange as YcbcrConversionRange;
 
 /// Indicates the format of a shader interface variable. Currently limited to specifying
 /// if the input is an 8-bit unsigned integer, 16-bit unsigned integer, or

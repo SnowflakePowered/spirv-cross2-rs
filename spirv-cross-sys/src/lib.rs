@@ -52,7 +52,7 @@ impl From<u32> for SpvId {
 impl Default for MslConstexprSampler {
     fn default() -> Self {
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_msl.hpp#L216
-        let mut sampler = MslConstexprSampler {
+        MslConstexprSampler {
             coord: MslSamplerCoord::Normalized,
             min_filter: MslSamplerFilter::Nearest,
             mag_filter: MslSamplerFilter::Nearest,
@@ -68,16 +68,14 @@ impl Default for MslConstexprSampler {
             compare_enable: false,
             lod_clamp_enable: false,
             anisotropy_enable: false,
-        };
-
-        sampler
+        }
     }
 }
 
 impl Default for MslSamplerYcbcrConversion {
     fn default() -> Self {
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_msl.hpp#L230
-        let mut conversion = MslSamplerYcbcrConversion {
+        MslSamplerYcbcrConversion {
             planes: 0,
             resolution: MslFormatResolution::FormatResolution444,
             chroma_filter: MslSamplerFilter::Nearest,
@@ -92,9 +90,7 @@ impl Default for MslSamplerYcbcrConversion {
             ycbcr_model: MslSamplerYcbcrModelConversion::RgbIdentity,
             ycbcr_range: MslSamplerYcbcrRange::ItuFull,
             bpc: 8,
-        };
-
-        conversion
+        }
     }
 }
 

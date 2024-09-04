@@ -522,7 +522,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             }
             Decoration::FPRoundingMode => {
                 // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_parsed_ir.cpp#L730
-                if value == u32::MAX {
+                if value as i32 == i32::MAX {
                     return Ok(None);
                 }
 

@@ -7,7 +7,7 @@
 //! Incorrect use of `_init` functions can cause undefined behaviour.
 //!
 //! Always go through `MaybeUninit` for anything that sets an enum,
-//! then check for `u32::MAX`.
+//! then check for `i32::MAX`.
 //!
 //! `spvc_rs` functions are unstable and are meant for consumption by [spirv-cross2](https://crates.io/crates/spirv-cross2)
 //! only.

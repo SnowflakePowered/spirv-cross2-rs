@@ -35,7 +35,8 @@ impl<'ctx, T> Compiler<'ctx, T> {
             sys::spvc_compiler_get_declared_capabilities(self.ptr.as_ptr(), &mut caps, &mut size)
                 .ok(self)?;
 
-            const _: () = assert!(std::mem::size_of::<spirv::Capability>() == std::mem::size_of::<u32>());
+            const _: () =
+                assert!(std::mem::size_of::<spirv::Capability>() == std::mem::size_of::<u32>());
             try_valid_slice(caps, size)
         }
     }
@@ -66,7 +67,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 exec_model.as_mut_ptr(),
             );
 
-            if exec_model.as_ptr().cast::<u32>().read() == u32::MAX {
+            if exec_model.as_ptr().cast::<i32>().read() == i32::MAX {
                 Err(SpirvCrossError::InvalidEnum)
             } else {
                 Ok(exec_model.assume_init())
@@ -137,7 +138,7 @@ impl<'a> Iterator for EntryPointIter<'a> {
         self.0.next().and_then(|entry| unsafe {
             // execution_model is potentially uninit, we need to check.
             let exec_model = ptr::addr_of!((*entry.as_ptr()).execution_model);
-            if exec_model.cast::<u32>().read() == u32::MAX {
+            if exec_model.cast::<i32>().read() == i32::MAX {
                 if cfg!(debug_assertions) {
                     panic!("Unexpected SpvExecutionModelMax in valid entry point!")
                 } else {

@@ -284,7 +284,7 @@ impl<'a> BuiltinResource<'a> {
         // builtin is potentially uninit, we need to check.
         let value = unsafe {
             let builtin = ptr::addr_of!((*value.as_ptr()).builtin);
-            if builtin.cast::<u32>().read() == u32::MAX {
+            if builtin.cast::<i32>().read() == i32::MAX {
                 if cfg!(debug_assertions) {
                     panic!("Unexpected SpvBuiltIn in spvc_reflected_builtin_resource!")
                 } else {

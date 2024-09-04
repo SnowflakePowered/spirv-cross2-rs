@@ -190,7 +190,10 @@ impl Compiler<'_, Glsl> {
     /// mixing int and float is not.
     ///
     /// The name of the uniform array will be the same as the interface block name.
-    pub fn flatten_buffer_block(&mut self, block: impl Into<Handle<VariableId>>) -> error::Result<()> {
+    pub fn flatten_buffer_block(
+        &mut self,
+        block: impl Into<Handle<VariableId>>,
+    ) -> error::Result<()> {
         let block = block.into();
         let block = self.yield_id(block)?;
 

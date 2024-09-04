@@ -717,7 +717,7 @@ pub struct ShaderInterfaceVariable {
 }
 
 impl ShaderInterfaceVariable {
-    /// We need to be maybeuninit, because None builtin is represented by u32::MAX,
+    /// We need to be maybeuninit, because None builtin is represented by i32::MAX,
     /// which is invalid in Rust. I don't want to expose it just for this, so we'll just
     /// do some magic.
     #[must_use]
@@ -738,15 +738,16 @@ impl ShaderInterfaceVariable {
             // sad path...
 
             // ensure layout
-            const _: () = assert!(std::mem::size_of::<spirv::BuiltIn>() == std::mem::size_of::<u32>());
+            const _: () =
+                assert!(std::mem::size_of::<spirv::BuiltIn>() == std::mem::size_of::<i32>());
 
             let mut base = MaybeUninit::new(base);
             unsafe {
                 let base_ptr = base.as_mut_ptr();
-                let builtin_ptr = addr_of_mut!((*base_ptr).builtin).cast::<u32>();
+                let builtin_ptr = addr_of_mut!((*base_ptr).builtin).cast::<i32>();
 
                 // from this point forward, the MslShaderInterfaceVar2 is a hot potato.
-                builtin_ptr.write(u32::MAX)
+                builtin_ptr.write(i32::MAX)
             }
 
             base

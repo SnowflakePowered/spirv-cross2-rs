@@ -646,7 +646,8 @@ impl<T> Compiler<'_, T> {
     }
 
     /// Get the underlying type of the variable.
-    pub fn variable_type(&self, variable: Handle<VariableId>) -> error::Result<Handle<TypeId>> {
+    pub fn variable_type(&self, variable: impl Into<Handle<VariableId>>) -> error::Result<Handle<TypeId>> {
+        let variable = variable.into();
         let variable_id = self.yield_id(variable)?;
 
         unsafe {

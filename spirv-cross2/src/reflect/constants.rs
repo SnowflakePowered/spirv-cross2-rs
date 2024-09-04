@@ -90,6 +90,12 @@ pub struct SpecializationConstantIter<'a>(
     slice::Iter<'a, spvc_specialization_constant>,
 );
 
+impl ExactSizeIterator for SpecializationConstantIter<'_> {
+    fn len(&self) -> usize {
+        self.1.len()
+    }
+}
+
 impl Iterator for SpecializationConstantIter<'_> {
     type Item = SpecializationConstant;
 

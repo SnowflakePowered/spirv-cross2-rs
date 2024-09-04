@@ -163,6 +163,12 @@ pub struct ResourceIter<'a>(
     slice::Iter<'a, spvc_reflected_resource>,
 );
 
+impl ExactSizeIterator for ResourceIter<'_> {
+    fn len(&self) -> usize {
+        self.1.len()
+    }
+}
+
 impl<'a> Iterator for ResourceIter<'a> {
     type Item = Resource<'a>;
 
@@ -326,6 +332,12 @@ impl ToStatic for BuiltinResource<'_> {
 impl Clone for BuiltinResource<'_> {
     fn clone(&self) -> BuiltinResource<'static> {
         self.to_static()
+    }
+}
+
+impl ExactSizeIterator for BuiltinResourceIter<'_> {
+    fn len(&self) -> usize {
+        self.1.len()
     }
 }
 

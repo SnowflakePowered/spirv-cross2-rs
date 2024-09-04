@@ -227,6 +227,12 @@ pub struct GlslExtensionsIter<'a>(
     PhantomCompiler<'a>,
 );
 
+impl ExactSizeIterator for GlslExtensionsIter<'_> {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
 impl<'comp> Iterator for GlslExtensionsIter<'comp> {
     type Item = ContextStr<'comp>;
 

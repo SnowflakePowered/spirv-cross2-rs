@@ -18,6 +18,12 @@ pub struct CombinedImageSamplerIter<'a>(
     slice::Iter<'a, sys::spvc_combined_image_sampler>,
 );
 
+impl ExactSizeIterator for CombinedImageSamplerIter<'_> {
+    fn len(&self) -> usize {
+        self.1.len()
+    }
+}
+
 impl Iterator for CombinedImageSamplerIter<'_> {
     type Item = CombinedImageSampler;
 

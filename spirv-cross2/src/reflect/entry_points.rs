@@ -1,6 +1,6 @@
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
-use crate::reflect::try_valid_slice;
+use crate::reflect::{try_valid_slice, CombinedImageSamplerIter};
 use crate::string::ContextStr;
 use crate::{error, spirv};
 use crate::{Compiler, ContextRoot};
@@ -21,6 +21,12 @@ impl<'a> Iterator for ExtensionsIter<'a> {
         self.0
             .next()
             .map(|ptr| unsafe { ContextStr::from_ptr(*ptr, self.1.clone()) })
+    }
+}
+
+impl ExactSizeIterator for ExtensionsIter<'_> {
+    fn len(&self) -> usize {
+        self.0.len()
     }
 }
 
@@ -129,6 +135,12 @@ pub struct EntryPoint<'a> {
     pub execution_model: spirv::ExecutionModel,
     /// The name of the entry point.
     pub name: ContextStr<'a>,
+}
+
+impl ExactSizeIterator for EntryPointIter<'_> {
+    fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 impl<'a> Iterator for EntryPointIter<'a> {

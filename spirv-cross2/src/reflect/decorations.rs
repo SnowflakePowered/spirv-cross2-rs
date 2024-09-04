@@ -521,6 +521,11 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 Ok(Some(DecorationValue::BuiltIn(builtin)))
             }
             Decoration::FPRoundingMode => {
+                // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_parsed_ir.cpp#L730
+                if value == u32::MAX {
+                    return Ok(None);
+                }
+
                 let Some(rounding_mode) = spirv::FPRoundingMode::from_u32(value) else {
                     return Err(SpirvCrossError::InvalidDecorationOutput(decoration, value));
                 };

@@ -6,7 +6,7 @@ use bitflags::bitflags;
 use spirv_cross_sys::HlslResourceBinding;
 use spirv_cross_sys::HlslResourceBindingMapping;
 
-/// HLSL Root Constant Layout
+/// Specifies an HLSL root constant layout.
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 
 use crate::error::ToContextError;
@@ -264,8 +264,7 @@ impl From<RegisterBinding> for HlslResourceBindingMapping {
 impl Compiler<'_, Hlsl> {
     /// Add a resource binding to the HLSL compilation.
     ///
-    /// By matching `stage`, `desc_set` and `binding` for a SPIR-V resource,
-    /// register bindings are set based on whether the HLSL resource is a
+    /// Register bindings are set based on whether the HLSL resource is a
     /// CBV, UAV, SRV or Sampler.
     ///
     /// A single binding in SPIR-V might contain multiple

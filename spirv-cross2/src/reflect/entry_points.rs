@@ -144,23 +144,27 @@ impl<'a> Iterator for EntryPointIter<'a> {
 /// Reflection of entry points.
 impl<'ctx, T> Compiler<'ctx, T> {
     /// All operations work on the current entry point.
-    /// Entry points can be swapped out with set_entry_point().
-    /// Entry points should be set right after the constructor completes as some reflection functions traverse the graph from the entry point.
+    ///
+    /// Entry points can be swapped out with [`Compiler::set_entry_point`].
+    ///
+    /// Entry points should be set right after creating the compiler as some reflection
+    /// functions traverse the graph from the entry point.
+    ///
     /// Resource reflection also depends on the entry point.
-    /// By default, the current entry point is set to the first OpEntryPoint which appears in the SPIR-V module.
+    /// By default, the current entry point is set to the first `OpEntryPoint` which appears in the SPIR-V module.
     //
     /// Some shader languages restrict the names that can be given to entry points, and the
-    /// corresponding backend will automatically rename an entry point name, during the call
-    /// to compile() if it is illegal. For example, the common entry point name main() is
-    /// illegal in MSL, and is renamed to an alternate name by the MSL backend.
+    /// corresponding backend will automatically rename an entry point name when compiling,
+    /// if it is illegal.
+    ///
+    /// For example, the common entry point name `main()` is illegal in MSL, and is renamed to an
+    /// alternate name by the MSL backend.
+    ///
     /// Given the original entry point name contained in the SPIR-V, this function returns
-    /// the name, as updated by the backend during the call to compile(). If the name is not
-    /// illegal, and has not been renamed, or if this function is called before compile(),
-    /// this function will simply return the same name.
-    //
-    /// New variants of entry point query and reflection.
-    /// Names for entry points in the SPIR-V module may alias if they belong to different execution models.
-    /// To disambiguate, we must pass along with the entry point names the execution model.
+    /// the name, as updated by the backend, if called after compilation.
+    ///
+    /// If the name is not illegal, and has not been renamed this function will simply return the
+    /// original name.
     pub fn entry_points(&self) -> error::Result<EntryPointIter<'ctx>> {
         unsafe {
             // SAFETY: 'ctx is sound here
@@ -211,7 +215,6 @@ impl<'ctx, T> Compiler<'ctx, T> {
     ///
     /// By default, the current entry point is set to the first OpEntryPoint which appears in the SPIR-V module.
     ///
-    /// New variants of entry point query and reflection.
     /// Names for entry points in the SPIR-V module may alias if they belong to different execution models.
     /// To disambiguate, we must pass along with the entry point names the execution model.
     ///

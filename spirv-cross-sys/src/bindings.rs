@@ -4,6 +4,7 @@
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct SpvId(pub crate::ctypes::c_uint);
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -36,6 +37,7 @@ impl SpvExecutionModel {
     pub const CallableNV: SpvExecutionModel = SpvExecutionModel::CallableKHR;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -63,6 +65,7 @@ impl SpvAddressingModel {
         SpvAddressingModel::PhysicalStorageBuffer64;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -76,6 +79,7 @@ impl SpvMemoryModel {
     pub const VulkanKHR: SpvMemoryModel = SpvMemoryModel::Vulkan;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -95,6 +99,7 @@ impl SpvExecutionMode {
     pub const OutputTrianglesNV: SpvExecutionMode = SpvExecutionMode::OutputTrianglesEXT;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -197,6 +202,7 @@ impl SpvStorageClass {
     pub const PhysicalStorageBufferEXT: SpvStorageClass = SpvStorageClass::PhysicalStorageBuffer;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -227,6 +233,7 @@ pub enum SpvStorageClass {
     HostOnlyINTEL = 5937,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -240,6 +247,7 @@ pub enum SpvDim {
     DimSubpassData = 6,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -251,6 +259,7 @@ pub enum SpvSamplerAddressingMode {
     RepeatMirrored = 4,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -259,6 +268,7 @@ pub enum SpvSamplerFilterMode {
     Linear = 1,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -307,6 +317,7 @@ pub enum SpvImageFormat {
     R64i = 41,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -333,6 +344,7 @@ pub enum SpvImageChannelOrder {
     ABGR = 19,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -372,6 +384,7 @@ impl SpvImageOperandsShift {
         SpvImageOperandsShift::SpvImageOperandsVolatileTexelShift;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -410,6 +423,7 @@ impl SpvImageOperandsMask {
         SpvImageOperandsMask::SpvImageOperandsVolatileTexelMask;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -433,6 +447,7 @@ pub enum SpvImageOperandsMask {
     SpvImageOperandsOffsetsMask = 65536,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -446,6 +461,7 @@ pub enum SpvFPFastMathModeShift {
     SpvFPFastMathModeAllowReassocINTELShift = 17,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -460,6 +476,7 @@ pub enum SpvFPFastMathModeMask {
     SpvFPFastMathModeAllowReassocINTELMask = 131072,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -470,6 +487,7 @@ pub enum SpvFPRoundingMode {
     RTN = 3,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -479,6 +497,7 @@ pub enum SpvLinkageType {
     LinkOnceODR = 2,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -488,6 +507,7 @@ pub enum SpvAccessQualifier {
     ReadWrite = 2,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -523,6 +543,7 @@ impl SpvDecoration {
     pub const UserSemantic: SpvDecoration = SpvDecoration::HlslSemanticGOOGLE;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -702,6 +723,7 @@ impl SpvBuiltIn {
     pub const IncomingRayFlagsNV: SpvBuiltIn = SpvBuiltIn::IncomingRayFlagsKHR;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -812,6 +834,7 @@ pub enum SpvBuiltIn {
     CullMaskKHR = 6021,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -820,6 +843,7 @@ pub enum SpvSelectionControlShift {
     SpvSelectionControlDontFlattenShift = 1,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -829,6 +853,7 @@ pub enum SpvSelectionControlMask {
     SpvSelectionControlDontFlattenMask = 2,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -852,6 +877,7 @@ pub enum SpvLoopControlShift {
     SpvLoopControlNoFusionINTELShift = 23,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -876,6 +902,7 @@ pub enum SpvLoopControlMask {
     SpvLoopControlNoFusionINTELMask = 8388608,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -887,6 +914,7 @@ pub enum SpvFunctionControlShift {
     SpvFunctionControlOptNoneINTELShift = 16,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -911,6 +939,7 @@ impl SpvMemorySemanticsShift {
         SpvMemorySemanticsShift::SpvMemorySemanticsMakeVisibleShift;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -943,6 +972,7 @@ impl SpvMemorySemanticsMask {
         SpvMemorySemanticsMask::SpvMemorySemanticsMakeVisibleMask;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -976,6 +1006,7 @@ impl SpvMemoryAccessShift {
         SpvMemoryAccessShift::SpvMemoryAccessNonPrivatePointerShift;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1002,6 +1033,7 @@ impl SpvMemoryAccessMask {
         SpvMemoryAccessMask::SpvMemoryAccessNonPrivatePointerMask;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1020,6 +1052,7 @@ impl SpvScope {
     pub const QueueFamilyKHR: SpvScope = SpvScope::QueueFamily;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1033,6 +1066,7 @@ pub enum SpvScope {
     ShaderCallKHR = 6,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1046,6 +1080,7 @@ pub enum SpvGroupOperation {
     PartitionedExclusiveScanNV = 8,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1055,6 +1090,7 @@ pub enum SpvKernelEnqueueFlags {
     WaitWorkGroup = 2,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1062,6 +1098,7 @@ pub enum SpvKernelProfilingInfoShift {
     SpvKernelProfilingInfoCmdExecTimeShift = 0,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1159,6 +1196,7 @@ impl SpvCapability {
     pub const DotProductKHR: SpvCapability = SpvCapability::DotProduct;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1368,6 +1406,7 @@ pub enum SpvCapability {
     GroupUniformArithmeticKHR = 6400,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1384,6 +1423,7 @@ pub enum SpvRayFlagsShift {
     SpvRayFlagsSkipAABBsKHRShift = 9,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1401,6 +1441,7 @@ pub enum SpvRayFlagsMask {
     SpvRayFlagsSkipAABBsKHRMask = 512,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1409,6 +1450,7 @@ pub enum SpvRayQueryIntersection {
     RayQueryCommittedIntersectionKHR = 1,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1418,6 +1460,7 @@ pub enum SpvRayQueryCommittedIntersectionType {
     RayQueryCommittedIntersectionGeneratedKHR = 2,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1426,6 +1469,7 @@ pub enum SpvRayQueryCandidateIntersectionType {
     RayQueryCandidateIntersectionAABBKHR = 1,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1436,6 +1480,7 @@ pub enum SpvFragmentShadingRateShift {
     SpvFragmentShadingRateHorizontal4PixelsShift = 3,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1447,6 +1492,7 @@ pub enum SpvFragmentShadingRateMask {
     SpvFragmentShadingRateHorizontal4PixelsMask = 8,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1455,6 +1501,7 @@ pub enum SpvFPDenormMode {
     FlushToZero = 1,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1463,6 +1510,7 @@ pub enum SpvFPOperationMode {
     ALT = 1,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1477,6 +1525,7 @@ pub enum SpvQuantizationModes {
     RND_CONV_ODD = 7,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1491,6 +1540,7 @@ impl SpvPackedVectorFormat {
         SpvPackedVectorFormat::PackedVectorFormat4x8Bit;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1531,6 +1581,7 @@ impl SpvOp {
     pub const MemberDecorateStringGOOGLE: SpvOp = SpvOp::MemberDecorateString;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]

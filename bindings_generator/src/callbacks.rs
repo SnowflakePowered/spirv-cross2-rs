@@ -176,6 +176,9 @@ impl ParseCallbacks for SpirvCrossCallbacks {
             return vec![String::from("#[non_exhaustive]")];
         };
 
+        if info.kind == TypeKind::Enum && info.name.starts_with("Spv") {
+            return vec![String::from("#[non_exhaustive]")];
+        }
         vec![]
     }
 }

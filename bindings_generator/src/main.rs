@@ -101,6 +101,7 @@ fn main() {
         .derive_partialeq(true)
         .derive_eq(true)
         .derive_hash(true)
+        .layout_tests(false)
         .generate()
         .expect("Unable to generate bindings");
     bindings

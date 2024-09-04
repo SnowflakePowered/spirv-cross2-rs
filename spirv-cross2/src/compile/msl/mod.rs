@@ -738,7 +738,7 @@ impl ShaderInterfaceVariable {
             // sad path...
 
             // ensure layout
-            const _: () = assert!(size_of::<spirv::BuiltIn>() == size_of::<u32>());
+            const _: () = assert!(std::mem::size_of::<spirv::BuiltIn>() == std::mem::size_of::<u32>());
 
             let mut base = MaybeUninit::new(base);
             unsafe {

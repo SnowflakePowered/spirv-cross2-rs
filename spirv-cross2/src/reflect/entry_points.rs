@@ -35,7 +35,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             sys::spvc_compiler_get_declared_capabilities(self.ptr.as_ptr(), &mut caps, &mut size)
                 .ok(self)?;
 
-            const _: () = assert!(size_of::<spirv::Capability>() == size_of::<u32>());
+            const _: () = assert!(std::mem::size_of::<spirv::Capability>() == std::mem::size_of::<u32>());
             try_valid_slice(caps, size)
         }
     }

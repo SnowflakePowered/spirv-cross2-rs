@@ -79,7 +79,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             // SAFETY: 'ctx is sound here.
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2250
 
-            const _: () = assert!(size_of::<spirv::ExecutionMode>() == size_of::<u32>());
+            const _: () = assert!(std::mem::size_of::<spirv::ExecutionMode>() == std::mem::size_of::<u32>());
             try_valid_slice(modes, size)
         }
     }

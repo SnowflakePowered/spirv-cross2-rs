@@ -198,7 +198,7 @@ pub enum ImageClass {
         arrayed: bool,
     },
     /// Storage images.
-    LoadStore {
+    Storage {
         /// The image format of the storage image.
         format: spirv::ImageFormat,
     },
@@ -462,7 +462,7 @@ impl<T> Compiler<'_, T> {
             let format = sys::spvc_type_get_image_storage_format(ty);
 
             let class = if storage {
-                ImageClass::LoadStore { format }
+                ImageClass::Storage { format }
             } else if base_ty == BaseType::SampledImage {
                 ImageClass::Sampled {
                     depth,

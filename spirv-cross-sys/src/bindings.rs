@@ -2266,20 +2266,6 @@ pub struct spvc_reflected_resource {
     pub type_id: TypeId,
     pub name: *const crate::ctypes::c_char,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of spvc_reflected_resource"][::std::mem::size_of::<spvc_reflected_resource>() - 24usize];
-    ["Alignment of spvc_reflected_resource"]
-        [::std::mem::align_of::<spvc_reflected_resource>() - 8usize];
-    ["Offset of field: spvc_reflected_resource::id"]
-        [::std::mem::offset_of!(spvc_reflected_resource, id) - 0usize];
-    ["Offset of field: spvc_reflected_resource::base_type_id"]
-        [::std::mem::offset_of!(spvc_reflected_resource, base_type_id) - 4usize];
-    ["Offset of field: spvc_reflected_resource::type_id"]
-        [::std::mem::offset_of!(spvc_reflected_resource, type_id) - 8usize];
-    ["Offset of field: spvc_reflected_resource::name"]
-        [::std::mem::offset_of!(spvc_reflected_resource, name) - 16usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct spvc_reflected_builtin_resource {
@@ -2287,34 +2273,12 @@ pub struct spvc_reflected_builtin_resource {
     pub value_type_id: TypeId,
     pub resource: spvc_reflected_resource,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of spvc_reflected_builtin_resource"]
-        [::std::mem::size_of::<spvc_reflected_builtin_resource>() - 32usize];
-    ["Alignment of spvc_reflected_builtin_resource"]
-        [::std::mem::align_of::<spvc_reflected_builtin_resource>() - 8usize];
-    ["Offset of field: spvc_reflected_builtin_resource::builtin"]
-        [::std::mem::offset_of!(spvc_reflected_builtin_resource, builtin) - 0usize];
-    ["Offset of field: spvc_reflected_builtin_resource::value_type_id"]
-        [::std::mem::offset_of!(spvc_reflected_builtin_resource, value_type_id) - 4usize];
-    ["Offset of field: spvc_reflected_builtin_resource::resource"]
-        [::std::mem::offset_of!(spvc_reflected_builtin_resource, resource) - 8usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct spvc_entry_point {
     pub execution_model: SpvExecutionModel,
     pub name: *const crate::ctypes::c_char,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of spvc_entry_point"][::std::mem::size_of::<spvc_entry_point>() - 16usize];
-    ["Alignment of spvc_entry_point"][::std::mem::align_of::<spvc_entry_point>() - 8usize];
-    ["Offset of field: spvc_entry_point::execution_model"]
-        [::std::mem::offset_of!(spvc_entry_point, execution_model) - 0usize];
-    ["Offset of field: spvc_entry_point::name"]
-        [::std::mem::offset_of!(spvc_entry_point, name) - 8usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct spvc_combined_image_sampler {
@@ -2322,36 +2286,12 @@ pub struct spvc_combined_image_sampler {
     pub image_id: VariableId,
     pub sampler_id: VariableId,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of spvc_combined_image_sampler"]
-        [::std::mem::size_of::<spvc_combined_image_sampler>() - 12usize];
-    ["Alignment of spvc_combined_image_sampler"]
-        [::std::mem::align_of::<spvc_combined_image_sampler>() - 4usize];
-    ["Offset of field: spvc_combined_image_sampler::combined_id"]
-        [::std::mem::offset_of!(spvc_combined_image_sampler, combined_id) - 0usize];
-    ["Offset of field: spvc_combined_image_sampler::image_id"]
-        [::std::mem::offset_of!(spvc_combined_image_sampler, image_id) - 4usize];
-    ["Offset of field: spvc_combined_image_sampler::sampler_id"]
-        [::std::mem::offset_of!(spvc_combined_image_sampler, sampler_id) - 8usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct spvc_specialization_constant {
     pub id: ConstantId,
     pub constant_id: crate::ctypes::c_uint,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of spvc_specialization_constant"]
-        [::std::mem::size_of::<spvc_specialization_constant>() - 8usize];
-    ["Alignment of spvc_specialization_constant"]
-        [::std::mem::align_of::<spvc_specialization_constant>() - 4usize];
-    ["Offset of field: spvc_specialization_constant::id"]
-        [::std::mem::offset_of!(spvc_specialization_constant, id) - 0usize];
-    ["Offset of field: spvc_specialization_constant::constant_id"]
-        [::std::mem::offset_of!(spvc_specialization_constant, constant_id) - 4usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct BufferRange {
@@ -2359,14 +2299,6 @@ pub struct BufferRange {
     pub offset: usize,
     pub range: usize,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of BufferRange"][::std::mem::size_of::<BufferRange>() - 24usize];
-    ["Alignment of BufferRange"][::std::mem::align_of::<BufferRange>() - 8usize];
-    ["Offset of field: BufferRange::index"][::std::mem::offset_of!(BufferRange, index) - 0usize];
-    ["Offset of field: BufferRange::offset"][::std::mem::offset_of!(BufferRange, offset) - 8usize];
-    ["Offset of field: BufferRange::range"][::std::mem::offset_of!(BufferRange, range) - 16usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslRootConstants {
@@ -2375,36 +2307,12 @@ pub struct HlslRootConstants {
     pub binding: crate::ctypes::c_uint,
     pub space: crate::ctypes::c_uint,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of HlslRootConstants"][::std::mem::size_of::<HlslRootConstants>() - 16usize];
-    ["Alignment of HlslRootConstants"][::std::mem::align_of::<HlslRootConstants>() - 4usize];
-    ["Offset of field: HlslRootConstants::start"]
-        [::std::mem::offset_of!(HlslRootConstants, start) - 0usize];
-    ["Offset of field: HlslRootConstants::end"]
-        [::std::mem::offset_of!(HlslRootConstants, end) - 4usize];
-    ["Offset of field: HlslRootConstants::binding"]
-        [::std::mem::offset_of!(HlslRootConstants, binding) - 8usize];
-    ["Offset of field: HlslRootConstants::space"]
-        [::std::mem::offset_of!(HlslRootConstants, space) - 12usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslVertexAttributeRemap {
     pub location: crate::ctypes::c_uint,
     pub semantic: *const crate::ctypes::c_char,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of HlslVertexAttributeRemap"]
-        [::std::mem::size_of::<HlslVertexAttributeRemap>() - 16usize];
-    ["Alignment of HlslVertexAttributeRemap"]
-        [::std::mem::align_of::<HlslVertexAttributeRemap>() - 8usize];
-    ["Offset of field: HlslVertexAttributeRemap::location"]
-        [::std::mem::offset_of!(HlslVertexAttributeRemap, location) - 0usize];
-    ["Offset of field: HlslVertexAttributeRemap::semantic"]
-        [::std::mem::offset_of!(HlslVertexAttributeRemap, semantic) - 8usize];
-};
 #[repr(i32)]
 #[must_use]
 #[derive(
@@ -2544,6 +2452,7 @@ impl MslShaderVariableFormat {
         MslShaderVariableFormat::Any32;
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -2557,7 +2466,6 @@ pub enum MslShaderVariableFormat {
 pub use self::MslShaderVariableFormat as MslShaderInputFormat;
 pub use self::MslShaderVariableFormat as MslVertexFormat;
 #[repr(C)]
-#[non_exhaustive]
 pub struct MslVertexAttribute {
     pub location: crate::ctypes::c_uint,
     pub msl_buffer: crate::ctypes::c_uint,
@@ -2567,51 +2475,17 @@ pub struct MslVertexAttribute {
     pub format: MslVertexFormat,
     pub builtin: SpvBuiltIn,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MslVertexAttribute"][::std::mem::size_of::<MslVertexAttribute>() - 28usize];
-    ["Alignment of MslVertexAttribute"][::std::mem::align_of::<MslVertexAttribute>() - 4usize];
-    ["Offset of field: MslVertexAttribute::location"]
-        [::std::mem::offset_of!(MslVertexAttribute, location) - 0usize];
-    ["Offset of field: MslVertexAttribute::msl_buffer"]
-        [::std::mem::offset_of!(MslVertexAttribute, msl_buffer) - 4usize];
-    ["Offset of field: MslVertexAttribute::msl_offset"]
-        [::std::mem::offset_of!(MslVertexAttribute, msl_offset) - 8usize];
-    ["Offset of field: MslVertexAttribute::msl_stride"]
-        [::std::mem::offset_of!(MslVertexAttribute, msl_stride) - 12usize];
-    ["Offset of field: MslVertexAttribute::per_instance"]
-        [::std::mem::offset_of!(MslVertexAttribute, per_instance) - 16usize];
-    ["Offset of field: MslVertexAttribute::format"]
-        [::std::mem::offset_of!(MslVertexAttribute, format) - 20usize];
-    ["Offset of field: MslVertexAttribute::builtin"]
-        [::std::mem::offset_of!(MslVertexAttribute, builtin) - 24usize];
-};
 extern "C" {
     pub fn spvc_msl_vertex_attribute_init(attr: *mut MslVertexAttribute);
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-#[non_exhaustive]
 pub struct MslShaderInterfaceVar {
     pub location: crate::ctypes::c_uint,
     pub format: MslVertexFormat,
     pub builtin: SpvBuiltIn,
     pub vecsize: crate::ctypes::c_uint,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MslShaderInterfaceVar"][::std::mem::size_of::<MslShaderInterfaceVar>() - 16usize];
-    ["Alignment of MslShaderInterfaceVar"]
-        [::std::mem::align_of::<MslShaderInterfaceVar>() - 4usize];
-    ["Offset of field: MslShaderInterfaceVar::location"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar, location) - 0usize];
-    ["Offset of field: MslShaderInterfaceVar::format"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar, format) - 4usize];
-    ["Offset of field: MslShaderInterfaceVar::builtin"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar, builtin) - 8usize];
-    ["Offset of field: MslShaderInterfaceVar::vecsize"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar, vecsize) - 12usize];
-};
 pub type MslShaderInput = MslShaderInterfaceVar;
 extern "C" {
     pub fn spvc_msl_shader_interface_var_init(var: *mut MslShaderInterfaceVar);
@@ -2630,7 +2504,6 @@ pub enum MslShaderVariableRate {
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-#[non_exhaustive]
 pub struct MslShaderInterfaceVar2 {
     pub location: crate::ctypes::c_uint,
     pub format: MslShaderVariableFormat,
@@ -2638,28 +2511,11 @@ pub struct MslShaderInterfaceVar2 {
     pub vecsize: crate::ctypes::c_uint,
     pub rate: MslShaderVariableRate,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MslShaderInterfaceVar2"][::std::mem::size_of::<MslShaderInterfaceVar2>() - 20usize];
-    ["Alignment of MslShaderInterfaceVar2"]
-        [::std::mem::align_of::<MslShaderInterfaceVar2>() - 4usize];
-    ["Offset of field: MslShaderInterfaceVar2::location"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar2, location) - 0usize];
-    ["Offset of field: MslShaderInterfaceVar2::format"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar2, format) - 4usize];
-    ["Offset of field: MslShaderInterfaceVar2::builtin"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar2, builtin) - 8usize];
-    ["Offset of field: MslShaderInterfaceVar2::vecsize"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar2, vecsize) - 12usize];
-    ["Offset of field: MslShaderInterfaceVar2::rate"]
-        [::std::mem::offset_of!(MslShaderInterfaceVar2, rate) - 16usize];
-};
 extern "C" {
     pub fn spvc_msl_shader_interface_var_init_2(var: *mut MslShaderInterfaceVar2);
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-#[non_exhaustive]
 pub struct MslResourceBinding {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,
@@ -2668,26 +2524,8 @@ pub struct MslResourceBinding {
     pub msl_texture: crate::ctypes::c_uint,
     pub msl_sampler: crate::ctypes::c_uint,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MslResourceBinding"][::std::mem::size_of::<MslResourceBinding>() - 24usize];
-    ["Alignment of MslResourceBinding"][::std::mem::align_of::<MslResourceBinding>() - 4usize];
-    ["Offset of field: MslResourceBinding::stage"]
-        [::std::mem::offset_of!(MslResourceBinding, stage) - 0usize];
-    ["Offset of field: MslResourceBinding::desc_set"]
-        [::std::mem::offset_of!(MslResourceBinding, desc_set) - 4usize];
-    ["Offset of field: MslResourceBinding::binding"]
-        [::std::mem::offset_of!(MslResourceBinding, binding) - 8usize];
-    ["Offset of field: MslResourceBinding::msl_buffer"]
-        [::std::mem::offset_of!(MslResourceBinding, msl_buffer) - 12usize];
-    ["Offset of field: MslResourceBinding::msl_texture"]
-        [::std::mem::offset_of!(MslResourceBinding, msl_texture) - 16usize];
-    ["Offset of field: MslResourceBinding::msl_sampler"]
-        [::std::mem::offset_of!(MslResourceBinding, msl_sampler) - 20usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-#[non_exhaustive]
 pub struct MslResourceBinding2 {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,
@@ -2697,25 +2535,6 @@ pub struct MslResourceBinding2 {
     pub msl_texture: crate::ctypes::c_uint,
     pub msl_sampler: crate::ctypes::c_uint,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MslResourceBinding2"][::std::mem::size_of::<MslResourceBinding2>() - 28usize];
-    ["Alignment of MslResourceBinding2"][::std::mem::align_of::<MslResourceBinding2>() - 4usize];
-    ["Offset of field: MslResourceBinding2::stage"]
-        [::std::mem::offset_of!(MslResourceBinding2, stage) - 0usize];
-    ["Offset of field: MslResourceBinding2::desc_set"]
-        [::std::mem::offset_of!(MslResourceBinding2, desc_set) - 4usize];
-    ["Offset of field: MslResourceBinding2::binding"]
-        [::std::mem::offset_of!(MslResourceBinding2, binding) - 8usize];
-    ["Offset of field: MslResourceBinding2::count"]
-        [::std::mem::offset_of!(MslResourceBinding2, count) - 12usize];
-    ["Offset of field: MslResourceBinding2::msl_buffer"]
-        [::std::mem::offset_of!(MslResourceBinding2, msl_buffer) - 16usize];
-    ["Offset of field: MslResourceBinding2::msl_texture"]
-        [::std::mem::offset_of!(MslResourceBinding2, msl_texture) - 20usize];
-    ["Offset of field: MslResourceBinding2::msl_sampler"]
-        [::std::mem::offset_of!(MslResourceBinding2, msl_sampler) - 24usize];
-};
 extern "C" {
     pub fn spvc_msl_resource_binding_init(binding: *mut MslResourceBinding);
 }
@@ -2834,7 +2653,6 @@ pub enum MslSamplerYcbcrRange {
     ItuNarrow = 1,
 }
 #[repr(C)]
-#[non_exhaustive]
 pub struct MslConstexprSampler {
     pub coord: MslSamplerCoord,
     pub min_filter: MslSamplerFilter,
@@ -2852,47 +2670,11 @@ pub struct MslConstexprSampler {
     pub lod_clamp_enable: crate::ctypes::spvc_bool,
     pub anisotropy_enable: crate::ctypes::spvc_bool,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MslConstexprSampler"][::std::mem::size_of::<MslConstexprSampler>() - 52usize];
-    ["Alignment of MslConstexprSampler"][::std::mem::align_of::<MslConstexprSampler>() - 4usize];
-    ["Offset of field: MslConstexprSampler::coord"]
-        [::std::mem::offset_of!(MslConstexprSampler, coord) - 0usize];
-    ["Offset of field: MslConstexprSampler::min_filter"]
-        [::std::mem::offset_of!(MslConstexprSampler, min_filter) - 4usize];
-    ["Offset of field: MslConstexprSampler::mag_filter"]
-        [::std::mem::offset_of!(MslConstexprSampler, mag_filter) - 8usize];
-    ["Offset of field: MslConstexprSampler::mip_filter"]
-        [::std::mem::offset_of!(MslConstexprSampler, mip_filter) - 12usize];
-    ["Offset of field: MslConstexprSampler::s_address"]
-        [::std::mem::offset_of!(MslConstexprSampler, s_address) - 16usize];
-    ["Offset of field: MslConstexprSampler::t_address"]
-        [::std::mem::offset_of!(MslConstexprSampler, t_address) - 20usize];
-    ["Offset of field: MslConstexprSampler::r_address"]
-        [::std::mem::offset_of!(MslConstexprSampler, r_address) - 24usize];
-    ["Offset of field: MslConstexprSampler::compare_func"]
-        [::std::mem::offset_of!(MslConstexprSampler, compare_func) - 28usize];
-    ["Offset of field: MslConstexprSampler::border_color"]
-        [::std::mem::offset_of!(MslConstexprSampler, border_color) - 32usize];
-    ["Offset of field: MslConstexprSampler::lod_clamp_min"]
-        [::std::mem::offset_of!(MslConstexprSampler, lod_clamp_min) - 36usize];
-    ["Offset of field: MslConstexprSampler::lod_clamp_max"]
-        [::std::mem::offset_of!(MslConstexprSampler, lod_clamp_max) - 40usize];
-    ["Offset of field: MslConstexprSampler::max_anisotropy"]
-        [::std::mem::offset_of!(MslConstexprSampler, max_anisotropy) - 44usize];
-    ["Offset of field: MslConstexprSampler::compare_enable"]
-        [::std::mem::offset_of!(MslConstexprSampler, compare_enable) - 48usize];
-    ["Offset of field: MslConstexprSampler::lod_clamp_enable"]
-        [::std::mem::offset_of!(MslConstexprSampler, lod_clamp_enable) - 49usize];
-    ["Offset of field: MslConstexprSampler::anisotropy_enable"]
-        [::std::mem::offset_of!(MslConstexprSampler, anisotropy_enable) - 50usize];
-};
 extern "C" {
     pub fn spvc_msl_constexpr_sampler_init(sampler: *mut MslConstexprSampler);
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-#[non_exhaustive]
 pub struct MslSamplerYcbcrConversion {
     pub planes: crate::ctypes::c_uint,
     pub resolution: MslFormatResolution,
@@ -2904,31 +2686,6 @@ pub struct MslSamplerYcbcrConversion {
     pub ycbcr_range: MslSamplerYcbcrRange,
     pub bpc: crate::ctypes::c_uint,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MslSamplerYcbcrConversion"]
-        [::std::mem::size_of::<MslSamplerYcbcrConversion>() - 48usize];
-    ["Alignment of MslSamplerYcbcrConversion"]
-        [::std::mem::align_of::<MslSamplerYcbcrConversion>() - 4usize];
-    ["Offset of field: MslSamplerYcbcrConversion::planes"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, planes) - 0usize];
-    ["Offset of field: MslSamplerYcbcrConversion::resolution"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, resolution) - 4usize];
-    ["Offset of field: MslSamplerYcbcrConversion::chroma_filter"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, chroma_filter) - 8usize];
-    ["Offset of field: MslSamplerYcbcrConversion::x_chroma_offset"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, x_chroma_offset) - 12usize];
-    ["Offset of field: MslSamplerYcbcrConversion::y_chroma_offset"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, y_chroma_offset) - 16usize];
-    ["Offset of field: MslSamplerYcbcrConversion::swizzle"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, swizzle) - 20usize];
-    ["Offset of field: MslSamplerYcbcrConversion::ycbcr_model"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, ycbcr_model) - 36usize];
-    ["Offset of field: MslSamplerYcbcrConversion::ycbcr_range"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, ycbcr_range) - 40usize];
-    ["Offset of field: MslSamplerYcbcrConversion::bpc"]
-        [::std::mem::offset_of!(MslSamplerYcbcrConversion, bpc) - 44usize];
-};
 extern "C" {
     pub fn spvc_msl_sampler_ycbcr_conversion_init(conv: *mut MslSamplerYcbcrConversion);
 }
@@ -2994,17 +2751,6 @@ pub struct HlslResourceBindingMapping {
     pub register_space: crate::ctypes::c_uint,
     pub register_binding: crate::ctypes::c_uint,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of HlslResourceBindingMapping"]
-        [::std::mem::size_of::<HlslResourceBindingMapping>() - 8usize];
-    ["Alignment of HlslResourceBindingMapping"]
-        [::std::mem::align_of::<HlslResourceBindingMapping>() - 4usize];
-    ["Offset of field: HlslResourceBindingMapping::register_space"]
-        [::std::mem::offset_of!(HlslResourceBindingMapping, register_space) - 0usize];
-    ["Offset of field: HlslResourceBindingMapping::register_binding"]
-        [::std::mem::offset_of!(HlslResourceBindingMapping, register_binding) - 4usize];
-};
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslResourceBinding {
@@ -3016,25 +2762,6 @@ pub struct HlslResourceBinding {
     pub srv: HlslResourceBindingMapping,
     pub sampler: HlslResourceBindingMapping,
 }
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of HlslResourceBinding"][::std::mem::size_of::<HlslResourceBinding>() - 44usize];
-    ["Alignment of HlslResourceBinding"][::std::mem::align_of::<HlslResourceBinding>() - 4usize];
-    ["Offset of field: HlslResourceBinding::stage"]
-        [::std::mem::offset_of!(HlslResourceBinding, stage) - 0usize];
-    ["Offset of field: HlslResourceBinding::desc_set"]
-        [::std::mem::offset_of!(HlslResourceBinding, desc_set) - 4usize];
-    ["Offset of field: HlslResourceBinding::binding"]
-        [::std::mem::offset_of!(HlslResourceBinding, binding) - 8usize];
-    ["Offset of field: HlslResourceBinding::cbv"]
-        [::std::mem::offset_of!(HlslResourceBinding, cbv) - 12usize];
-    ["Offset of field: HlslResourceBinding::uav"]
-        [::std::mem::offset_of!(HlslResourceBinding, uav) - 20usize];
-    ["Offset of field: HlslResourceBinding::srv"]
-        [::std::mem::offset_of!(HlslResourceBinding, srv) - 28usize];
-    ["Offset of field: HlslResourceBinding::sampler"]
-        [::std::mem::offset_of!(HlslResourceBinding, sampler) - 36usize];
-};
 extern "C" {
     pub fn spvc_hlsl_resource_binding_init(binding: *mut HlslResourceBinding);
 }

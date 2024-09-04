@@ -4,9 +4,11 @@
 
 //! Raw bindings to the C API of SPIRV-Cross.
 //!
-//! Types in `PascalCase` can be safely exposed.
-//! Types and functions in `snake_case` are all unsafe.
+//! Incorrect use of `_init` functions can cause undefined behaviour.
 //!
+//! Always go through `MaybeUninit` for anything that sets an enum,
+//! then check for `u32::MAX`.
+
 mod bindings;
 
 // Because SPIRV-Cross's C API is C89, we don't have stdint,
@@ -47,126 +49,26 @@ impl From<u32> for SpvId {
     }
 }
 
-impl Default for MslVertexAttribute {
-    fn default() -> Self {
-        // This should be non_exhaustive.
-        // waiting for https://github.com/rust-lang/rust-bindgen/pull/2866
-        let mut attr = MslVertexAttribute {
-            location: 0,
-            msl_buffer: 0,
-            msl_offset: 0,
-            msl_stride: 0,
-            per_instance: false,
-            format: MslShaderVariableFormat::Other,
-            builtin: SpvBuiltIn::Position,
-        };
-
-        unsafe {
-            bindings::spvc_msl_vertex_attribute_init(&mut attr);
-        }
-
-        attr
-    }
-}
-
-impl Default for MslShaderInterfaceVar {
-    fn default() -> Self {
-        // This should be non_exhaustive.
-        // waiting for https://github.com/rust-lang/rust-bindgen/pull/2866
-        let mut attr = MslShaderInterfaceVar {
-            location: 0,
-            format: MslShaderVariableFormat::Other,
-            builtin: SpvBuiltIn::Position,
-            vecsize: 0,
-        };
-
-        unsafe {
-            bindings::spvc_msl_shader_interface_var_init(&mut attr);
-        }
-
-        attr
-    }
-}
-
-impl Default for MslShaderInterfaceVar2 {
-    fn default() -> Self {
-        // This should be non_exhaustive.
-        // waiting for https://github.com/rust-lang/rust-bindgen/pull/2866
-        let mut attr = MslShaderInterfaceVar2 {
-            location: 0,
-            format: MslShaderVariableFormat::Other,
-            builtin: SpvBuiltIn::Position,
-            vecsize: 0,
-            rate: MslShaderVariableRate::PerVertex,
-        };
-
-        unsafe {
-            bindings::spvc_msl_shader_interface_var_init_2(&mut attr);
-        }
-
-        attr
-    }
-}
-
-impl Default for MslResourceBinding {
-    fn default() -> Self {
-        let mut binding = MslResourceBinding {
-            stage: SpvExecutionModel::Vertex,
-            desc_set: 0,
-            binding: 0,
-            msl_buffer: 0,
-            msl_texture: 0,
-            msl_sampler: 0,
-        };
-
-        unsafe {
-            bindings::spvc_msl_resource_binding_init(&mut binding);
-
-            binding
-        }
-    }
-}
-
-impl Default for MslResourceBinding2 {
-    fn default() -> Self {
-        let mut binding = MslResourceBinding2 {
-            stage: SpvExecutionModel::Vertex,
-            desc_set: 0,
-            binding: 0,
-            count: 0,
-            msl_buffer: 0,
-            msl_texture: 0,
-            msl_sampler: 0,
-        };
-
-        unsafe {
-            bindings::spvc_msl_resource_binding_init_2(&mut binding);
-        }
-        binding
-    }
-}
-
 impl Default for MslConstexprSampler {
     fn default() -> Self {
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_msl.hpp#L216
         let mut sampler = MslConstexprSampler {
             coord: MslSamplerCoord::Normalized,
             min_filter: MslSamplerFilter::Nearest,
             mag_filter: MslSamplerFilter::Nearest,
             mip_filter: MslSamplerMipFilter::None,
-            s_address: MslSamplerAddress::ClampToZero,
-            t_address: MslSamplerAddress::ClampToZero,
-            r_address: MslSamplerAddress::ClampToZero,
+            s_address: MslSamplerAddress::ClampToEdge,
+            t_address: MslSamplerAddress::ClampToEdge,
+            r_address: MslSamplerAddress::ClampToEdge,
             compare_func: MslSamplerCompareFunc::Never,
             border_color: MslSamplerBorderColor::TransparentBlack,
             lod_clamp_min: 0.0,
-            lod_clamp_max: 0.0,
-            max_anisotropy: 0,
+            lod_clamp_max: 1000.0,
+            max_anisotropy: 1,
             compare_enable: false,
             lod_clamp_enable: false,
             anisotropy_enable: false,
         };
-
-        unsafe { bindings::spvc_msl_constexpr_sampler_init(&mut sampler) }
 
         sampler
     }
@@ -174,6 +76,7 @@ impl Default for MslConstexprSampler {
 
 impl Default for MslSamplerYcbcrConversion {
     fn default() -> Self {
+        // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_msl.hpp#L230
         let mut conversion = MslSamplerYcbcrConversion {
             planes: 0,
             resolution: MslFormatResolution::FormatResolution444,
@@ -181,53 +84,17 @@ impl Default for MslSamplerYcbcrConversion {
             x_chroma_offset: MslChromaLocation::CositedEven,
             y_chroma_offset: MslChromaLocation::CositedEven,
             swizzle: [
-                MslComponentSwizzle::Zero,
-                MslComponentSwizzle::Zero,
-                MslComponentSwizzle::Zero,
-                MslComponentSwizzle::Zero,
+                MslComponentSwizzle::Identity,
+                MslComponentSwizzle::Identity,
+                MslComponentSwizzle::Identity,
+                MslComponentSwizzle::Identity,
             ],
             ycbcr_model: MslSamplerYcbcrModelConversion::RgbIdentity,
             ycbcr_range: MslSamplerYcbcrRange::ItuFull,
-            bpc: 0,
+            bpc: 8,
         };
-
-        unsafe { bindings::spvc_msl_sampler_ycbcr_conversion_init(&mut conversion) }
 
         conversion
-    }
-}
-
-impl Default for HlslResourceBinding {
-    fn default() -> Self {
-        // This should be non_exhaustive.
-        // waiting for https://github.com/rust-lang/rust-bindgen/pull/2866
-        let mut binding = HlslResourceBinding {
-            stage: SpvExecutionModel::Vertex,
-            desc_set: 0,
-            binding: 0,
-            cbv: HlslResourceBindingMapping {
-                register_space: 0,
-                register_binding: 0,
-            },
-            uav: HlslResourceBindingMapping {
-                register_space: 0,
-                register_binding: 0,
-            },
-            srv: HlslResourceBindingMapping {
-                register_space: 0,
-                register_binding: 0,
-            },
-            sampler: HlslResourceBindingMapping {
-                register_space: 0,
-                register_binding: 0,
-            },
-        };
-
-        unsafe {
-            bindings::spvc_hlsl_resource_binding_init(&mut binding);
-        }
-
-        binding
     }
 }
 

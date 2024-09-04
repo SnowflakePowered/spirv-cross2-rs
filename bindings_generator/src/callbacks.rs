@@ -44,15 +44,7 @@ const SPVC_MSL_TYPES: &[&str] = &[
     "spvc_msl_shader_input",
 ];
 
-const NON_EXHAUSTIVE_TYPES: &[&str] = &[
-    "MslVertexAttribute",
-    "MslShaderInterfaceVar",
-    "MslShaderInterfaceVar2",
-    "MslResourceBinding",
-    "MslResourceBinding2",
-    "MslConstexprSampler",
-    "MslSamplerYcbcrConversion",
-];
+const NON_EXHAUSTIVE_TYPES: &[&str] = &["MslShaderVariableFormat"];
 
 impl ParseCallbacks for SpirvCrossCallbacks {
     fn item_name(&self, original_item_name: &str) -> Option<String> {

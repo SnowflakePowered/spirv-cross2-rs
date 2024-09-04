@@ -4,7 +4,6 @@ pub use spirv_cross_sys::MslChromaLocation as ChromaLocation;
 pub use spirv_cross_sys::MslComponentSwizzle as ComponentSwizzle;
 pub use spirv_cross_sys::MslConstexprSampler as ConstexprSampler;
 pub use spirv_cross_sys::MslFormatResolution as FormatResolution;
-pub use spirv_cross_sys::MslResourceBinding2 as ResourceBinding;
 pub use spirv_cross_sys::MslSamplerAddress as SamplerAddress;
 pub use spirv_cross_sys::MslSamplerBorderColor as SamplerBorderColor;
 pub use spirv_cross_sys::MslSamplerCompareFunc as SamplerCompareFunc;
@@ -42,6 +41,27 @@ pub const ARGUMENT_BUFFER_BINDING: u32 = !3;
 
 /// Maximum number of argument buffers supported.
 pub const MAX_ARGUMENT_BUFFERS: u32 = 8;
+
+use spirv_cross_sys::MslResourceBinding2;
+
+
+/// Pipeline binding information for a resource.
+///
+/// Used to map a SPIR-V resource to an MSL buffer.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum ResourceBinding {
+    /// A resource with a qualified layout.
+    ///
+    /// i.e. `layout(set = 0, binding = 1)` in GLSL.
+    Qualified {
+        /// The descriptor set of the qualified layout.
+        set: u32,
+        /// The binding number of the qualified layout.
+        binding: u32,
+    },
+    /// The push constant buffer.
+    PushConstant,
+}
 
 use std::fmt::{Debug, Formatter};
 

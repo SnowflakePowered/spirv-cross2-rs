@@ -52,7 +52,6 @@ const NON_EXHAUSTIVE_TYPES: &[&str] = &[
     "MslResourceBinding2",
     "MslConstexprSampler",
     "MslSamplerYcbcrConversion",
-    "HlslResourceBinding",
 ];
 
 impl ParseCallbacks for SpirvCrossCallbacks {

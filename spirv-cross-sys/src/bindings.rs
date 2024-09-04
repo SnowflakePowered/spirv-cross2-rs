@@ -3007,7 +3007,6 @@ const _: () = {
 };
 #[repr(C)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-#[non_exhaustive]
 pub struct HlslResourceBinding {
     pub stage: SpvExecutionModel,
     pub desc_set: crate::ctypes::c_uint,

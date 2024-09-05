@@ -19,6 +19,10 @@ pub use spirv_cross_sys::VariableId;
 #[repr(transparent)]
 struct PointerOnlyForComparison<T>(NonNull<T>);
 
+// SAFETY: pointer is only for comparison.
+unsafe impl<T> Send for PointerOnlyForComparison<T> {}
+unsafe impl<T> Sync for PointerOnlyForComparison<T> {}
+
 impl<T> PartialEq for PointerOnlyForComparison<T> {
     fn eq(&self, other: &Self) -> bool {
         other.0.as_ptr() == self.0.as_ptr()
@@ -63,7 +67,7 @@ impl<T: Id> Handle<T> {
 }
 
 /// Trait for SPIRV-Cross ID types.
-pub trait Id: Sealed + Debug + 'static {
+pub trait Id: Sealed + Debug + Send + Sync + 'static {
     /// Return the `u32` part of the Id.
     fn id(&self) -> u32;
 }

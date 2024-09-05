@@ -121,7 +121,7 @@ use crate::targets::Target;
 use std::marker::PhantomData;
 use std::ops::Deref;
 use std::ptr::NonNull;
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// Compilation of SPIR-V to a textual format.
 pub mod compile;
@@ -173,6 +173,15 @@ pub use crate::string::ContextStr;
 #[repr(transparent)]
 pub struct SpirvCrossContext(NonNull<spvc_context_s>);
 
+// SAFETY: SpirvCrossContext is not clone.
+//
+// While allocations are interior mutability,
+// they should be safe one thread at a time.
+//
+// C++ new and delete operators are thread safe,
+// which is what this uses to allocate.s
+unsafe impl Send for SpirvCrossContext {}
+
 /// The root lifetime of a SPIRV-Cross context.
 ///
 /// There are mainly two lifetimes to worry about in the entire crate,
@@ -195,14 +204,14 @@ pub struct SpirvCrossContext(NonNull<spvc_context_s>);
 /// matches the lifetime of the immutable borrow of the compiler.
 enum ContextRoot<'a, T = SpirvCrossContext> {
     Borrowed(&'a T),
-    RefCounted(Rc<T>),
+    RefCounted(Arc<T>),
 }
 
 impl<'a, T> Clone for ContextRoot<'a, T> {
     fn clone(&self) -> Self {
         match self {
             &ContextRoot::Borrowed(a) => ContextRoot::Borrowed(a),
-            ContextRoot::RefCounted(rc) => ContextRoot::RefCounted(Rc::clone(rc)),
+            ContextRoot::RefCounted(rc) => ContextRoot::RefCounted(Arc::clone(rc)),
         }
     }
 }
@@ -312,7 +321,7 @@ impl SpirvCrossContext {
     /// pointer to the SPIRV-Cross context, and thus has a `'static`
     /// lifetime.
     pub fn create_compiler_refcounted<T: Target>(
-        self: &Rc<Self>,
+        self: &Arc<Self>,
         spirv: Module,
     ) -> error::Result<Compiler<'static, T>> {
         unsafe {
@@ -341,7 +350,7 @@ impl SpirvCrossContext {
 
             Ok(Compiler::new_from_raw(
                 compiler,
-                ContextRoot::RefCounted(Rc::clone(self)),
+                ContextRoot::RefCounted(Arc::clone(self)),
             ))
         }
     }
@@ -380,7 +389,7 @@ impl SpirvCrossContext {
 
             Ok(Compiler::new_from_raw(
                 compiler,
-                ContextRoot::RefCounted(Rc::new(self)),
+                ContextRoot::RefCounted(Arc::new(self)),
             ))
         }
     }
@@ -433,6 +442,15 @@ pub struct Compiler<'a, T> {
     ctx: ContextRoot<'a>,
     _pd: PhantomData<T>,
 }
+
+// SAFETY: Compiler is not clone.
+//
+// While allocations are interior mutability,
+// they should be safe one thread at a time.
+//
+// C++ new and delete operators are thread safe,
+// which is what this uses to allocate.s
+unsafe impl<T> Send for Compiler<'_, T> {}
 
 impl<T> Compiler<'_, T> {
     /// Create a new compiler instance.

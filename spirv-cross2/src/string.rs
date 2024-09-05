@@ -39,6 +39,13 @@ pub struct ContextStr<'a, T = SpirvCrossContext> {
     cow: Cow<'a, str>,
 }
 
+// SAFETY: SpirvCrossContext is Send.
+// Once created, the ContextStr is immutable, so it is also sync.
+// cloning the string doesn't affect the memory, as long as it
+// is alive for 'a.
+unsafe impl<T: Send> Send for ContextStr<'_, T> {}
+unsafe impl<T: Send> Sync for ContextStr<'_, T> {}
+
 impl<T> Clone for ContextStr<'_, T> {
     fn clone(&self) -> Self {
         Self {
@@ -308,6 +315,7 @@ mod test {
     use crate::ContextRoot;
     use std::ffi::{c_char, CStr, CString};
     use std::rc::Rc;
+    use std::sync::Arc;
 
     struct LifetimeContext(*mut c_char);
     impl LifetimeContext {
@@ -341,7 +349,7 @@ mod test {
     fn test_string() {
         // use std::borrow::BorrowMut;
         let lc = LifetimeContext::new();
-        let ctx = ContextRoot::RefCounted(Rc::new(lc));
+        let ctx = ContextRoot::RefCounted(Arc::new(lc));
 
         let mut lt = LifetimeTest(ctx);
 

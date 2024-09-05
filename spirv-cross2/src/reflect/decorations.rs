@@ -2,13 +2,12 @@ use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{ConstantId, Handle, Id, TypeId, VariableId};
 use crate::reflect::StructMember;
 use crate::sealed::Sealed;
-use crate::spirv::Decoration;
 use crate::string::ContextStr;
 use crate::Compiler;
-use crate::{error, spirv, ToStatic};
-use core::slice;
+use crate::{error, ToStatic};
+use spirv::Decoration;
 use spirv_cross_sys as sys;
-use spirv_cross_sys::{FromPrimitive, SpvId, ToPrimitive};
+use spirv_cross_sys::{SpvDecoration, SpvId};
 
 /// A value accompanying an `OpDecoration`
 #[derive(Debug, Eq, PartialEq)]
@@ -122,7 +121,7 @@ impl<'a> Clone for DecorationValue<'a> {
 
 impl DecorationValue<'_> {
     /// Check that the value is valid for the decoration type.
-    pub fn type_is_valid_for_decoration(&self, decoration: Decoration) -> bool {
+    pub fn type_is_valid_for_decoration(&self, decoration: spirv::Decoration) -> bool {
         match self {
             DecorationValue::Literal(_) => decoration_is_literal(decoration),
             DecorationValue::BuiltIn(_) => decoration == Decoration::BuiltIn,
@@ -139,7 +138,7 @@ impl DecorationValue<'_> {
         }
     }
 }
-fn decoration_is_literal(decoration: Decoration) -> bool {
+fn decoration_is_literal(decoration: spirv::Decoration) -> bool {
     match decoration {
         Decoration::Location
         | Decoration::Component
@@ -177,22 +176,32 @@ impl<'ctx, T> Compiler<'ctx, T> {
         // SAFETY: id is yielded by the instance so it's safe to use.
         let id = SpvId(self.yield_id(id)?.id());
         unsafe {
-            let has_decoration =
-                sys::spvc_compiler_has_decoration(self.ptr.as_ptr(), id, decoration);
+            let has_decoration = sys::spvc_compiler_has_decoration(
+                self.ptr.as_ptr(),
+                id,
+                SpvDecoration(decoration as u32 as i32),
+            );
             if !has_decoration {
                 return Ok(None);
             };
 
             if decoration_is_string(decoration) {
-                let str =
-                    sys::spvc_compiler_get_decoration_string(self.ptr.as_ptr(), id, decoration);
+                let str = sys::spvc_compiler_get_decoration_string(
+                    self.ptr.as_ptr(),
+                    id,
+                    SpvDecoration(decoration as u32 as i32),
+                );
                 return Ok(Some(DecorationValue::String(ContextStr::from_ptr(
                     str,
                     self.ctx.clone(),
                 ))));
             }
 
-            let value = sys::spvc_compiler_get_decoration(self.ptr.as_ptr(), id, decoration);
+            let value = sys::spvc_compiler_get_decoration(
+                self.ptr.as_ptr(),
+                id,
+                SpvDecoration(decoration as u32 as i32),
+            );
             self.parse_decoration_value(decoration, value)
         }
     }
@@ -213,7 +222,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 self.ptr.as_ptr(),
                 struct_type,
                 index,
-                decoration,
+                SpvDecoration(decoration as u32 as i32),
             );
             if !has_decoration {
                 return Ok(None);
@@ -224,7 +233,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                     self.ptr.as_ptr(),
                     struct_type,
                     index,
-                    decoration,
+                    SpvDecoration(decoration as u32 as i32),
                 );
                 return Ok(Some(DecorationValue::String(ContextStr::from_ptr(
                     str,
@@ -236,7 +245,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 self.ptr.as_ptr(),
                 struct_type,
                 index,
-                decoration,
+                SpvDecoration(decoration as u32 as i32),
             );
             self.parse_decoration_value(decoration, value)
         }
@@ -255,14 +264,18 @@ impl<'ctx, T> Compiler<'ctx, T> {
     pub fn set_decoration<'value, I: Id>(
         &mut self,
         id: Handle<I>,
-        decoration: Decoration,
+        decoration: spirv::Decoration,
         value: Option<impl Into<DecorationValue<'value>>>,
     ) -> error::Result<()> {
         // SAFETY: id is yielded by the instance so it's safe to use.
         let id = SpvId(self.yield_id(id)?.id());
         unsafe {
             let Some(value) = value else {
-                sys::spvc_compiler_unset_decoration(self.ptr.as_ptr(), id, decoration);
+                sys::spvc_compiler_unset_decoration(
+                    self.ptr.as_ptr(),
+                    id,
+                    SpvDecoration(decoration as u32 as i32),
+                );
                 return Ok(());
             };
 
@@ -277,31 +290,27 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             match value {
                 DecorationValue::Literal(literal) => {
-                    sys::spvc_compiler_set_decoration(self.ptr.as_ptr(), id, decoration, literal);
-                }
-                DecorationValue::BuiltIn(builtin) => {
-                    let Some(builtin) = builtin.to_u32() else {
-                        return Err(SpirvCrossError::InvalidDecorationInput(
-                            decoration,
-                            DecorationValue::to_static(&value),
-                        ));
-                    };
-
-                    sys::spvc_compiler_set_decoration(self.ptr.as_ptr(), id, decoration, builtin);
-                }
-                DecorationValue::RoundingMode(rounding_mode) => {
-                    let Some(rounding_mode) = rounding_mode.to_u32() else {
-                        return Err(SpirvCrossError::InvalidDecorationInput(
-                            decoration,
-                            DecorationValue::to_static(&value),
-                        ));
-                    };
-
                     sys::spvc_compiler_set_decoration(
                         self.ptr.as_ptr(),
                         id,
-                        decoration,
-                        rounding_mode,
+                        SpvDecoration(decoration as u32 as i32),
+                        literal,
+                    );
+                }
+                DecorationValue::BuiltIn(builtin) => {
+                    sys::spvc_compiler_set_decoration(
+                        self.ptr.as_ptr(),
+                        id,
+                        SpvDecoration(decoration as u32 as i32),
+                        builtin as u32,
+                    );
+                }
+                DecorationValue::RoundingMode(rounding_mode) => {
+                    sys::spvc_compiler_set_decoration(
+                        self.ptr.as_ptr(),
+                        id,
+                        SpvDecoration(decoration as u32 as i32),
+                        rounding_mode as u32,
                     );
                 }
                 DecorationValue::Constant(constant) => {
@@ -309,12 +318,17 @@ impl<'ctx, T> Compiler<'ctx, T> {
                     sys::spvc_compiler_set_decoration(
                         self.ptr.as_ptr(),
                         id,
-                        decoration,
+                        SpvDecoration(decoration as u32 as i32),
                         constant.id(),
                     );
                 }
                 DecorationValue::Present => {
-                    sys::spvc_compiler_set_decoration(self.ptr.as_ptr(), id, decoration, 1);
+                    sys::spvc_compiler_set_decoration(
+                        self.ptr.as_ptr(),
+                        id,
+                        SpvDecoration(decoration as u32 as i32),
+                        1,
+                    );
                 }
                 DecorationValue::String(string) => {
                     let cstring = string.into_cstring_ptr().map_err(|e| {
@@ -330,7 +344,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                     sys::spvc_compiler_set_decoration_string(
                         self.ptr.as_ptr(),
                         id,
-                        decoration,
+                        SpvDecoration(decoration as u32 as i32),
                         cstring.as_ptr(),
                     );
 
@@ -377,7 +391,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                     self.ptr.as_ptr(),
                     struct_type,
                     index,
-                    decoration,
+                    SpvDecoration(decoration as u32 as i32),
                 );
                 return Ok(());
             };
@@ -397,40 +411,26 @@ impl<'ctx, T> Compiler<'ctx, T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        decoration,
+                        SpvDecoration(decoration as u32 as i32),
                         literal,
                     );
                 }
                 DecorationValue::BuiltIn(builtin) => {
-                    let Some(builtin) = builtin.to_u32() else {
-                        return Err(SpirvCrossError::InvalidDecorationInput(
-                            decoration,
-                            DecorationValue::to_static(&value),
-                        ));
-                    };
-
                     sys::spvc_compiler_set_member_decoration(
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        decoration,
-                        builtin,
+                        SpvDecoration(decoration as u32 as i32),
+                        builtin as u32,
                     );
                 }
                 DecorationValue::RoundingMode(rounding_mode) => {
-                    let Some(rounding_mode) = rounding_mode.to_u32() else {
-                        return Err(SpirvCrossError::InvalidDecorationInput(
-                            decoration,
-                            DecorationValue::to_static(&value),
-                        ));
-                    };
-
                     sys::spvc_compiler_set_member_decoration(
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        decoration,
-                        rounding_mode,
+                        SpvDecoration(decoration as u32 as i32),
+                        rounding_mode as u32,
                     );
                 }
                 DecorationValue::Constant(constant) => {
@@ -439,7 +439,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        decoration,
+                        SpvDecoration(decoration as u32 as i32),
                         constant.id(),
                     );
                 }
@@ -448,7 +448,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        decoration,
+                        SpvDecoration(decoration as u32 as i32),
                         1,
                     );
                 }
@@ -467,7 +467,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        decoration,
+                        SpvDecoration(decoration as u32 as i32),
                         cstring.as_ptr(),
                     );
 
@@ -501,7 +501,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             if !sys::spvc_compiler_get_binary_offset_for_decoration(
                 self.ptr.as_ptr(),
                 id,
-                decoration,
+                SpvDecoration(decoration as u32 as i32),
                 &mut offset,
             ) {
                 Ok(None)
@@ -578,7 +578,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             // SAFETY: 'ctx is sound here.
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2790
-            let slice = slice::from_raw_parts(buffer, size);
+            let slice = super::try_valid_slice::<Decoration>(buffer.cast(), size)?;
             if slice.is_empty() {
                 Ok(None)
             } else {

@@ -1,15 +1,13 @@
+use crate::error;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::reflect::try_valid_slice;
 use crate::string::ContextStr;
-use crate::{error, spirv};
 use crate::{Compiler, ContextRoot};
 use core::slice;
 use spirv_cross_sys as sys;
-use spirv_cross_sys::spvc_entry_point;
+use spirv_cross_sys::{spvc_entry_point, SpvBuiltIn, SpvExecutionModel, SpvStorageClass};
 use std::ffi::c_char;
-use std::mem::MaybeUninit;
-use std::ptr;
 
 /// Iterator for declared extensions, created by [`Compiler::declared_extensions`].
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>, ContextRoot<'a>);
@@ -42,8 +40,8 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 .ok(self)?;
 
             const _: () =
-                assert!(std::mem::size_of::<spirv::Capability>() == std::mem::size_of::<u32>());
-            try_valid_slice(caps, size)
+                assert!(std::mem::size_of::<spirv::Capability>() == std::mem::size_of::<i32>());
+            try_valid_slice(caps.cast(), size)
         }
     }
 
@@ -67,17 +65,13 @@ impl<'ctx, T> Compiler<'ctx, T> {
     /// Get the execution model of the module.
     pub fn execution_model(&self) -> error::Result<spirv::ExecutionModel> {
         unsafe {
-            let mut exec_model = MaybeUninit::zeroed();
-            sys::spvc_rs_compiler_get_execution_model_indirect(
-                self.ptr.as_ptr(),
-                exec_model.as_mut_ptr(),
-            );
+            let exec_model = sys::spvc_compiler_get_execution_model(self.ptr.as_ptr());
 
-            if exec_model.as_ptr().cast::<i32>().read() == i32::MAX {
-                Err(SpirvCrossError::InvalidEnum)
-            } else {
-                Ok(exec_model.assume_init())
-            }
+            let Some(exec_model) = spirv::ExecutionModel::from_u32(exec_model.0 as u32) else {
+                return Err(SpirvCrossError::InvalidEnum);
+            };
+
+            Ok(exec_model)
         }
     }
 }
@@ -115,18 +109,15 @@ impl<T> Compiler<'_, T> {
         unsafe {
             Ok(sys::spvc_compiler_has_active_builtin(
                 self.ptr.as_ptr(),
-                builtin,
-                storage_class,
+                SpvBuiltIn(builtin as i32),
+                SpvStorageClass(storage_class as i32),
             ))
         }
     }
 }
 
 /// Iterator type created by [`Compiler::entry_points`].
-pub struct EntryPointIter<'a>(
-    slice::Iter<'a, MaybeUninit<spvc_entry_point>>,
-    ContextRoot<'a>,
-);
+pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>, ContextRoot<'a>);
 
 /// A SPIR-V entry point.
 #[derive(Debug)]
@@ -149,20 +140,20 @@ impl<'a> Iterator for EntryPointIter<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().and_then(|entry| unsafe {
             // execution_model is potentially uninit, we need to check.
-            let exec_model = ptr::addr_of!((*entry.as_ptr()).execution_model);
-            if exec_model.cast::<i32>().read() == i32::MAX {
+            let Some(execution_model) =
+                spirv::ExecutionModel::from_u32(entry.execution_model.0 as u32)
+            else {
                 if cfg!(debug_assertions) {
                     panic!("Unexpected SpvExecutionModelMax in valid entry point!")
                 } else {
                     return None;
                 }
-            }
+            };
 
-            let entry = entry.assume_init();
             let name = ContextStr::from_ptr(entry.name, self.1.clone());
             Some(EntryPoint {
                 name,
-                execution_model: entry.execution_model,
+                execution_model,
             })
         })
     }
@@ -223,7 +214,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             let name = sys::spvc_compiler_get_cleansed_entry_point_name(
                 self.ptr.as_ptr(),
                 name.as_ptr(),
-                model,
+                SpvExecutionModel(model as u32 as i32),
             );
 
             if name.is_null() {
@@ -260,7 +251,12 @@ impl<'ctx, T> Compiler<'ctx, T> {
         unsafe {
             let name = name.into_cstring_ptr()?;
 
-            sys::spvc_compiler_set_entry_point(self.ptr.as_ptr(), name.as_ptr(), model).ok(&*self)
+            sys::spvc_compiler_set_entry_point(
+                self.ptr.as_ptr(),
+                name.as_ptr(),
+                SpvExecutionModel(model as u32 as i32),
+            )
+            .ok(&*self)
         }
     }
 
@@ -287,7 +283,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
                 self.ptr.as_ptr(),
                 from.as_ptr(),
                 to.as_ptr(),
-                model,
+                SpvExecutionModel(model as u32 as i32),
             )
             .ok(&*self)
         }
@@ -298,7 +294,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{spirv, targets, Module, SpirvCrossContext};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 

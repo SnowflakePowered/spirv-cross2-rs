@@ -34,10 +34,10 @@ pub enum SpirvCrossError {
     ///
     /// This is mostly returned if there is an invalid `OpDecoration Builtin` or `OpDecoration FPRoundingMode`
     /// in the SPIR-V module.
-    InvalidDecorationOutput(crate::spirv::Decoration, u32),
+    InvalidDecorationOutput(spirv::Decoration, u32),
     #[error("The decoration value is invalid for the given decoration: {0:?} = {1:?}")]
     /// The decoration value is invalid for the given decoration.
-    InvalidDecorationInput(crate::spirv::Decoration, DecorationValue<'static>),
+    InvalidDecorationInput(spirv::Decoration, DecorationValue<'static>),
     #[error("The string is invalid: {0:?}")]
     /// The string is invalid.
     ///

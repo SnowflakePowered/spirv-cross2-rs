@@ -3,2245 +3,2042 @@
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct SpvId(pub crate::ctypes::c_uint);
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvExecutionModel {
+    pub const Vertex: SpvExecutionModel = SpvExecutionModel(0);
+}
+impl SpvExecutionModel {
+    pub const TessellationControl: SpvExecutionModel = SpvExecutionModel(1);
+}
+impl SpvExecutionModel {
+    pub const TessellationEvaluation: SpvExecutionModel = SpvExecutionModel(2);
+}
+impl SpvExecutionModel {
+    pub const Geometry: SpvExecutionModel = SpvExecutionModel(3);
+}
+impl SpvExecutionModel {
+    pub const Fragment: SpvExecutionModel = SpvExecutionModel(4);
+}
+impl SpvExecutionModel {
+    pub const GLCompute: SpvExecutionModel = SpvExecutionModel(5);
+}
+impl SpvExecutionModel {
+    pub const Kernel: SpvExecutionModel = SpvExecutionModel(6);
+}
+impl SpvExecutionModel {
+    pub const TaskNV: SpvExecutionModel = SpvExecutionModel(5267);
+}
+impl SpvExecutionModel {
+    pub const MeshNV: SpvExecutionModel = SpvExecutionModel(5268);
+}
+impl SpvExecutionModel {
+    pub const RayGenerationKHR: SpvExecutionModel = SpvExecutionModel(5313);
+}
+impl SpvExecutionModel {
+    pub const RayGenerationNV: SpvExecutionModel = SpvExecutionModel(5313);
+}
+impl SpvExecutionModel {
+    pub const IntersectionKHR: SpvExecutionModel = SpvExecutionModel(5314);
+}
+impl SpvExecutionModel {
+    pub const IntersectionNV: SpvExecutionModel = SpvExecutionModel(5314);
+}
+impl SpvExecutionModel {
+    pub const AnyHitKHR: SpvExecutionModel = SpvExecutionModel(5315);
+}
+impl SpvExecutionModel {
+    pub const AnyHitNV: SpvExecutionModel = SpvExecutionModel(5315);
+}
+impl SpvExecutionModel {
+    pub const ClosestHitKHR: SpvExecutionModel = SpvExecutionModel(5316);
+}
+impl SpvExecutionModel {
+    pub const ClosestHitNV: SpvExecutionModel = SpvExecutionModel(5316);
+}
+impl SpvExecutionModel {
+    pub const MissKHR: SpvExecutionModel = SpvExecutionModel(5317);
+}
+impl SpvExecutionModel {
+    pub const MissNV: SpvExecutionModel = SpvExecutionModel(5317);
+}
+impl SpvExecutionModel {
+    pub const CallableKHR: SpvExecutionModel = SpvExecutionModel(5318);
+}
+impl SpvExecutionModel {
+    pub const CallableNV: SpvExecutionModel = SpvExecutionModel(5318);
+}
+impl SpvExecutionModel {
+    pub const TaskEXT: SpvExecutionModel = SpvExecutionModel(5364);
+}
+impl SpvExecutionModel {
+    pub const MeshEXT: SpvExecutionModel = SpvExecutionModel(5365);
+}
+impl SpvExecutionModel {
+    pub const Max: SpvExecutionModel = SpvExecutionModel(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvSourceLanguage {
-    Unknown = 0,
-    ESSL = 1,
-    GLSL = 2,
-    OpenCL_C = 3,
-    OpenCL_CPP = 4,
-    HLSL = 5,
-    CPP_for_OpenCL = 6,
-    SYCL = 7,
-}
-impl SpvExecutionModel {
-    pub const RayGenerationNV: SpvExecutionModel = SpvExecutionModel::RayGenerationKHR;
-}
-impl SpvExecutionModel {
-    pub const IntersectionNV: SpvExecutionModel = SpvExecutionModel::IntersectionKHR;
-}
-impl SpvExecutionModel {
-    pub const AnyHitNV: SpvExecutionModel = SpvExecutionModel::AnyHitKHR;
-}
-impl SpvExecutionModel {
-    pub const ClosestHitNV: SpvExecutionModel = SpvExecutionModel::ClosestHitKHR;
-}
-impl SpvExecutionModel {
-    pub const MissNV: SpvExecutionModel = SpvExecutionModel::MissKHR;
-}
-impl SpvExecutionModel {
-    pub const CallableNV: SpvExecutionModel = SpvExecutionModel::CallableKHR;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvExecutionModel {
-    Vertex = 0,
-    TessellationControl = 1,
-    TessellationEvaluation = 2,
-    Geometry = 3,
-    Fragment = 4,
-    GLCompute = 5,
-    Kernel = 6,
-    TaskNV = 5267,
-    MeshNV = 5268,
-    RayGenerationKHR = 5313,
-    IntersectionKHR = 5314,
-    AnyHitKHR = 5315,
-    ClosestHitKHR = 5316,
-    MissKHR = 5317,
-    CallableKHR = 5318,
-    TaskEXT = 5364,
-    MeshEXT = 5365,
-}
-impl SpvAddressingModel {
-    pub const PhysicalStorageBuffer64EXT: SpvAddressingModel =
-        SpvAddressingModel::PhysicalStorageBuffer64;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvAddressingModel {
-    Logical = 0,
-    Physical32 = 1,
-    Physical64 = 2,
-    PhysicalStorageBuffer64 = 5348,
-}
-impl SpvMemoryModel {
-    pub const VulkanKHR: SpvMemoryModel = SpvMemoryModel::Vulkan;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvMemoryModel {
-    Simple = 0,
-    GLSL450 = 1,
-    OpenCL = 2,
-    Vulkan = 3,
+pub struct SpvExecutionModel(pub i32);
+impl SpvExecutionMode {
+    pub const Invocations: SpvExecutionMode = SpvExecutionMode(0);
 }
 impl SpvExecutionMode {
-    pub const OutputLinesNV: SpvExecutionMode = SpvExecutionMode::OutputLinesEXT;
+    pub const SpacingEqual: SpvExecutionMode = SpvExecutionMode(1);
 }
 impl SpvExecutionMode {
-    pub const OutputPrimitivesNV: SpvExecutionMode = SpvExecutionMode::OutputPrimitivesEXT;
+    pub const SpacingFractionalEven: SpvExecutionMode = SpvExecutionMode(2);
 }
 impl SpvExecutionMode {
-    pub const OutputTrianglesNV: SpvExecutionMode = SpvExecutionMode::OutputTrianglesEXT;
+    pub const SpacingFractionalOdd: SpvExecutionMode = SpvExecutionMode(3);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvExecutionMode {
+    pub const VertexOrderCw: SpvExecutionMode = SpvExecutionMode(4);
+}
+impl SpvExecutionMode {
+    pub const VertexOrderCcw: SpvExecutionMode = SpvExecutionMode(5);
+}
+impl SpvExecutionMode {
+    pub const PixelCenterInteger: SpvExecutionMode = SpvExecutionMode(6);
+}
+impl SpvExecutionMode {
+    pub const OriginUpperLeft: SpvExecutionMode = SpvExecutionMode(7);
+}
+impl SpvExecutionMode {
+    pub const OriginLowerLeft: SpvExecutionMode = SpvExecutionMode(8);
+}
+impl SpvExecutionMode {
+    pub const EarlyFragmentTests: SpvExecutionMode = SpvExecutionMode(9);
+}
+impl SpvExecutionMode {
+    pub const PointMode: SpvExecutionMode = SpvExecutionMode(10);
+}
+impl SpvExecutionMode {
+    pub const Xfb: SpvExecutionMode = SpvExecutionMode(11);
+}
+impl SpvExecutionMode {
+    pub const DepthReplacing: SpvExecutionMode = SpvExecutionMode(12);
+}
+impl SpvExecutionMode {
+    pub const DepthGreater: SpvExecutionMode = SpvExecutionMode(14);
+}
+impl SpvExecutionMode {
+    pub const DepthLess: SpvExecutionMode = SpvExecutionMode(15);
+}
+impl SpvExecutionMode {
+    pub const DepthUnchanged: SpvExecutionMode = SpvExecutionMode(16);
+}
+impl SpvExecutionMode {
+    pub const LocalSize: SpvExecutionMode = SpvExecutionMode(17);
+}
+impl SpvExecutionMode {
+    pub const LocalSizeHint: SpvExecutionMode = SpvExecutionMode(18);
+}
+impl SpvExecutionMode {
+    pub const InputPoints: SpvExecutionMode = SpvExecutionMode(19);
+}
+impl SpvExecutionMode {
+    pub const InputLines: SpvExecutionMode = SpvExecutionMode(20);
+}
+impl SpvExecutionMode {
+    pub const InputLinesAdjacency: SpvExecutionMode = SpvExecutionMode(21);
+}
+impl SpvExecutionMode {
+    pub const Triangles: SpvExecutionMode = SpvExecutionMode(22);
+}
+impl SpvExecutionMode {
+    pub const InputTrianglesAdjacency: SpvExecutionMode = SpvExecutionMode(23);
+}
+impl SpvExecutionMode {
+    pub const Quads: SpvExecutionMode = SpvExecutionMode(24);
+}
+impl SpvExecutionMode {
+    pub const Isolines: SpvExecutionMode = SpvExecutionMode(25);
+}
+impl SpvExecutionMode {
+    pub const OutputVertices: SpvExecutionMode = SpvExecutionMode(26);
+}
+impl SpvExecutionMode {
+    pub const OutputPoints: SpvExecutionMode = SpvExecutionMode(27);
+}
+impl SpvExecutionMode {
+    pub const OutputLineStrip: SpvExecutionMode = SpvExecutionMode(28);
+}
+impl SpvExecutionMode {
+    pub const OutputTriangleStrip: SpvExecutionMode = SpvExecutionMode(29);
+}
+impl SpvExecutionMode {
+    pub const VecTypeHint: SpvExecutionMode = SpvExecutionMode(30);
+}
+impl SpvExecutionMode {
+    pub const ContractionOff: SpvExecutionMode = SpvExecutionMode(31);
+}
+impl SpvExecutionMode {
+    pub const Initializer: SpvExecutionMode = SpvExecutionMode(33);
+}
+impl SpvExecutionMode {
+    pub const Finalizer: SpvExecutionMode = SpvExecutionMode(34);
+}
+impl SpvExecutionMode {
+    pub const SubgroupSize: SpvExecutionMode = SpvExecutionMode(35);
+}
+impl SpvExecutionMode {
+    pub const SubgroupsPerWorkgroup: SpvExecutionMode = SpvExecutionMode(36);
+}
+impl SpvExecutionMode {
+    pub const SubgroupsPerWorkgroupId: SpvExecutionMode = SpvExecutionMode(37);
+}
+impl SpvExecutionMode {
+    pub const LocalSizeId: SpvExecutionMode = SpvExecutionMode(38);
+}
+impl SpvExecutionMode {
+    pub const LocalSizeHintId: SpvExecutionMode = SpvExecutionMode(39);
+}
+impl SpvExecutionMode {
+    pub const SubgroupUniformControlFlowKHR: SpvExecutionMode = SpvExecutionMode(4421);
+}
+impl SpvExecutionMode {
+    pub const PostDepthCoverage: SpvExecutionMode = SpvExecutionMode(4446);
+}
+impl SpvExecutionMode {
+    pub const DenormPreserve: SpvExecutionMode = SpvExecutionMode(4459);
+}
+impl SpvExecutionMode {
+    pub const DenormFlushToZero: SpvExecutionMode = SpvExecutionMode(4460);
+}
+impl SpvExecutionMode {
+    pub const SignedZeroInfNanPreserve: SpvExecutionMode = SpvExecutionMode(4461);
+}
+impl SpvExecutionMode {
+    pub const RoundingModeRTE: SpvExecutionMode = SpvExecutionMode(4462);
+}
+impl SpvExecutionMode {
+    pub const RoundingModeRTZ: SpvExecutionMode = SpvExecutionMode(4463);
+}
+impl SpvExecutionMode {
+    pub const EarlyAndLateFragmentTestsAMD: SpvExecutionMode = SpvExecutionMode(5017);
+}
+impl SpvExecutionMode {
+    pub const StencilRefReplacingEXT: SpvExecutionMode = SpvExecutionMode(5027);
+}
+impl SpvExecutionMode {
+    pub const StencilRefUnchangedFrontAMD: SpvExecutionMode = SpvExecutionMode(5079);
+}
+impl SpvExecutionMode {
+    pub const StencilRefGreaterFrontAMD: SpvExecutionMode = SpvExecutionMode(5080);
+}
+impl SpvExecutionMode {
+    pub const StencilRefLessFrontAMD: SpvExecutionMode = SpvExecutionMode(5081);
+}
+impl SpvExecutionMode {
+    pub const StencilRefUnchangedBackAMD: SpvExecutionMode = SpvExecutionMode(5082);
+}
+impl SpvExecutionMode {
+    pub const StencilRefGreaterBackAMD: SpvExecutionMode = SpvExecutionMode(5083);
+}
+impl SpvExecutionMode {
+    pub const StencilRefLessBackAMD: SpvExecutionMode = SpvExecutionMode(5084);
+}
+impl SpvExecutionMode {
+    pub const OutputLinesEXT: SpvExecutionMode = SpvExecutionMode(5269);
+}
+impl SpvExecutionMode {
+    pub const OutputLinesNV: SpvExecutionMode = SpvExecutionMode(5269);
+}
+impl SpvExecutionMode {
+    pub const OutputPrimitivesEXT: SpvExecutionMode = SpvExecutionMode(5270);
+}
+impl SpvExecutionMode {
+    pub const OutputPrimitivesNV: SpvExecutionMode = SpvExecutionMode(5270);
+}
+impl SpvExecutionMode {
+    pub const DerivativeGroupQuadsNV: SpvExecutionMode = SpvExecutionMode(5289);
+}
+impl SpvExecutionMode {
+    pub const DerivativeGroupLinearNV: SpvExecutionMode = SpvExecutionMode(5290);
+}
+impl SpvExecutionMode {
+    pub const OutputTrianglesEXT: SpvExecutionMode = SpvExecutionMode(5298);
+}
+impl SpvExecutionMode {
+    pub const OutputTrianglesNV: SpvExecutionMode = SpvExecutionMode(5298);
+}
+impl SpvExecutionMode {
+    pub const PixelInterlockOrderedEXT: SpvExecutionMode = SpvExecutionMode(5366);
+}
+impl SpvExecutionMode {
+    pub const PixelInterlockUnorderedEXT: SpvExecutionMode = SpvExecutionMode(5367);
+}
+impl SpvExecutionMode {
+    pub const SampleInterlockOrderedEXT: SpvExecutionMode = SpvExecutionMode(5368);
+}
+impl SpvExecutionMode {
+    pub const SampleInterlockUnorderedEXT: SpvExecutionMode = SpvExecutionMode(5369);
+}
+impl SpvExecutionMode {
+    pub const ShadingRateInterlockOrderedEXT: SpvExecutionMode = SpvExecutionMode(5370);
+}
+impl SpvExecutionMode {
+    pub const ShadingRateInterlockUnorderedEXT: SpvExecutionMode = SpvExecutionMode(5371);
+}
+impl SpvExecutionMode {
+    pub const SharedLocalMemorySizeINTEL: SpvExecutionMode = SpvExecutionMode(5618);
+}
+impl SpvExecutionMode {
+    pub const RoundingModeRTPINTEL: SpvExecutionMode = SpvExecutionMode(5620);
+}
+impl SpvExecutionMode {
+    pub const RoundingModeRTNINTEL: SpvExecutionMode = SpvExecutionMode(5621);
+}
+impl SpvExecutionMode {
+    pub const FloatingPointModeALTINTEL: SpvExecutionMode = SpvExecutionMode(5622);
+}
+impl SpvExecutionMode {
+    pub const FloatingPointModeIEEEINTEL: SpvExecutionMode = SpvExecutionMode(5623);
+}
+impl SpvExecutionMode {
+    pub const MaxWorkgroupSizeINTEL: SpvExecutionMode = SpvExecutionMode(5893);
+}
+impl SpvExecutionMode {
+    pub const MaxWorkDimINTEL: SpvExecutionMode = SpvExecutionMode(5894);
+}
+impl SpvExecutionMode {
+    pub const NoGlobalOffsetINTEL: SpvExecutionMode = SpvExecutionMode(5895);
+}
+impl SpvExecutionMode {
+    pub const NumSIMDWorkitemsINTEL: SpvExecutionMode = SpvExecutionMode(5896);
+}
+impl SpvExecutionMode {
+    pub const SchedulerTargetFmaxMhzINTEL: SpvExecutionMode = SpvExecutionMode(5903);
+}
+impl SpvExecutionMode {
+    pub const NamedBarrierCountINTEL: SpvExecutionMode = SpvExecutionMode(6417);
+}
+impl SpvExecutionMode {
+    pub const Max: SpvExecutionMode = SpvExecutionMode(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvExecutionMode {
-    Invocations = 0,
-    SpacingEqual = 1,
-    SpacingFractionalEven = 2,
-    SpacingFractionalOdd = 3,
-    VertexOrderCw = 4,
-    VertexOrderCcw = 5,
-    PixelCenterInteger = 6,
-    OriginUpperLeft = 7,
-    OriginLowerLeft = 8,
-    EarlyFragmentTests = 9,
-    PointMode = 10,
-    Xfb = 11,
-    DepthReplacing = 12,
-    DepthGreater = 14,
-    DepthLess = 15,
-    DepthUnchanged = 16,
-    LocalSize = 17,
-    LocalSizeHint = 18,
-    InputPoints = 19,
-    InputLines = 20,
-    InputLinesAdjacency = 21,
-    Triangles = 22,
-    InputTrianglesAdjacency = 23,
-    Quads = 24,
-    Isolines = 25,
-    OutputVertices = 26,
-    OutputPoints = 27,
-    OutputLineStrip = 28,
-    OutputTriangleStrip = 29,
-    VecTypeHint = 30,
-    ContractionOff = 31,
-    Initializer = 33,
-    Finalizer = 34,
-    SubgroupSize = 35,
-    SubgroupsPerWorkgroup = 36,
-    SubgroupsPerWorkgroupId = 37,
-    LocalSizeId = 38,
-    LocalSizeHintId = 39,
-    SubgroupUniformControlFlowKHR = 4421,
-    PostDepthCoverage = 4446,
-    DenormPreserve = 4459,
-    DenormFlushToZero = 4460,
-    SignedZeroInfNanPreserve = 4461,
-    RoundingModeRTE = 4462,
-    RoundingModeRTZ = 4463,
-    EarlyAndLateFragmentTestsAMD = 5017,
-    StencilRefReplacingEXT = 5027,
-    StencilRefUnchangedFrontAMD = 5079,
-    StencilRefGreaterFrontAMD = 5080,
-    StencilRefLessFrontAMD = 5081,
-    StencilRefUnchangedBackAMD = 5082,
-    StencilRefGreaterBackAMD = 5083,
-    StencilRefLessBackAMD = 5084,
-    OutputLinesEXT = 5269,
-    OutputPrimitivesEXT = 5270,
-    DerivativeGroupQuadsNV = 5289,
-    DerivativeGroupLinearNV = 5290,
-    OutputTrianglesEXT = 5298,
-    PixelInterlockOrderedEXT = 5366,
-    PixelInterlockUnorderedEXT = 5367,
-    SampleInterlockOrderedEXT = 5368,
-    SampleInterlockUnorderedEXT = 5369,
-    ShadingRateInterlockOrderedEXT = 5370,
-    ShadingRateInterlockUnorderedEXT = 5371,
-    SharedLocalMemorySizeINTEL = 5618,
-    RoundingModeRTPINTEL = 5620,
-    RoundingModeRTNINTEL = 5621,
-    FloatingPointModeALTINTEL = 5622,
-    FloatingPointModeIEEEINTEL = 5623,
-    MaxWorkgroupSizeINTEL = 5893,
-    MaxWorkDimINTEL = 5894,
-    NoGlobalOffsetINTEL = 5895,
-    NumSIMDWorkitemsINTEL = 5896,
-    SchedulerTargetFmaxMhzINTEL = 5903,
-    NamedBarrierCountINTEL = 6417,
+pub struct SpvExecutionMode(pub i32);
+impl SpvStorageClass {
+    pub const UniformConstant: SpvStorageClass = SpvStorageClass(0);
 }
 impl SpvStorageClass {
-    pub const CallableDataNV: SpvStorageClass = SpvStorageClass::CallableDataKHR;
+    pub const Input: SpvStorageClass = SpvStorageClass(1);
 }
 impl SpvStorageClass {
-    pub const IncomingCallableDataNV: SpvStorageClass = SpvStorageClass::IncomingCallableDataKHR;
+    pub const Uniform: SpvStorageClass = SpvStorageClass(2);
 }
 impl SpvStorageClass {
-    pub const RayPayloadNV: SpvStorageClass = SpvStorageClass::RayPayloadKHR;
+    pub const Output: SpvStorageClass = SpvStorageClass(3);
 }
 impl SpvStorageClass {
-    pub const HitAttributeNV: SpvStorageClass = SpvStorageClass::HitAttributeKHR;
+    pub const Workgroup: SpvStorageClass = SpvStorageClass(4);
 }
 impl SpvStorageClass {
-    pub const IncomingRayPayloadNV: SpvStorageClass = SpvStorageClass::IncomingRayPayloadKHR;
+    pub const CrossWorkgroup: SpvStorageClass = SpvStorageClass(5);
 }
 impl SpvStorageClass {
-    pub const ShaderRecordBufferNV: SpvStorageClass = SpvStorageClass::ShaderRecordBufferKHR;
+    pub const Private: SpvStorageClass = SpvStorageClass(6);
 }
 impl SpvStorageClass {
-    pub const PhysicalStorageBufferEXT: SpvStorageClass = SpvStorageClass::PhysicalStorageBuffer;
+    pub const Function: SpvStorageClass = SpvStorageClass(7);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvStorageClass {
+    pub const Generic: SpvStorageClass = SpvStorageClass(8);
+}
+impl SpvStorageClass {
+    pub const PushConstant: SpvStorageClass = SpvStorageClass(9);
+}
+impl SpvStorageClass {
+    pub const AtomicCounter: SpvStorageClass = SpvStorageClass(10);
+}
+impl SpvStorageClass {
+    pub const Image: SpvStorageClass = SpvStorageClass(11);
+}
+impl SpvStorageClass {
+    pub const StorageBuffer: SpvStorageClass = SpvStorageClass(12);
+}
+impl SpvStorageClass {
+    pub const CallableDataKHR: SpvStorageClass = SpvStorageClass(5328);
+}
+impl SpvStorageClass {
+    pub const CallableDataNV: SpvStorageClass = SpvStorageClass(5328);
+}
+impl SpvStorageClass {
+    pub const IncomingCallableDataKHR: SpvStorageClass = SpvStorageClass(5329);
+}
+impl SpvStorageClass {
+    pub const IncomingCallableDataNV: SpvStorageClass = SpvStorageClass(5329);
+}
+impl SpvStorageClass {
+    pub const RayPayloadKHR: SpvStorageClass = SpvStorageClass(5338);
+}
+impl SpvStorageClass {
+    pub const RayPayloadNV: SpvStorageClass = SpvStorageClass(5338);
+}
+impl SpvStorageClass {
+    pub const HitAttributeKHR: SpvStorageClass = SpvStorageClass(5339);
+}
+impl SpvStorageClass {
+    pub const HitAttributeNV: SpvStorageClass = SpvStorageClass(5339);
+}
+impl SpvStorageClass {
+    pub const IncomingRayPayloadKHR: SpvStorageClass = SpvStorageClass(5342);
+}
+impl SpvStorageClass {
+    pub const IncomingRayPayloadNV: SpvStorageClass = SpvStorageClass(5342);
+}
+impl SpvStorageClass {
+    pub const ShaderRecordBufferKHR: SpvStorageClass = SpvStorageClass(5343);
+}
+impl SpvStorageClass {
+    pub const ShaderRecordBufferNV: SpvStorageClass = SpvStorageClass(5343);
+}
+impl SpvStorageClass {
+    pub const PhysicalStorageBuffer: SpvStorageClass = SpvStorageClass(5349);
+}
+impl SpvStorageClass {
+    pub const PhysicalStorageBufferEXT: SpvStorageClass = SpvStorageClass(5349);
+}
+impl SpvStorageClass {
+    pub const TaskPayloadWorkgroupEXT: SpvStorageClass = SpvStorageClass(5402);
+}
+impl SpvStorageClass {
+    pub const CodeSectionINTEL: SpvStorageClass = SpvStorageClass(5605);
+}
+impl SpvStorageClass {
+    pub const DeviceOnlyINTEL: SpvStorageClass = SpvStorageClass(5936);
+}
+impl SpvStorageClass {
+    pub const HostOnlyINTEL: SpvStorageClass = SpvStorageClass(5937);
+}
+impl SpvStorageClass {
+    pub const Max: SpvStorageClass = SpvStorageClass(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvStorageClass {
-    UniformConstant = 0,
-    Input = 1,
-    Uniform = 2,
-    Output = 3,
-    Workgroup = 4,
-    CrossWorkgroup = 5,
-    Private = 6,
-    Function = 7,
-    Generic = 8,
-    PushConstant = 9,
-    AtomicCounter = 10,
-    Image = 11,
-    StorageBuffer = 12,
-    CallableDataKHR = 5328,
-    IncomingCallableDataKHR = 5329,
-    RayPayloadKHR = 5338,
-    HitAttributeKHR = 5339,
-    IncomingRayPayloadKHR = 5342,
-    ShaderRecordBufferKHR = 5343,
-    PhysicalStorageBuffer = 5349,
-    TaskPayloadWorkgroupEXT = 5402,
-    CodeSectionINTEL = 5605,
-    DeviceOnlyINTEL = 5936,
-    HostOnlyINTEL = 5937,
+pub struct SpvStorageClass(pub i32);
+impl SpvDim {
+    pub const Dim1D: SpvDim = SpvDim(0);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvDim {
+    pub const Dim2D: SpvDim = SpvDim(1);
+}
+impl SpvDim {
+    pub const Dim3D: SpvDim = SpvDim(2);
+}
+impl SpvDim {
+    pub const DimCube: SpvDim = SpvDim(3);
+}
+impl SpvDim {
+    pub const DimRect: SpvDim = SpvDim(4);
+}
+impl SpvDim {
+    pub const DimBuffer: SpvDim = SpvDim(5);
+}
+impl SpvDim {
+    pub const DimSubpassData: SpvDim = SpvDim(6);
+}
+impl SpvDim {
+    pub const DimMax: SpvDim = SpvDim(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvDim {
-    Dim1D = 0,
-    Dim2D = 1,
-    Dim3D = 2,
-    DimCube = 3,
-    DimRect = 4,
-    DimBuffer = 5,
-    DimSubpassData = 6,
+pub struct SpvDim(pub i32);
+impl SpvImageFormat {
+    pub const Unknown: SpvImageFormat = SpvImageFormat(0);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvImageFormat {
+    pub const Rgba32f: SpvImageFormat = SpvImageFormat(1);
+}
+impl SpvImageFormat {
+    pub const Rgba16f: SpvImageFormat = SpvImageFormat(2);
+}
+impl SpvImageFormat {
+    pub const R32f: SpvImageFormat = SpvImageFormat(3);
+}
+impl SpvImageFormat {
+    pub const Rgba8: SpvImageFormat = SpvImageFormat(4);
+}
+impl SpvImageFormat {
+    pub const Rgba8Snorm: SpvImageFormat = SpvImageFormat(5);
+}
+impl SpvImageFormat {
+    pub const Rg32f: SpvImageFormat = SpvImageFormat(6);
+}
+impl SpvImageFormat {
+    pub const Rg16f: SpvImageFormat = SpvImageFormat(7);
+}
+impl SpvImageFormat {
+    pub const R11fG11fB10f: SpvImageFormat = SpvImageFormat(8);
+}
+impl SpvImageFormat {
+    pub const R16f: SpvImageFormat = SpvImageFormat(9);
+}
+impl SpvImageFormat {
+    pub const Rgba16: SpvImageFormat = SpvImageFormat(10);
+}
+impl SpvImageFormat {
+    pub const Rgb10A2: SpvImageFormat = SpvImageFormat(11);
+}
+impl SpvImageFormat {
+    pub const Rg16: SpvImageFormat = SpvImageFormat(12);
+}
+impl SpvImageFormat {
+    pub const Rg8: SpvImageFormat = SpvImageFormat(13);
+}
+impl SpvImageFormat {
+    pub const R16: SpvImageFormat = SpvImageFormat(14);
+}
+impl SpvImageFormat {
+    pub const R8: SpvImageFormat = SpvImageFormat(15);
+}
+impl SpvImageFormat {
+    pub const Rgba16Snorm: SpvImageFormat = SpvImageFormat(16);
+}
+impl SpvImageFormat {
+    pub const Rg16Snorm: SpvImageFormat = SpvImageFormat(17);
+}
+impl SpvImageFormat {
+    pub const Rg8Snorm: SpvImageFormat = SpvImageFormat(18);
+}
+impl SpvImageFormat {
+    pub const R16Snorm: SpvImageFormat = SpvImageFormat(19);
+}
+impl SpvImageFormat {
+    pub const R8Snorm: SpvImageFormat = SpvImageFormat(20);
+}
+impl SpvImageFormat {
+    pub const Rgba32i: SpvImageFormat = SpvImageFormat(21);
+}
+impl SpvImageFormat {
+    pub const Rgba16i: SpvImageFormat = SpvImageFormat(22);
+}
+impl SpvImageFormat {
+    pub const Rgba8i: SpvImageFormat = SpvImageFormat(23);
+}
+impl SpvImageFormat {
+    pub const R32i: SpvImageFormat = SpvImageFormat(24);
+}
+impl SpvImageFormat {
+    pub const Rg32i: SpvImageFormat = SpvImageFormat(25);
+}
+impl SpvImageFormat {
+    pub const Rg16i: SpvImageFormat = SpvImageFormat(26);
+}
+impl SpvImageFormat {
+    pub const Rg8i: SpvImageFormat = SpvImageFormat(27);
+}
+impl SpvImageFormat {
+    pub const R16i: SpvImageFormat = SpvImageFormat(28);
+}
+impl SpvImageFormat {
+    pub const R8i: SpvImageFormat = SpvImageFormat(29);
+}
+impl SpvImageFormat {
+    pub const Rgba32ui: SpvImageFormat = SpvImageFormat(30);
+}
+impl SpvImageFormat {
+    pub const Rgba16ui: SpvImageFormat = SpvImageFormat(31);
+}
+impl SpvImageFormat {
+    pub const Rgba8ui: SpvImageFormat = SpvImageFormat(32);
+}
+impl SpvImageFormat {
+    pub const R32ui: SpvImageFormat = SpvImageFormat(33);
+}
+impl SpvImageFormat {
+    pub const Rgb10a2ui: SpvImageFormat = SpvImageFormat(34);
+}
+impl SpvImageFormat {
+    pub const Rg32ui: SpvImageFormat = SpvImageFormat(35);
+}
+impl SpvImageFormat {
+    pub const Rg16ui: SpvImageFormat = SpvImageFormat(36);
+}
+impl SpvImageFormat {
+    pub const Rg8ui: SpvImageFormat = SpvImageFormat(37);
+}
+impl SpvImageFormat {
+    pub const R16ui: SpvImageFormat = SpvImageFormat(38);
+}
+impl SpvImageFormat {
+    pub const R8ui: SpvImageFormat = SpvImageFormat(39);
+}
+impl SpvImageFormat {
+    pub const R64ui: SpvImageFormat = SpvImageFormat(40);
+}
+impl SpvImageFormat {
+    pub const R64i: SpvImageFormat = SpvImageFormat(41);
+}
+impl SpvImageFormat {
+    pub const Max: SpvImageFormat = SpvImageFormat(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvSamplerAddressingMode {
-    None = 0,
-    ClampToEdge = 1,
-    Clamp = 2,
-    Repeat = 3,
-    RepeatMirrored = 4,
+pub struct SpvImageFormat(pub i32);
+impl SpvFPRoundingMode {
+    pub const RTE: SpvFPRoundingMode = SpvFPRoundingMode(0);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvFPRoundingMode {
+    pub const RTZ: SpvFPRoundingMode = SpvFPRoundingMode(1);
+}
+impl SpvFPRoundingMode {
+    pub const RTP: SpvFPRoundingMode = SpvFPRoundingMode(2);
+}
+impl SpvFPRoundingMode {
+    pub const RTN: SpvFPRoundingMode = SpvFPRoundingMode(3);
+}
+impl SpvFPRoundingMode {
+    pub const Max: SpvFPRoundingMode = SpvFPRoundingMode(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvSamplerFilterMode {
-    Nearest = 0,
-    Linear = 1,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvImageFormat {
-    Unknown = 0,
-    Rgba32f = 1,
-    Rgba16f = 2,
-    R32f = 3,
-    Rgba8 = 4,
-    Rgba8Snorm = 5,
-    Rg32f = 6,
-    Rg16f = 7,
-    R11fG11fB10f = 8,
-    R16f = 9,
-    Rgba16 = 10,
-    Rgb10A2 = 11,
-    Rg16 = 12,
-    Rg8 = 13,
-    R16 = 14,
-    R8 = 15,
-    Rgba16Snorm = 16,
-    Rg16Snorm = 17,
-    Rg8Snorm = 18,
-    R16Snorm = 19,
-    R8Snorm = 20,
-    Rgba32i = 21,
-    Rgba16i = 22,
-    Rgba8i = 23,
-    R32i = 24,
-    Rg32i = 25,
-    Rg16i = 26,
-    Rg8i = 27,
-    R16i = 28,
-    R8i = 29,
-    Rgba32ui = 30,
-    Rgba16ui = 31,
-    Rgba8ui = 32,
-    R32ui = 33,
-    Rgb10a2ui = 34,
-    Rg32ui = 35,
-    Rg16ui = 36,
-    Rg8ui = 37,
-    R16ui = 38,
-    R8ui = 39,
-    R64ui = 40,
-    R64i = 41,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvImageChannelOrder {
-    R = 0,
-    A = 1,
-    RG = 2,
-    RA = 3,
-    RGB = 4,
-    RGBA = 5,
-    BGRA = 6,
-    ARGB = 7,
-    Intensity = 8,
-    Luminance = 9,
-    Rx = 10,
-    RGx = 11,
-    RGBx = 12,
-    Depth = 13,
-    DepthStencil = 14,
-    sRGB = 15,
-    sRGBx = 16,
-    sRGBA = 17,
-    sBGRA = 18,
-    ABGR = 19,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvImageChannelDataType {
-    SnormInt8 = 0,
-    SnormInt16 = 1,
-    UnormInt8 = 2,
-    UnormInt16 = 3,
-    UnormShort565 = 4,
-    UnormShort555 = 5,
-    UnormInt101010 = 6,
-    SignedInt8 = 7,
-    SignedInt16 = 8,
-    SignedInt32 = 9,
-    UnsignedInt8 = 10,
-    UnsignedInt16 = 11,
-    UnsignedInt32 = 12,
-    HalfFloat = 13,
-    Float = 14,
-    UnormInt24 = 15,
-    UnormInt101010_2 = 16,
-}
-impl SpvImageOperandsShift {
-    pub const SpvImageOperandsMakeTexelAvailableKHRShift: SpvImageOperandsShift =
-        SpvImageOperandsShift::SpvImageOperandsMakeTexelAvailableShift;
-}
-impl SpvImageOperandsShift {
-    pub const SpvImageOperandsMakeTexelVisibleKHRShift: SpvImageOperandsShift =
-        SpvImageOperandsShift::SpvImageOperandsMakeTexelVisibleShift;
-}
-impl SpvImageOperandsShift {
-    pub const SpvImageOperandsNonPrivateTexelKHRShift: SpvImageOperandsShift =
-        SpvImageOperandsShift::SpvImageOperandsNonPrivateTexelShift;
-}
-impl SpvImageOperandsShift {
-    pub const SpvImageOperandsVolatileTexelKHRShift: SpvImageOperandsShift =
-        SpvImageOperandsShift::SpvImageOperandsVolatileTexelShift;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvImageOperandsShift {
-    SpvImageOperandsBiasShift = 0,
-    SpvImageOperandsLodShift = 1,
-    SpvImageOperandsGradShift = 2,
-    SpvImageOperandsConstOffsetShift = 3,
-    SpvImageOperandsOffsetShift = 4,
-    SpvImageOperandsConstOffsetsShift = 5,
-    SpvImageOperandsSampleShift = 6,
-    SpvImageOperandsMinLodShift = 7,
-    SpvImageOperandsMakeTexelAvailableShift = 8,
-    SpvImageOperandsMakeTexelVisibleShift = 9,
-    SpvImageOperandsNonPrivateTexelShift = 10,
-    SpvImageOperandsVolatileTexelShift = 11,
-    SpvImageOperandsSignExtendShift = 12,
-    SpvImageOperandsZeroExtendShift = 13,
-    SpvImageOperandsNontemporalShift = 14,
-    SpvImageOperandsOffsetsShift = 16,
-}
-impl SpvImageOperandsMask {
-    pub const SpvImageOperandsMakeTexelAvailableKHRMask: SpvImageOperandsMask =
-        SpvImageOperandsMask::SpvImageOperandsMakeTexelAvailableMask;
-}
-impl SpvImageOperandsMask {
-    pub const SpvImageOperandsMakeTexelVisibleKHRMask: SpvImageOperandsMask =
-        SpvImageOperandsMask::SpvImageOperandsMakeTexelVisibleMask;
-}
-impl SpvImageOperandsMask {
-    pub const SpvImageOperandsNonPrivateTexelKHRMask: SpvImageOperandsMask =
-        SpvImageOperandsMask::SpvImageOperandsNonPrivateTexelMask;
-}
-impl SpvImageOperandsMask {
-    pub const SpvImageOperandsVolatileTexelKHRMask: SpvImageOperandsMask =
-        SpvImageOperandsMask::SpvImageOperandsVolatileTexelMask;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvImageOperandsMask {
-    None = 0,
-    SpvImageOperandsBiasMask = 1,
-    SpvImageOperandsLodMask = 2,
-    SpvImageOperandsGradMask = 4,
-    SpvImageOperandsConstOffsetMask = 8,
-    SpvImageOperandsOffsetMask = 16,
-    SpvImageOperandsConstOffsetsMask = 32,
-    SpvImageOperandsSampleMask = 64,
-    SpvImageOperandsMinLodMask = 128,
-    SpvImageOperandsMakeTexelAvailableMask = 256,
-    SpvImageOperandsMakeTexelVisibleMask = 512,
-    SpvImageOperandsNonPrivateTexelMask = 1024,
-    SpvImageOperandsVolatileTexelMask = 2048,
-    SpvImageOperandsSignExtendMask = 4096,
-    SpvImageOperandsZeroExtendMask = 8192,
-    SpvImageOperandsNontemporalMask = 16384,
-    SpvImageOperandsOffsetsMask = 65536,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFPFastMathModeShift {
-    SpvFPFastMathModeNotNaNShift = 0,
-    SpvFPFastMathModeNotInfShift = 1,
-    SpvFPFastMathModeNSZShift = 2,
-    SpvFPFastMathModeAllowRecipShift = 3,
-    SpvFPFastMathModeFastShift = 4,
-    SpvFPFastMathModeAllowContractFastINTELShift = 16,
-    SpvFPFastMathModeAllowReassocINTELShift = 17,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFPFastMathModeMask {
-    None = 0,
-    SpvFPFastMathModeNotNaNMask = 1,
-    SpvFPFastMathModeNotInfMask = 2,
-    SpvFPFastMathModeNSZMask = 4,
-    SpvFPFastMathModeAllowRecipMask = 8,
-    SpvFPFastMathModeFastMask = 16,
-    SpvFPFastMathModeAllowContractFastINTELMask = 65536,
-    SpvFPFastMathModeAllowReassocINTELMask = 131072,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFPRoundingMode {
-    RTE = 0,
-    RTZ = 1,
-    RTP = 2,
-    RTN = 3,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvLinkageType {
-    Export = 0,
-    Import = 1,
-    LinkOnceODR = 2,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvAccessQualifier {
-    ReadOnly = 0,
-    WriteOnly = 1,
-    ReadWrite = 2,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFunctionParameterAttribute {
-    Zext = 0,
-    Sext = 1,
-    ByVal = 2,
-    Sret = 3,
-    NoAlias = 4,
-    NoCapture = 5,
-    NoWrite = 6,
-    NoReadWrite = 7,
+pub struct SpvFPRoundingMode(pub i32);
+pub const SpvAccessQualifier_ReadOnly: SpvAccessQualifier = 0;
+pub const SpvAccessQualifier_WriteOnly: SpvAccessQualifier = 1;
+pub const SpvAccessQualifier_ReadWrite: SpvAccessQualifier = 2;
+pub const SpvAccessQualifier_Max: SpvAccessQualifier = 2147483647;
+pub type SpvAccessQualifier = i32;
+impl SpvDecoration {
+    pub const RelaxedPrecision: SpvDecoration = SpvDecoration(0);
 }
 impl SpvDecoration {
-    pub const PerPrimitiveNV: SpvDecoration = SpvDecoration::PerPrimitiveEXT;
+    pub const SpecId: SpvDecoration = SpvDecoration(1);
 }
 impl SpvDecoration {
-    pub const PerVertexNV: SpvDecoration = SpvDecoration::PerVertexKHR;
+    pub const Block: SpvDecoration = SpvDecoration(2);
 }
 impl SpvDecoration {
-    pub const NonUniformEXT: SpvDecoration = SpvDecoration::NonUniform;
+    pub const BufferBlock: SpvDecoration = SpvDecoration(3);
 }
 impl SpvDecoration {
-    pub const RestrictPointerEXT: SpvDecoration = SpvDecoration::RestrictPointer;
+    pub const RowMajor: SpvDecoration = SpvDecoration(4);
 }
 impl SpvDecoration {
-    pub const AliasedPointerEXT: SpvDecoration = SpvDecoration::AliasedPointer;
+    pub const ColMajor: SpvDecoration = SpvDecoration(5);
 }
 impl SpvDecoration {
-    pub const HlslCounterBufferGOOGLE: SpvDecoration = SpvDecoration::CounterBuffer;
+    pub const ArrayStride: SpvDecoration = SpvDecoration(6);
 }
 impl SpvDecoration {
-    pub const UserSemantic: SpvDecoration = SpvDecoration::HlslSemanticGOOGLE;
+    pub const MatrixStride: SpvDecoration = SpvDecoration(7);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvDecoration {
+    pub const GLSLShared: SpvDecoration = SpvDecoration(8);
+}
+impl SpvDecoration {
+    pub const GLSLPacked: SpvDecoration = SpvDecoration(9);
+}
+impl SpvDecoration {
+    pub const CPacked: SpvDecoration = SpvDecoration(10);
+}
+impl SpvDecoration {
+    pub const BuiltIn: SpvDecoration = SpvDecoration(11);
+}
+impl SpvDecoration {
+    pub const NoPerspective: SpvDecoration = SpvDecoration(13);
+}
+impl SpvDecoration {
+    pub const Flat: SpvDecoration = SpvDecoration(14);
+}
+impl SpvDecoration {
+    pub const Patch: SpvDecoration = SpvDecoration(15);
+}
+impl SpvDecoration {
+    pub const Centroid: SpvDecoration = SpvDecoration(16);
+}
+impl SpvDecoration {
+    pub const Sample: SpvDecoration = SpvDecoration(17);
+}
+impl SpvDecoration {
+    pub const Invariant: SpvDecoration = SpvDecoration(18);
+}
+impl SpvDecoration {
+    pub const Restrict: SpvDecoration = SpvDecoration(19);
+}
+impl SpvDecoration {
+    pub const Aliased: SpvDecoration = SpvDecoration(20);
+}
+impl SpvDecoration {
+    pub const Volatile: SpvDecoration = SpvDecoration(21);
+}
+impl SpvDecoration {
+    pub const Constant: SpvDecoration = SpvDecoration(22);
+}
+impl SpvDecoration {
+    pub const Coherent: SpvDecoration = SpvDecoration(23);
+}
+impl SpvDecoration {
+    pub const NonWritable: SpvDecoration = SpvDecoration(24);
+}
+impl SpvDecoration {
+    pub const NonReadable: SpvDecoration = SpvDecoration(25);
+}
+impl SpvDecoration {
+    pub const Uniform: SpvDecoration = SpvDecoration(26);
+}
+impl SpvDecoration {
+    pub const UniformId: SpvDecoration = SpvDecoration(27);
+}
+impl SpvDecoration {
+    pub const SaturatedConversion: SpvDecoration = SpvDecoration(28);
+}
+impl SpvDecoration {
+    pub const Stream: SpvDecoration = SpvDecoration(29);
+}
+impl SpvDecoration {
+    pub const Location: SpvDecoration = SpvDecoration(30);
+}
+impl SpvDecoration {
+    pub const Component: SpvDecoration = SpvDecoration(31);
+}
+impl SpvDecoration {
+    pub const Index: SpvDecoration = SpvDecoration(32);
+}
+impl SpvDecoration {
+    pub const Binding: SpvDecoration = SpvDecoration(33);
+}
+impl SpvDecoration {
+    pub const DescriptorSet: SpvDecoration = SpvDecoration(34);
+}
+impl SpvDecoration {
+    pub const Offset: SpvDecoration = SpvDecoration(35);
+}
+impl SpvDecoration {
+    pub const XfbBuffer: SpvDecoration = SpvDecoration(36);
+}
+impl SpvDecoration {
+    pub const XfbStride: SpvDecoration = SpvDecoration(37);
+}
+impl SpvDecoration {
+    pub const FuncParamAttr: SpvDecoration = SpvDecoration(38);
+}
+impl SpvDecoration {
+    pub const FPRoundingMode: SpvDecoration = SpvDecoration(39);
+}
+impl SpvDecoration {
+    pub const FPFastMathMode: SpvDecoration = SpvDecoration(40);
+}
+impl SpvDecoration {
+    pub const LinkageAttributes: SpvDecoration = SpvDecoration(41);
+}
+impl SpvDecoration {
+    pub const NoContraction: SpvDecoration = SpvDecoration(42);
+}
+impl SpvDecoration {
+    pub const InputAttachmentIndex: SpvDecoration = SpvDecoration(43);
+}
+impl SpvDecoration {
+    pub const Alignment: SpvDecoration = SpvDecoration(44);
+}
+impl SpvDecoration {
+    pub const MaxByteOffset: SpvDecoration = SpvDecoration(45);
+}
+impl SpvDecoration {
+    pub const AlignmentId: SpvDecoration = SpvDecoration(46);
+}
+impl SpvDecoration {
+    pub const MaxByteOffsetId: SpvDecoration = SpvDecoration(47);
+}
+impl SpvDecoration {
+    pub const NoSignedWrap: SpvDecoration = SpvDecoration(4469);
+}
+impl SpvDecoration {
+    pub const NoUnsignedWrap: SpvDecoration = SpvDecoration(4470);
+}
+impl SpvDecoration {
+    pub const WeightTextureQCOM: SpvDecoration = SpvDecoration(4487);
+}
+impl SpvDecoration {
+    pub const BlockMatchTextureQCOM: SpvDecoration = SpvDecoration(4488);
+}
+impl SpvDecoration {
+    pub const ExplicitInterpAMD: SpvDecoration = SpvDecoration(4999);
+}
+impl SpvDecoration {
+    pub const OverrideCoverageNV: SpvDecoration = SpvDecoration(5248);
+}
+impl SpvDecoration {
+    pub const PassthroughNV: SpvDecoration = SpvDecoration(5250);
+}
+impl SpvDecoration {
+    pub const ViewportRelativeNV: SpvDecoration = SpvDecoration(5252);
+}
+impl SpvDecoration {
+    pub const SecondaryViewportRelativeNV: SpvDecoration = SpvDecoration(5256);
+}
+impl SpvDecoration {
+    pub const PerPrimitiveEXT: SpvDecoration = SpvDecoration(5271);
+}
+impl SpvDecoration {
+    pub const PerPrimitiveNV: SpvDecoration = SpvDecoration(5271);
+}
+impl SpvDecoration {
+    pub const PerViewNV: SpvDecoration = SpvDecoration(5272);
+}
+impl SpvDecoration {
+    pub const PerTaskNV: SpvDecoration = SpvDecoration(5273);
+}
+impl SpvDecoration {
+    pub const PerVertexKHR: SpvDecoration = SpvDecoration(5285);
+}
+impl SpvDecoration {
+    pub const PerVertexNV: SpvDecoration = SpvDecoration(5285);
+}
+impl SpvDecoration {
+    pub const NonUniform: SpvDecoration = SpvDecoration(5300);
+}
+impl SpvDecoration {
+    pub const NonUniformEXT: SpvDecoration = SpvDecoration(5300);
+}
+impl SpvDecoration {
+    pub const RestrictPointer: SpvDecoration = SpvDecoration(5355);
+}
+impl SpvDecoration {
+    pub const RestrictPointerEXT: SpvDecoration = SpvDecoration(5355);
+}
+impl SpvDecoration {
+    pub const AliasedPointer: SpvDecoration = SpvDecoration(5356);
+}
+impl SpvDecoration {
+    pub const AliasedPointerEXT: SpvDecoration = SpvDecoration(5356);
+}
+impl SpvDecoration {
+    pub const BindlessSamplerNV: SpvDecoration = SpvDecoration(5398);
+}
+impl SpvDecoration {
+    pub const BindlessImageNV: SpvDecoration = SpvDecoration(5399);
+}
+impl SpvDecoration {
+    pub const BoundSamplerNV: SpvDecoration = SpvDecoration(5400);
+}
+impl SpvDecoration {
+    pub const BoundImageNV: SpvDecoration = SpvDecoration(5401);
+}
+impl SpvDecoration {
+    pub const SIMTCallINTEL: SpvDecoration = SpvDecoration(5599);
+}
+impl SpvDecoration {
+    pub const ReferencedIndirectlyINTEL: SpvDecoration = SpvDecoration(5602);
+}
+impl SpvDecoration {
+    pub const ClobberINTEL: SpvDecoration = SpvDecoration(5607);
+}
+impl SpvDecoration {
+    pub const SideEffectsINTEL: SpvDecoration = SpvDecoration(5608);
+}
+impl SpvDecoration {
+    pub const VectorComputeVariableINTEL: SpvDecoration = SpvDecoration(5624);
+}
+impl SpvDecoration {
+    pub const FuncParamIOKindINTEL: SpvDecoration = SpvDecoration(5625);
+}
+impl SpvDecoration {
+    pub const VectorComputeFunctionINTEL: SpvDecoration = SpvDecoration(5626);
+}
+impl SpvDecoration {
+    pub const StackCallINTEL: SpvDecoration = SpvDecoration(5627);
+}
+impl SpvDecoration {
+    pub const GlobalVariableOffsetINTEL: SpvDecoration = SpvDecoration(5628);
+}
+impl SpvDecoration {
+    pub const CounterBuffer: SpvDecoration = SpvDecoration(5634);
+}
+impl SpvDecoration {
+    pub const HlslCounterBufferGOOGLE: SpvDecoration = SpvDecoration(5634);
+}
+impl SpvDecoration {
+    pub const HlslSemanticGOOGLE: SpvDecoration = SpvDecoration(5635);
+}
+impl SpvDecoration {
+    pub const UserSemantic: SpvDecoration = SpvDecoration(5635);
+}
+impl SpvDecoration {
+    pub const UserTypeGOOGLE: SpvDecoration = SpvDecoration(5636);
+}
+impl SpvDecoration {
+    pub const FunctionRoundingModeINTEL: SpvDecoration = SpvDecoration(5822);
+}
+impl SpvDecoration {
+    pub const FunctionDenormModeINTEL: SpvDecoration = SpvDecoration(5823);
+}
+impl SpvDecoration {
+    pub const RegisterINTEL: SpvDecoration = SpvDecoration(5825);
+}
+impl SpvDecoration {
+    pub const MemoryINTEL: SpvDecoration = SpvDecoration(5826);
+}
+impl SpvDecoration {
+    pub const NumbanksINTEL: SpvDecoration = SpvDecoration(5827);
+}
+impl SpvDecoration {
+    pub const BankwidthINTEL: SpvDecoration = SpvDecoration(5828);
+}
+impl SpvDecoration {
+    pub const MaxPrivateCopiesINTEL: SpvDecoration = SpvDecoration(5829);
+}
+impl SpvDecoration {
+    pub const SinglepumpINTEL: SpvDecoration = SpvDecoration(5830);
+}
+impl SpvDecoration {
+    pub const DoublepumpINTEL: SpvDecoration = SpvDecoration(5831);
+}
+impl SpvDecoration {
+    pub const MaxReplicatesINTEL: SpvDecoration = SpvDecoration(5832);
+}
+impl SpvDecoration {
+    pub const SimpleDualPortINTEL: SpvDecoration = SpvDecoration(5833);
+}
+impl SpvDecoration {
+    pub const MergeINTEL: SpvDecoration = SpvDecoration(5834);
+}
+impl SpvDecoration {
+    pub const BankBitsINTEL: SpvDecoration = SpvDecoration(5835);
+}
+impl SpvDecoration {
+    pub const ForcePow2DepthINTEL: SpvDecoration = SpvDecoration(5836);
+}
+impl SpvDecoration {
+    pub const BurstCoalesceINTEL: SpvDecoration = SpvDecoration(5899);
+}
+impl SpvDecoration {
+    pub const CacheSizeINTEL: SpvDecoration = SpvDecoration(5900);
+}
+impl SpvDecoration {
+    pub const DontStaticallyCoalesceINTEL: SpvDecoration = SpvDecoration(5901);
+}
+impl SpvDecoration {
+    pub const PrefetchINTEL: SpvDecoration = SpvDecoration(5902);
+}
+impl SpvDecoration {
+    pub const StallEnableINTEL: SpvDecoration = SpvDecoration(5905);
+}
+impl SpvDecoration {
+    pub const FuseLoopsInFunctionINTEL: SpvDecoration = SpvDecoration(5907);
+}
+impl SpvDecoration {
+    pub const AliasScopeINTEL: SpvDecoration = SpvDecoration(5914);
+}
+impl SpvDecoration {
+    pub const NoAliasINTEL: SpvDecoration = SpvDecoration(5915);
+}
+impl SpvDecoration {
+    pub const BufferLocationINTEL: SpvDecoration = SpvDecoration(5921);
+}
+impl SpvDecoration {
+    pub const IOPipeStorageINTEL: SpvDecoration = SpvDecoration(5944);
+}
+impl SpvDecoration {
+    pub const FunctionFloatingPointModeINTEL: SpvDecoration = SpvDecoration(6080);
+}
+impl SpvDecoration {
+    pub const SingleElementVectorINTEL: SpvDecoration = SpvDecoration(6085);
+}
+impl SpvDecoration {
+    pub const VectorComputeCallableFunctionINTEL: SpvDecoration = SpvDecoration(6087);
+}
+impl SpvDecoration {
+    pub const MediaBlockIOINTEL: SpvDecoration = SpvDecoration(6140);
+}
+impl SpvDecoration {
+    pub const Max: SpvDecoration = SpvDecoration(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvDecoration {
-    RelaxedPrecision = 0,
-    SpecId = 1,
-    Block = 2,
-    BufferBlock = 3,
-    RowMajor = 4,
-    ColMajor = 5,
-    ArrayStride = 6,
-    MatrixStride = 7,
-    GLSLShared = 8,
-    GLSLPacked = 9,
-    CPacked = 10,
-    BuiltIn = 11,
-    NoPerspective = 13,
-    Flat = 14,
-    Patch = 15,
-    Centroid = 16,
-    Sample = 17,
-    Invariant = 18,
-    Restrict = 19,
-    Aliased = 20,
-    Volatile = 21,
-    Constant = 22,
-    Coherent = 23,
-    NonWritable = 24,
-    NonReadable = 25,
-    Uniform = 26,
-    UniformId = 27,
-    SaturatedConversion = 28,
-    Stream = 29,
-    Location = 30,
-    Component = 31,
-    Index = 32,
-    Binding = 33,
-    DescriptorSet = 34,
-    Offset = 35,
-    XfbBuffer = 36,
-    XfbStride = 37,
-    FuncParamAttr = 38,
-    FPRoundingMode = 39,
-    FPFastMathMode = 40,
-    LinkageAttributes = 41,
-    NoContraction = 42,
-    InputAttachmentIndex = 43,
-    Alignment = 44,
-    MaxByteOffset = 45,
-    AlignmentId = 46,
-    MaxByteOffsetId = 47,
-    NoSignedWrap = 4469,
-    NoUnsignedWrap = 4470,
-    WeightTextureQCOM = 4487,
-    BlockMatchTextureQCOM = 4488,
-    ExplicitInterpAMD = 4999,
-    OverrideCoverageNV = 5248,
-    PassthroughNV = 5250,
-    ViewportRelativeNV = 5252,
-    SecondaryViewportRelativeNV = 5256,
-    PerPrimitiveEXT = 5271,
-    PerViewNV = 5272,
-    PerTaskNV = 5273,
-    PerVertexKHR = 5285,
-    NonUniform = 5300,
-    RestrictPointer = 5355,
-    AliasedPointer = 5356,
-    BindlessSamplerNV = 5398,
-    BindlessImageNV = 5399,
-    BoundSamplerNV = 5400,
-    BoundImageNV = 5401,
-    SIMTCallINTEL = 5599,
-    ReferencedIndirectlyINTEL = 5602,
-    ClobberINTEL = 5607,
-    SideEffectsINTEL = 5608,
-    VectorComputeVariableINTEL = 5624,
-    FuncParamIOKindINTEL = 5625,
-    VectorComputeFunctionINTEL = 5626,
-    StackCallINTEL = 5627,
-    GlobalVariableOffsetINTEL = 5628,
-    CounterBuffer = 5634,
-    HlslSemanticGOOGLE = 5635,
-    UserTypeGOOGLE = 5636,
-    FunctionRoundingModeINTEL = 5822,
-    FunctionDenormModeINTEL = 5823,
-    RegisterINTEL = 5825,
-    MemoryINTEL = 5826,
-    NumbanksINTEL = 5827,
-    BankwidthINTEL = 5828,
-    MaxPrivateCopiesINTEL = 5829,
-    SinglepumpINTEL = 5830,
-    DoublepumpINTEL = 5831,
-    MaxReplicatesINTEL = 5832,
-    SimpleDualPortINTEL = 5833,
-    MergeINTEL = 5834,
-    BankBitsINTEL = 5835,
-    ForcePow2DepthINTEL = 5836,
-    BurstCoalesceINTEL = 5899,
-    CacheSizeINTEL = 5900,
-    DontStaticallyCoalesceINTEL = 5901,
-    PrefetchINTEL = 5902,
-    StallEnableINTEL = 5905,
-    FuseLoopsInFunctionINTEL = 5907,
-    AliasScopeINTEL = 5914,
-    NoAliasINTEL = 5915,
-    BufferLocationINTEL = 5921,
-    IOPipeStorageINTEL = 5944,
-    FunctionFloatingPointModeINTEL = 6080,
-    SingleElementVectorINTEL = 6085,
-    VectorComputeCallableFunctionINTEL = 6087,
-    MediaBlockIOINTEL = 6140,
+pub struct SpvDecoration(pub i32);
+impl SpvBuiltIn {
+    pub const Position: SpvBuiltIn = SpvBuiltIn(0);
 }
 impl SpvBuiltIn {
-    pub const SubgroupEqMaskKHR: SpvBuiltIn = SpvBuiltIn::SubgroupEqMask;
+    pub const PointSize: SpvBuiltIn = SpvBuiltIn(1);
 }
 impl SpvBuiltIn {
-    pub const SubgroupGeMaskKHR: SpvBuiltIn = SpvBuiltIn::SubgroupGeMask;
+    pub const ClipDistance: SpvBuiltIn = SpvBuiltIn(3);
 }
 impl SpvBuiltIn {
-    pub const SubgroupGtMaskKHR: SpvBuiltIn = SpvBuiltIn::SubgroupGtMask;
+    pub const CullDistance: SpvBuiltIn = SpvBuiltIn(4);
 }
 impl SpvBuiltIn {
-    pub const SubgroupLeMaskKHR: SpvBuiltIn = SpvBuiltIn::SubgroupLeMask;
+    pub const VertexId: SpvBuiltIn = SpvBuiltIn(5);
 }
 impl SpvBuiltIn {
-    pub const SubgroupLtMaskKHR: SpvBuiltIn = SpvBuiltIn::SubgroupLtMask;
+    pub const InstanceId: SpvBuiltIn = SpvBuiltIn(6);
 }
 impl SpvBuiltIn {
-    pub const BaryCoordNV: SpvBuiltIn = SpvBuiltIn::BaryCoordKHR;
+    pub const PrimitiveId: SpvBuiltIn = SpvBuiltIn(7);
 }
 impl SpvBuiltIn {
-    pub const BaryCoordNoPerspNV: SpvBuiltIn = SpvBuiltIn::BaryCoordNoPerspKHR;
+    pub const InvocationId: SpvBuiltIn = SpvBuiltIn(8);
 }
 impl SpvBuiltIn {
-    pub const FragmentSizeNV: SpvBuiltIn = SpvBuiltIn::FragSizeEXT;
+    pub const Layer: SpvBuiltIn = SpvBuiltIn(9);
 }
 impl SpvBuiltIn {
-    pub const InvocationsPerPixelNV: SpvBuiltIn = SpvBuiltIn::FragInvocationCountEXT;
+    pub const ViewportIndex: SpvBuiltIn = SpvBuiltIn(10);
 }
 impl SpvBuiltIn {
-    pub const LaunchIdNV: SpvBuiltIn = SpvBuiltIn::LaunchIdKHR;
+    pub const TessLevelOuter: SpvBuiltIn = SpvBuiltIn(11);
 }
 impl SpvBuiltIn {
-    pub const LaunchSizeNV: SpvBuiltIn = SpvBuiltIn::LaunchSizeKHR;
+    pub const TessLevelInner: SpvBuiltIn = SpvBuiltIn(12);
 }
 impl SpvBuiltIn {
-    pub const WorldRayOriginNV: SpvBuiltIn = SpvBuiltIn::WorldRayOriginKHR;
+    pub const TessCoord: SpvBuiltIn = SpvBuiltIn(13);
 }
 impl SpvBuiltIn {
-    pub const WorldRayDirectionNV: SpvBuiltIn = SpvBuiltIn::WorldRayDirectionKHR;
+    pub const PatchVertices: SpvBuiltIn = SpvBuiltIn(14);
 }
 impl SpvBuiltIn {
-    pub const ObjectRayOriginNV: SpvBuiltIn = SpvBuiltIn::ObjectRayOriginKHR;
+    pub const FragCoord: SpvBuiltIn = SpvBuiltIn(15);
 }
 impl SpvBuiltIn {
-    pub const ObjectRayDirectionNV: SpvBuiltIn = SpvBuiltIn::ObjectRayDirectionKHR;
+    pub const PointCoord: SpvBuiltIn = SpvBuiltIn(16);
 }
 impl SpvBuiltIn {
-    pub const RayTminNV: SpvBuiltIn = SpvBuiltIn::RayTminKHR;
+    pub const FrontFacing: SpvBuiltIn = SpvBuiltIn(17);
 }
 impl SpvBuiltIn {
-    pub const RayTmaxNV: SpvBuiltIn = SpvBuiltIn::RayTmaxKHR;
+    pub const SampleId: SpvBuiltIn = SpvBuiltIn(18);
 }
 impl SpvBuiltIn {
-    pub const InstanceCustomIndexNV: SpvBuiltIn = SpvBuiltIn::InstanceCustomIndexKHR;
+    pub const SamplePosition: SpvBuiltIn = SpvBuiltIn(19);
 }
 impl SpvBuiltIn {
-    pub const ObjectToWorldNV: SpvBuiltIn = SpvBuiltIn::ObjectToWorldKHR;
+    pub const SampleMask: SpvBuiltIn = SpvBuiltIn(20);
 }
 impl SpvBuiltIn {
-    pub const WorldToObjectNV: SpvBuiltIn = SpvBuiltIn::WorldToObjectKHR;
+    pub const FragDepth: SpvBuiltIn = SpvBuiltIn(22);
 }
 impl SpvBuiltIn {
-    pub const HitKindNV: SpvBuiltIn = SpvBuiltIn::HitKindKHR;
+    pub const HelperInvocation: SpvBuiltIn = SpvBuiltIn(23);
 }
 impl SpvBuiltIn {
-    pub const IncomingRayFlagsNV: SpvBuiltIn = SpvBuiltIn::IncomingRayFlagsKHR;
+    pub const NumWorkgroups: SpvBuiltIn = SpvBuiltIn(24);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvBuiltIn {
+    pub const WorkgroupSize: SpvBuiltIn = SpvBuiltIn(25);
+}
+impl SpvBuiltIn {
+    pub const WorkgroupId: SpvBuiltIn = SpvBuiltIn(26);
+}
+impl SpvBuiltIn {
+    pub const LocalInvocationId: SpvBuiltIn = SpvBuiltIn(27);
+}
+impl SpvBuiltIn {
+    pub const GlobalInvocationId: SpvBuiltIn = SpvBuiltIn(28);
+}
+impl SpvBuiltIn {
+    pub const LocalInvocationIndex: SpvBuiltIn = SpvBuiltIn(29);
+}
+impl SpvBuiltIn {
+    pub const WorkDim: SpvBuiltIn = SpvBuiltIn(30);
+}
+impl SpvBuiltIn {
+    pub const GlobalSize: SpvBuiltIn = SpvBuiltIn(31);
+}
+impl SpvBuiltIn {
+    pub const EnqueuedWorkgroupSize: SpvBuiltIn = SpvBuiltIn(32);
+}
+impl SpvBuiltIn {
+    pub const GlobalOffset: SpvBuiltIn = SpvBuiltIn(33);
+}
+impl SpvBuiltIn {
+    pub const GlobalLinearId: SpvBuiltIn = SpvBuiltIn(34);
+}
+impl SpvBuiltIn {
+    pub const SubgroupSize: SpvBuiltIn = SpvBuiltIn(36);
+}
+impl SpvBuiltIn {
+    pub const SubgroupMaxSize: SpvBuiltIn = SpvBuiltIn(37);
+}
+impl SpvBuiltIn {
+    pub const NumSubgroups: SpvBuiltIn = SpvBuiltIn(38);
+}
+impl SpvBuiltIn {
+    pub const NumEnqueuedSubgroups: SpvBuiltIn = SpvBuiltIn(39);
+}
+impl SpvBuiltIn {
+    pub const SubgroupId: SpvBuiltIn = SpvBuiltIn(40);
+}
+impl SpvBuiltIn {
+    pub const SubgroupLocalInvocationId: SpvBuiltIn = SpvBuiltIn(41);
+}
+impl SpvBuiltIn {
+    pub const VertexIndex: SpvBuiltIn = SpvBuiltIn(42);
+}
+impl SpvBuiltIn {
+    pub const InstanceIndex: SpvBuiltIn = SpvBuiltIn(43);
+}
+impl SpvBuiltIn {
+    pub const SubgroupEqMask: SpvBuiltIn = SpvBuiltIn(4416);
+}
+impl SpvBuiltIn {
+    pub const SubgroupEqMaskKHR: SpvBuiltIn = SpvBuiltIn(4416);
+}
+impl SpvBuiltIn {
+    pub const SubgroupGeMask: SpvBuiltIn = SpvBuiltIn(4417);
+}
+impl SpvBuiltIn {
+    pub const SubgroupGeMaskKHR: SpvBuiltIn = SpvBuiltIn(4417);
+}
+impl SpvBuiltIn {
+    pub const SubgroupGtMask: SpvBuiltIn = SpvBuiltIn(4418);
+}
+impl SpvBuiltIn {
+    pub const SubgroupGtMaskKHR: SpvBuiltIn = SpvBuiltIn(4418);
+}
+impl SpvBuiltIn {
+    pub const SubgroupLeMask: SpvBuiltIn = SpvBuiltIn(4419);
+}
+impl SpvBuiltIn {
+    pub const SubgroupLeMaskKHR: SpvBuiltIn = SpvBuiltIn(4419);
+}
+impl SpvBuiltIn {
+    pub const SubgroupLtMask: SpvBuiltIn = SpvBuiltIn(4420);
+}
+impl SpvBuiltIn {
+    pub const SubgroupLtMaskKHR: SpvBuiltIn = SpvBuiltIn(4420);
+}
+impl SpvBuiltIn {
+    pub const BaseVertex: SpvBuiltIn = SpvBuiltIn(4424);
+}
+impl SpvBuiltIn {
+    pub const BaseInstance: SpvBuiltIn = SpvBuiltIn(4425);
+}
+impl SpvBuiltIn {
+    pub const DrawIndex: SpvBuiltIn = SpvBuiltIn(4426);
+}
+impl SpvBuiltIn {
+    pub const PrimitiveShadingRateKHR: SpvBuiltIn = SpvBuiltIn(4432);
+}
+impl SpvBuiltIn {
+    pub const DeviceIndex: SpvBuiltIn = SpvBuiltIn(4438);
+}
+impl SpvBuiltIn {
+    pub const ViewIndex: SpvBuiltIn = SpvBuiltIn(4440);
+}
+impl SpvBuiltIn {
+    pub const ShadingRateKHR: SpvBuiltIn = SpvBuiltIn(4444);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordNoPerspAMD: SpvBuiltIn = SpvBuiltIn(4992);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordNoPerspCentroidAMD: SpvBuiltIn = SpvBuiltIn(4993);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordNoPerspSampleAMD: SpvBuiltIn = SpvBuiltIn(4994);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordSmoothAMD: SpvBuiltIn = SpvBuiltIn(4995);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordSmoothCentroidAMD: SpvBuiltIn = SpvBuiltIn(4996);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordSmoothSampleAMD: SpvBuiltIn = SpvBuiltIn(4997);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordPullModelAMD: SpvBuiltIn = SpvBuiltIn(4998);
+}
+impl SpvBuiltIn {
+    pub const FragStencilRefEXT: SpvBuiltIn = SpvBuiltIn(5014);
+}
+impl SpvBuiltIn {
+    pub const ViewportMaskNV: SpvBuiltIn = SpvBuiltIn(5253);
+}
+impl SpvBuiltIn {
+    pub const SecondaryPositionNV: SpvBuiltIn = SpvBuiltIn(5257);
+}
+impl SpvBuiltIn {
+    pub const SecondaryViewportMaskNV: SpvBuiltIn = SpvBuiltIn(5258);
+}
+impl SpvBuiltIn {
+    pub const PositionPerViewNV: SpvBuiltIn = SpvBuiltIn(5261);
+}
+impl SpvBuiltIn {
+    pub const ViewportMaskPerViewNV: SpvBuiltIn = SpvBuiltIn(5262);
+}
+impl SpvBuiltIn {
+    pub const FullyCoveredEXT: SpvBuiltIn = SpvBuiltIn(5264);
+}
+impl SpvBuiltIn {
+    pub const TaskCountNV: SpvBuiltIn = SpvBuiltIn(5274);
+}
+impl SpvBuiltIn {
+    pub const PrimitiveCountNV: SpvBuiltIn = SpvBuiltIn(5275);
+}
+impl SpvBuiltIn {
+    pub const PrimitiveIndicesNV: SpvBuiltIn = SpvBuiltIn(5276);
+}
+impl SpvBuiltIn {
+    pub const ClipDistancePerViewNV: SpvBuiltIn = SpvBuiltIn(5277);
+}
+impl SpvBuiltIn {
+    pub const CullDistancePerViewNV: SpvBuiltIn = SpvBuiltIn(5278);
+}
+impl SpvBuiltIn {
+    pub const LayerPerViewNV: SpvBuiltIn = SpvBuiltIn(5279);
+}
+impl SpvBuiltIn {
+    pub const MeshViewCountNV: SpvBuiltIn = SpvBuiltIn(5280);
+}
+impl SpvBuiltIn {
+    pub const MeshViewIndicesNV: SpvBuiltIn = SpvBuiltIn(5281);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordKHR: SpvBuiltIn = SpvBuiltIn(5286);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordNV: SpvBuiltIn = SpvBuiltIn(5286);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordNoPerspKHR: SpvBuiltIn = SpvBuiltIn(5287);
+}
+impl SpvBuiltIn {
+    pub const BaryCoordNoPerspNV: SpvBuiltIn = SpvBuiltIn(5287);
+}
+impl SpvBuiltIn {
+    pub const FragSizeEXT: SpvBuiltIn = SpvBuiltIn(5292);
+}
+impl SpvBuiltIn {
+    pub const FragmentSizeNV: SpvBuiltIn = SpvBuiltIn(5292);
+}
+impl SpvBuiltIn {
+    pub const FragInvocationCountEXT: SpvBuiltIn = SpvBuiltIn(5293);
+}
+impl SpvBuiltIn {
+    pub const InvocationsPerPixelNV: SpvBuiltIn = SpvBuiltIn(5293);
+}
+impl SpvBuiltIn {
+    pub const PrimitivePointIndicesEXT: SpvBuiltIn = SpvBuiltIn(5294);
+}
+impl SpvBuiltIn {
+    pub const PrimitiveLineIndicesEXT: SpvBuiltIn = SpvBuiltIn(5295);
+}
+impl SpvBuiltIn {
+    pub const PrimitiveTriangleIndicesEXT: SpvBuiltIn = SpvBuiltIn(5296);
+}
+impl SpvBuiltIn {
+    pub const CullPrimitiveEXT: SpvBuiltIn = SpvBuiltIn(5299);
+}
+impl SpvBuiltIn {
+    pub const LaunchIdKHR: SpvBuiltIn = SpvBuiltIn(5319);
+}
+impl SpvBuiltIn {
+    pub const LaunchIdNV: SpvBuiltIn = SpvBuiltIn(5319);
+}
+impl SpvBuiltIn {
+    pub const LaunchSizeKHR: SpvBuiltIn = SpvBuiltIn(5320);
+}
+impl SpvBuiltIn {
+    pub const LaunchSizeNV: SpvBuiltIn = SpvBuiltIn(5320);
+}
+impl SpvBuiltIn {
+    pub const WorldRayOriginKHR: SpvBuiltIn = SpvBuiltIn(5321);
+}
+impl SpvBuiltIn {
+    pub const WorldRayOriginNV: SpvBuiltIn = SpvBuiltIn(5321);
+}
+impl SpvBuiltIn {
+    pub const WorldRayDirectionKHR: SpvBuiltIn = SpvBuiltIn(5322);
+}
+impl SpvBuiltIn {
+    pub const WorldRayDirectionNV: SpvBuiltIn = SpvBuiltIn(5322);
+}
+impl SpvBuiltIn {
+    pub const ObjectRayOriginKHR: SpvBuiltIn = SpvBuiltIn(5323);
+}
+impl SpvBuiltIn {
+    pub const ObjectRayOriginNV: SpvBuiltIn = SpvBuiltIn(5323);
+}
+impl SpvBuiltIn {
+    pub const ObjectRayDirectionKHR: SpvBuiltIn = SpvBuiltIn(5324);
+}
+impl SpvBuiltIn {
+    pub const ObjectRayDirectionNV: SpvBuiltIn = SpvBuiltIn(5324);
+}
+impl SpvBuiltIn {
+    pub const RayTminKHR: SpvBuiltIn = SpvBuiltIn(5325);
+}
+impl SpvBuiltIn {
+    pub const RayTminNV: SpvBuiltIn = SpvBuiltIn(5325);
+}
+impl SpvBuiltIn {
+    pub const RayTmaxKHR: SpvBuiltIn = SpvBuiltIn(5326);
+}
+impl SpvBuiltIn {
+    pub const RayTmaxNV: SpvBuiltIn = SpvBuiltIn(5326);
+}
+impl SpvBuiltIn {
+    pub const InstanceCustomIndexKHR: SpvBuiltIn = SpvBuiltIn(5327);
+}
+impl SpvBuiltIn {
+    pub const InstanceCustomIndexNV: SpvBuiltIn = SpvBuiltIn(5327);
+}
+impl SpvBuiltIn {
+    pub const ObjectToWorldKHR: SpvBuiltIn = SpvBuiltIn(5330);
+}
+impl SpvBuiltIn {
+    pub const ObjectToWorldNV: SpvBuiltIn = SpvBuiltIn(5330);
+}
+impl SpvBuiltIn {
+    pub const WorldToObjectKHR: SpvBuiltIn = SpvBuiltIn(5331);
+}
+impl SpvBuiltIn {
+    pub const WorldToObjectNV: SpvBuiltIn = SpvBuiltIn(5331);
+}
+impl SpvBuiltIn {
+    pub const HitTNV: SpvBuiltIn = SpvBuiltIn(5332);
+}
+impl SpvBuiltIn {
+    pub const HitKindKHR: SpvBuiltIn = SpvBuiltIn(5333);
+}
+impl SpvBuiltIn {
+    pub const HitKindNV: SpvBuiltIn = SpvBuiltIn(5333);
+}
+impl SpvBuiltIn {
+    pub const CurrentRayTimeNV: SpvBuiltIn = SpvBuiltIn(5334);
+}
+impl SpvBuiltIn {
+    pub const IncomingRayFlagsKHR: SpvBuiltIn = SpvBuiltIn(5351);
+}
+impl SpvBuiltIn {
+    pub const IncomingRayFlagsNV: SpvBuiltIn = SpvBuiltIn(5351);
+}
+impl SpvBuiltIn {
+    pub const RayGeometryIndexKHR: SpvBuiltIn = SpvBuiltIn(5352);
+}
+impl SpvBuiltIn {
+    pub const WarpsPerSMNV: SpvBuiltIn = SpvBuiltIn(5374);
+}
+impl SpvBuiltIn {
+    pub const SMCountNV: SpvBuiltIn = SpvBuiltIn(5375);
+}
+impl SpvBuiltIn {
+    pub const WarpIDNV: SpvBuiltIn = SpvBuiltIn(5376);
+}
+impl SpvBuiltIn {
+    pub const SMIDNV: SpvBuiltIn = SpvBuiltIn(5377);
+}
+impl SpvBuiltIn {
+    pub const CullMaskKHR: SpvBuiltIn = SpvBuiltIn(6021);
+}
+impl SpvBuiltIn {
+    pub const Max: SpvBuiltIn = SpvBuiltIn(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvBuiltIn {
-    Position = 0,
-    PointSize = 1,
-    ClipDistance = 3,
-    CullDistance = 4,
-    VertexId = 5,
-    InstanceId = 6,
-    PrimitiveId = 7,
-    InvocationId = 8,
-    Layer = 9,
-    ViewportIndex = 10,
-    TessLevelOuter = 11,
-    TessLevelInner = 12,
-    TessCoord = 13,
-    PatchVertices = 14,
-    FragCoord = 15,
-    PointCoord = 16,
-    FrontFacing = 17,
-    SampleId = 18,
-    SamplePosition = 19,
-    SampleMask = 20,
-    FragDepth = 22,
-    HelperInvocation = 23,
-    NumWorkgroups = 24,
-    WorkgroupSize = 25,
-    WorkgroupId = 26,
-    LocalInvocationId = 27,
-    GlobalInvocationId = 28,
-    LocalInvocationIndex = 29,
-    WorkDim = 30,
-    GlobalSize = 31,
-    EnqueuedWorkgroupSize = 32,
-    GlobalOffset = 33,
-    GlobalLinearId = 34,
-    SubgroupSize = 36,
-    SubgroupMaxSize = 37,
-    NumSubgroups = 38,
-    NumEnqueuedSubgroups = 39,
-    SubgroupId = 40,
-    SubgroupLocalInvocationId = 41,
-    VertexIndex = 42,
-    InstanceIndex = 43,
-    SubgroupEqMask = 4416,
-    SubgroupGeMask = 4417,
-    SubgroupGtMask = 4418,
-    SubgroupLeMask = 4419,
-    SubgroupLtMask = 4420,
-    BaseVertex = 4424,
-    BaseInstance = 4425,
-    DrawIndex = 4426,
-    PrimitiveShadingRateKHR = 4432,
-    DeviceIndex = 4438,
-    ViewIndex = 4440,
-    ShadingRateKHR = 4444,
-    BaryCoordNoPerspAMD = 4992,
-    BaryCoordNoPerspCentroidAMD = 4993,
-    BaryCoordNoPerspSampleAMD = 4994,
-    BaryCoordSmoothAMD = 4995,
-    BaryCoordSmoothCentroidAMD = 4996,
-    BaryCoordSmoothSampleAMD = 4997,
-    BaryCoordPullModelAMD = 4998,
-    FragStencilRefEXT = 5014,
-    ViewportMaskNV = 5253,
-    SecondaryPositionNV = 5257,
-    SecondaryViewportMaskNV = 5258,
-    PositionPerViewNV = 5261,
-    ViewportMaskPerViewNV = 5262,
-    FullyCoveredEXT = 5264,
-    TaskCountNV = 5274,
-    PrimitiveCountNV = 5275,
-    PrimitiveIndicesNV = 5276,
-    ClipDistancePerViewNV = 5277,
-    CullDistancePerViewNV = 5278,
-    LayerPerViewNV = 5279,
-    MeshViewCountNV = 5280,
-    MeshViewIndicesNV = 5281,
-    BaryCoordKHR = 5286,
-    BaryCoordNoPerspKHR = 5287,
-    FragSizeEXT = 5292,
-    FragInvocationCountEXT = 5293,
-    PrimitivePointIndicesEXT = 5294,
-    PrimitiveLineIndicesEXT = 5295,
-    PrimitiveTriangleIndicesEXT = 5296,
-    CullPrimitiveEXT = 5299,
-    LaunchIdKHR = 5319,
-    LaunchSizeKHR = 5320,
-    WorldRayOriginKHR = 5321,
-    WorldRayDirectionKHR = 5322,
-    ObjectRayOriginKHR = 5323,
-    ObjectRayDirectionKHR = 5324,
-    RayTminKHR = 5325,
-    RayTmaxKHR = 5326,
-    InstanceCustomIndexKHR = 5327,
-    ObjectToWorldKHR = 5330,
-    WorldToObjectKHR = 5331,
-    HitTNV = 5332,
-    HitKindKHR = 5333,
-    CurrentRayTimeNV = 5334,
-    IncomingRayFlagsKHR = 5351,
-    RayGeometryIndexKHR = 5352,
-    WarpsPerSMNV = 5374,
-    SMCountNV = 5375,
-    WarpIDNV = 5376,
-    SMIDNV = 5377,
-    CullMaskKHR = 6021,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvSelectionControlShift {
-    SpvSelectionControlFlattenShift = 0,
-    SpvSelectionControlDontFlattenShift = 1,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvSelectionControlMask {
-    None = 0,
-    SpvSelectionControlFlattenMask = 1,
-    SpvSelectionControlDontFlattenMask = 2,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvLoopControlShift {
-    SpvLoopControlUnrollShift = 0,
-    SpvLoopControlDontUnrollShift = 1,
-    SpvLoopControlDependencyInfiniteShift = 2,
-    SpvLoopControlDependencyLengthShift = 3,
-    SpvLoopControlMinIterationsShift = 4,
-    SpvLoopControlMaxIterationsShift = 5,
-    SpvLoopControlIterationMultipleShift = 6,
-    SpvLoopControlPeelCountShift = 7,
-    SpvLoopControlPartialCountShift = 8,
-    SpvLoopControlInitiationIntervalINTELShift = 16,
-    SpvLoopControlMaxConcurrencyINTELShift = 17,
-    SpvLoopControlDependencyArrayINTELShift = 18,
-    SpvLoopControlPipelineEnableINTELShift = 19,
-    SpvLoopControlLoopCoalesceINTELShift = 20,
-    SpvLoopControlMaxInterleavingINTELShift = 21,
-    SpvLoopControlSpeculatedIterationsINTELShift = 22,
-    SpvLoopControlNoFusionINTELShift = 23,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvLoopControlMask {
-    None = 0,
-    SpvLoopControlUnrollMask = 1,
-    SpvLoopControlDontUnrollMask = 2,
-    SpvLoopControlDependencyInfiniteMask = 4,
-    SpvLoopControlDependencyLengthMask = 8,
-    SpvLoopControlMinIterationsMask = 16,
-    SpvLoopControlMaxIterationsMask = 32,
-    SpvLoopControlIterationMultipleMask = 64,
-    SpvLoopControlPeelCountMask = 128,
-    SpvLoopControlPartialCountMask = 256,
-    SpvLoopControlInitiationIntervalINTELMask = 65536,
-    SpvLoopControlMaxConcurrencyINTELMask = 131072,
-    SpvLoopControlDependencyArrayINTELMask = 262144,
-    SpvLoopControlPipelineEnableINTELMask = 524288,
-    SpvLoopControlLoopCoalesceINTELMask = 1048576,
-    SpvLoopControlMaxInterleavingINTELMask = 2097152,
-    SpvLoopControlSpeculatedIterationsINTELMask = 4194304,
-    SpvLoopControlNoFusionINTELMask = 8388608,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFunctionControlShift {
-    SpvFunctionControlInlineShift = 0,
-    SpvFunctionControlDontInlineShift = 1,
-    SpvFunctionControlPureShift = 2,
-    SpvFunctionControlConstShift = 3,
-    SpvFunctionControlOptNoneINTELShift = 16,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFunctionControlMask {
-    None = 0,
-    SpvFunctionControlInlineMask = 1,
-    SpvFunctionControlDontInlineMask = 2,
-    SpvFunctionControlPureMask = 4,
-    SpvFunctionControlConstMask = 8,
-    SpvFunctionControlOptNoneINTELMask = 65536,
-}
-impl SpvMemorySemanticsShift {
-    pub const SpvMemorySemanticsOutputMemoryKHRShift: SpvMemorySemanticsShift =
-        SpvMemorySemanticsShift::SpvMemorySemanticsOutputMemoryShift;
-}
-impl SpvMemorySemanticsShift {
-    pub const SpvMemorySemanticsMakeAvailableKHRShift: SpvMemorySemanticsShift =
-        SpvMemorySemanticsShift::SpvMemorySemanticsMakeAvailableShift;
-}
-impl SpvMemorySemanticsShift {
-    pub const SpvMemorySemanticsMakeVisibleKHRShift: SpvMemorySemanticsShift =
-        SpvMemorySemanticsShift::SpvMemorySemanticsMakeVisibleShift;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvMemorySemanticsShift {
-    SpvMemorySemanticsAcquireShift = 1,
-    SpvMemorySemanticsReleaseShift = 2,
-    SpvMemorySemanticsAcquireReleaseShift = 3,
-    SpvMemorySemanticsSequentiallyConsistentShift = 4,
-    SpvMemorySemanticsUniformMemoryShift = 6,
-    SpvMemorySemanticsSubgroupMemoryShift = 7,
-    SpvMemorySemanticsWorkgroupMemoryShift = 8,
-    SpvMemorySemanticsCrossWorkgroupMemoryShift = 9,
-    SpvMemorySemanticsAtomicCounterMemoryShift = 10,
-    SpvMemorySemanticsImageMemoryShift = 11,
-    SpvMemorySemanticsOutputMemoryShift = 12,
-    SpvMemorySemanticsMakeAvailableShift = 13,
-    SpvMemorySemanticsMakeVisibleShift = 14,
-    SpvMemorySemanticsVolatileShift = 15,
-}
-impl SpvMemorySemanticsMask {
-    pub const SpvMemorySemanticsOutputMemoryKHRMask: SpvMemorySemanticsMask =
-        SpvMemorySemanticsMask::SpvMemorySemanticsOutputMemoryMask;
-}
-impl SpvMemorySemanticsMask {
-    pub const SpvMemorySemanticsMakeAvailableKHRMask: SpvMemorySemanticsMask =
-        SpvMemorySemanticsMask::SpvMemorySemanticsMakeAvailableMask;
-}
-impl SpvMemorySemanticsMask {
-    pub const SpvMemorySemanticsMakeVisibleKHRMask: SpvMemorySemanticsMask =
-        SpvMemorySemanticsMask::SpvMemorySemanticsMakeVisibleMask;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvMemorySemanticsMask {
-    None = 0,
-    SpvMemorySemanticsAcquireMask = 2,
-    SpvMemorySemanticsReleaseMask = 4,
-    SpvMemorySemanticsAcquireReleaseMask = 8,
-    SpvMemorySemanticsSequentiallyConsistentMask = 16,
-    SpvMemorySemanticsUniformMemoryMask = 64,
-    SpvMemorySemanticsSubgroupMemoryMask = 128,
-    SpvMemorySemanticsWorkgroupMemoryMask = 256,
-    SpvMemorySemanticsCrossWorkgroupMemoryMask = 512,
-    SpvMemorySemanticsAtomicCounterMemoryMask = 1024,
-    SpvMemorySemanticsImageMemoryMask = 2048,
-    SpvMemorySemanticsOutputMemoryMask = 4096,
-    SpvMemorySemanticsMakeAvailableMask = 8192,
-    SpvMemorySemanticsMakeVisibleMask = 16384,
-    SpvMemorySemanticsVolatileMask = 32768,
-}
-impl SpvMemoryAccessShift {
-    pub const SpvMemoryAccessMakePointerAvailableKHRShift: SpvMemoryAccessShift =
-        SpvMemoryAccessShift::SpvMemoryAccessMakePointerAvailableShift;
-}
-impl SpvMemoryAccessShift {
-    pub const SpvMemoryAccessMakePointerVisibleKHRShift: SpvMemoryAccessShift =
-        SpvMemoryAccessShift::SpvMemoryAccessMakePointerVisibleShift;
-}
-impl SpvMemoryAccessShift {
-    pub const SpvMemoryAccessNonPrivatePointerKHRShift: SpvMemoryAccessShift =
-        SpvMemoryAccessShift::SpvMemoryAccessNonPrivatePointerShift;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvMemoryAccessShift {
-    SpvMemoryAccessVolatileShift = 0,
-    SpvMemoryAccessAlignedShift = 1,
-    SpvMemoryAccessNontemporalShift = 2,
-    SpvMemoryAccessMakePointerAvailableShift = 3,
-    SpvMemoryAccessMakePointerVisibleShift = 4,
-    SpvMemoryAccessNonPrivatePointerShift = 5,
-    SpvMemoryAccessAliasScopeINTELMaskShift = 16,
-    SpvMemoryAccessNoAliasINTELMaskShift = 17,
-}
-impl SpvMemoryAccessMask {
-    pub const SpvMemoryAccessMakePointerAvailableKHRMask: SpvMemoryAccessMask =
-        SpvMemoryAccessMask::SpvMemoryAccessMakePointerAvailableMask;
-}
-impl SpvMemoryAccessMask {
-    pub const SpvMemoryAccessMakePointerVisibleKHRMask: SpvMemoryAccessMask =
-        SpvMemoryAccessMask::SpvMemoryAccessMakePointerVisibleMask;
-}
-impl SpvMemoryAccessMask {
-    pub const SpvMemoryAccessNonPrivatePointerKHRMask: SpvMemoryAccessMask =
-        SpvMemoryAccessMask::SpvMemoryAccessNonPrivatePointerMask;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvMemoryAccessMask {
-    None = 0,
-    SpvMemoryAccessVolatileMask = 1,
-    SpvMemoryAccessAlignedMask = 2,
-    SpvMemoryAccessNontemporalMask = 4,
-    SpvMemoryAccessMakePointerAvailableMask = 8,
-    SpvMemoryAccessMakePointerVisibleMask = 16,
-    SpvMemoryAccessNonPrivatePointerMask = 32,
-    SpvMemoryAccessAliasScopeINTELMaskMask = 65536,
-    SpvMemoryAccessNoAliasINTELMaskMask = 131072,
-}
-impl SpvScope {
-    pub const QueueFamilyKHR: SpvScope = SpvScope::QueueFamily;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvScope {
-    CrossDevice = 0,
-    Device = 1,
-    Workgroup = 2,
-    Subgroup = 3,
-    Invocation = 4,
-    QueueFamily = 5,
-    ShaderCallKHR = 6,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvGroupOperation {
-    Reduce = 0,
-    InclusiveScan = 1,
-    ExclusiveScan = 2,
-    ClusteredReduce = 3,
-    PartitionedReduceNV = 6,
-    PartitionedInclusiveScanNV = 7,
-    PartitionedExclusiveScanNV = 8,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvKernelEnqueueFlags {
-    NoWait = 0,
-    WaitKernel = 1,
-    WaitWorkGroup = 2,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvKernelProfilingInfoShift {
-    SpvKernelProfilingInfoCmdExecTimeShift = 0,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvKernelProfilingInfoMask {
-    None = 0,
-    SpvKernelProfilingInfoCmdExecTimeMask = 1,
+pub struct SpvBuiltIn(pub i32);
+impl SpvCapability {
+    pub const Matrix: SpvCapability = SpvCapability(0);
 }
 impl SpvCapability {
-    pub const StorageUniformBufferBlock16: SpvCapability = SpvCapability::StorageBuffer16BitAccess;
+    pub const Shader: SpvCapability = SpvCapability(1);
 }
 impl SpvCapability {
-    pub const UniformAndStorageBuffer16BitAccess: SpvCapability = SpvCapability::StorageUniform16;
+    pub const Geometry: SpvCapability = SpvCapability(2);
 }
 impl SpvCapability {
-    pub const ShaderViewportIndexLayerNV: SpvCapability =
-        SpvCapability::ShaderViewportIndexLayerEXT;
+    pub const Tessellation: SpvCapability = SpvCapability(3);
 }
 impl SpvCapability {
-    pub const FragmentBarycentricNV: SpvCapability = SpvCapability::FragmentBarycentricKHR;
+    pub const Addresses: SpvCapability = SpvCapability(4);
 }
 impl SpvCapability {
-    pub const ShadingRateNV: SpvCapability = SpvCapability::FragmentDensityEXT;
+    pub const Linkage: SpvCapability = SpvCapability(5);
 }
 impl SpvCapability {
-    pub const ShaderNonUniformEXT: SpvCapability = SpvCapability::ShaderNonUniform;
+    pub const Kernel: SpvCapability = SpvCapability(6);
 }
 impl SpvCapability {
-    pub const RuntimeDescriptorArrayEXT: SpvCapability = SpvCapability::RuntimeDescriptorArray;
+    pub const Vector16: SpvCapability = SpvCapability(7);
 }
 impl SpvCapability {
-    pub const InputAttachmentArrayDynamicIndexingEXT: SpvCapability =
-        SpvCapability::InputAttachmentArrayDynamicIndexing;
+    pub const Float16Buffer: SpvCapability = SpvCapability(8);
 }
 impl SpvCapability {
-    pub const UniformTexelBufferArrayDynamicIndexingEXT: SpvCapability =
-        SpvCapability::UniformTexelBufferArrayDynamicIndexing;
+    pub const Float16: SpvCapability = SpvCapability(9);
 }
 impl SpvCapability {
-    pub const StorageTexelBufferArrayDynamicIndexingEXT: SpvCapability =
-        SpvCapability::StorageTexelBufferArrayDynamicIndexing;
+    pub const Float64: SpvCapability = SpvCapability(10);
 }
 impl SpvCapability {
-    pub const UniformBufferArrayNonUniformIndexingEXT: SpvCapability =
-        SpvCapability::UniformBufferArrayNonUniformIndexing;
+    pub const Int64: SpvCapability = SpvCapability(11);
 }
 impl SpvCapability {
-    pub const SampledImageArrayNonUniformIndexingEXT: SpvCapability =
-        SpvCapability::SampledImageArrayNonUniformIndexing;
+    pub const Int64Atomics: SpvCapability = SpvCapability(12);
 }
 impl SpvCapability {
-    pub const StorageBufferArrayNonUniformIndexingEXT: SpvCapability =
-        SpvCapability::StorageBufferArrayNonUniformIndexing;
+    pub const ImageBasic: SpvCapability = SpvCapability(13);
 }
 impl SpvCapability {
-    pub const StorageImageArrayNonUniformIndexingEXT: SpvCapability =
-        SpvCapability::StorageImageArrayNonUniformIndexing;
+    pub const ImageReadWrite: SpvCapability = SpvCapability(14);
 }
 impl SpvCapability {
-    pub const InputAttachmentArrayNonUniformIndexingEXT: SpvCapability =
-        SpvCapability::InputAttachmentArrayNonUniformIndexing;
+    pub const ImageMipmap: SpvCapability = SpvCapability(15);
 }
 impl SpvCapability {
-    pub const UniformTexelBufferArrayNonUniformIndexingEXT: SpvCapability =
-        SpvCapability::UniformTexelBufferArrayNonUniformIndexing;
+    pub const Pipes: SpvCapability = SpvCapability(17);
 }
 impl SpvCapability {
-    pub const StorageTexelBufferArrayNonUniformIndexingEXT: SpvCapability =
-        SpvCapability::StorageTexelBufferArrayNonUniformIndexing;
+    pub const Groups: SpvCapability = SpvCapability(18);
 }
 impl SpvCapability {
-    pub const VulkanMemoryModelKHR: SpvCapability = SpvCapability::VulkanMemoryModel;
+    pub const DeviceEnqueue: SpvCapability = SpvCapability(19);
 }
 impl SpvCapability {
-    pub const VulkanMemoryModelDeviceScopeKHR: SpvCapability =
-        SpvCapability::VulkanMemoryModelDeviceScope;
+    pub const LiteralSampler: SpvCapability = SpvCapability(20);
 }
 impl SpvCapability {
-    pub const PhysicalStorageBufferAddressesEXT: SpvCapability =
-        SpvCapability::PhysicalStorageBufferAddresses;
+    pub const AtomicStorage: SpvCapability = SpvCapability(21);
 }
 impl SpvCapability {
-    pub const DemoteToHelperInvocationEXT: SpvCapability = SpvCapability::DemoteToHelperInvocation;
+    pub const Int16: SpvCapability = SpvCapability(22);
 }
 impl SpvCapability {
-    pub const DotProductInputAllKHR: SpvCapability = SpvCapability::DotProductInputAll;
+    pub const TessellationPointSize: SpvCapability = SpvCapability(23);
 }
 impl SpvCapability {
-    pub const DotProductInput4x8BitKHR: SpvCapability = SpvCapability::DotProductInput4x8Bit;
+    pub const GeometryPointSize: SpvCapability = SpvCapability(24);
 }
 impl SpvCapability {
-    pub const DotProductInput4x8BitPackedKHR: SpvCapability =
-        SpvCapability::DotProductInput4x8BitPacked;
+    pub const ImageGatherExtended: SpvCapability = SpvCapability(25);
 }
 impl SpvCapability {
-    pub const DotProductKHR: SpvCapability = SpvCapability::DotProduct;
+    pub const StorageImageMultisample: SpvCapability = SpvCapability(27);
 }
-#[repr(i32)]
-#[non_exhaustive]
+impl SpvCapability {
+    pub const UniformBufferArrayDynamicIndexing: SpvCapability = SpvCapability(28);
+}
+impl SpvCapability {
+    pub const SampledImageArrayDynamicIndexing: SpvCapability = SpvCapability(29);
+}
+impl SpvCapability {
+    pub const StorageBufferArrayDynamicIndexing: SpvCapability = SpvCapability(30);
+}
+impl SpvCapability {
+    pub const StorageImageArrayDynamicIndexing: SpvCapability = SpvCapability(31);
+}
+impl SpvCapability {
+    pub const ClipDistance: SpvCapability = SpvCapability(32);
+}
+impl SpvCapability {
+    pub const CullDistance: SpvCapability = SpvCapability(33);
+}
+impl SpvCapability {
+    pub const ImageCubeArray: SpvCapability = SpvCapability(34);
+}
+impl SpvCapability {
+    pub const SampleRateShading: SpvCapability = SpvCapability(35);
+}
+impl SpvCapability {
+    pub const ImageRect: SpvCapability = SpvCapability(36);
+}
+impl SpvCapability {
+    pub const SampledRect: SpvCapability = SpvCapability(37);
+}
+impl SpvCapability {
+    pub const GenericPointer: SpvCapability = SpvCapability(38);
+}
+impl SpvCapability {
+    pub const Int8: SpvCapability = SpvCapability(39);
+}
+impl SpvCapability {
+    pub const InputAttachment: SpvCapability = SpvCapability(40);
+}
+impl SpvCapability {
+    pub const SparseResidency: SpvCapability = SpvCapability(41);
+}
+impl SpvCapability {
+    pub const MinLod: SpvCapability = SpvCapability(42);
+}
+impl SpvCapability {
+    pub const Sampled1D: SpvCapability = SpvCapability(43);
+}
+impl SpvCapability {
+    pub const Image1D: SpvCapability = SpvCapability(44);
+}
+impl SpvCapability {
+    pub const SampledCubeArray: SpvCapability = SpvCapability(45);
+}
+impl SpvCapability {
+    pub const SampledBuffer: SpvCapability = SpvCapability(46);
+}
+impl SpvCapability {
+    pub const ImageBuffer: SpvCapability = SpvCapability(47);
+}
+impl SpvCapability {
+    pub const ImageMSArray: SpvCapability = SpvCapability(48);
+}
+impl SpvCapability {
+    pub const StorageImageExtendedFormats: SpvCapability = SpvCapability(49);
+}
+impl SpvCapability {
+    pub const ImageQuery: SpvCapability = SpvCapability(50);
+}
+impl SpvCapability {
+    pub const DerivativeControl: SpvCapability = SpvCapability(51);
+}
+impl SpvCapability {
+    pub const InterpolationFunction: SpvCapability = SpvCapability(52);
+}
+impl SpvCapability {
+    pub const TransformFeedback: SpvCapability = SpvCapability(53);
+}
+impl SpvCapability {
+    pub const GeometryStreams: SpvCapability = SpvCapability(54);
+}
+impl SpvCapability {
+    pub const StorageImageReadWithoutFormat: SpvCapability = SpvCapability(55);
+}
+impl SpvCapability {
+    pub const StorageImageWriteWithoutFormat: SpvCapability = SpvCapability(56);
+}
+impl SpvCapability {
+    pub const MultiViewport: SpvCapability = SpvCapability(57);
+}
+impl SpvCapability {
+    pub const SubgroupDispatch: SpvCapability = SpvCapability(58);
+}
+impl SpvCapability {
+    pub const NamedBarrier: SpvCapability = SpvCapability(59);
+}
+impl SpvCapability {
+    pub const PipeStorage: SpvCapability = SpvCapability(60);
+}
+impl SpvCapability {
+    pub const GroupNonUniform: SpvCapability = SpvCapability(61);
+}
+impl SpvCapability {
+    pub const GroupNonUniformVote: SpvCapability = SpvCapability(62);
+}
+impl SpvCapability {
+    pub const GroupNonUniformArithmetic: SpvCapability = SpvCapability(63);
+}
+impl SpvCapability {
+    pub const GroupNonUniformBallot: SpvCapability = SpvCapability(64);
+}
+impl SpvCapability {
+    pub const GroupNonUniformShuffle: SpvCapability = SpvCapability(65);
+}
+impl SpvCapability {
+    pub const GroupNonUniformShuffleRelative: SpvCapability = SpvCapability(66);
+}
+impl SpvCapability {
+    pub const GroupNonUniformClustered: SpvCapability = SpvCapability(67);
+}
+impl SpvCapability {
+    pub const GroupNonUniformQuad: SpvCapability = SpvCapability(68);
+}
+impl SpvCapability {
+    pub const ShaderLayer: SpvCapability = SpvCapability(69);
+}
+impl SpvCapability {
+    pub const ShaderViewportIndex: SpvCapability = SpvCapability(70);
+}
+impl SpvCapability {
+    pub const UniformDecoration: SpvCapability = SpvCapability(71);
+}
+impl SpvCapability {
+    pub const FragmentShadingRateKHR: SpvCapability = SpvCapability(4422);
+}
+impl SpvCapability {
+    pub const SubgroupBallotKHR: SpvCapability = SpvCapability(4423);
+}
+impl SpvCapability {
+    pub const DrawParameters: SpvCapability = SpvCapability(4427);
+}
+impl SpvCapability {
+    pub const WorkgroupMemoryExplicitLayoutKHR: SpvCapability = SpvCapability(4428);
+}
+impl SpvCapability {
+    pub const WorkgroupMemoryExplicitLayout8BitAccessKHR: SpvCapability = SpvCapability(4429);
+}
+impl SpvCapability {
+    pub const WorkgroupMemoryExplicitLayout16BitAccessKHR: SpvCapability = SpvCapability(4430);
+}
+impl SpvCapability {
+    pub const SubgroupVoteKHR: SpvCapability = SpvCapability(4431);
+}
+impl SpvCapability {
+    pub const StorageBuffer16BitAccess: SpvCapability = SpvCapability(4433);
+}
+impl SpvCapability {
+    pub const StorageUniformBufferBlock16: SpvCapability = SpvCapability(4433);
+}
+impl SpvCapability {
+    pub const StorageUniform16: SpvCapability = SpvCapability(4434);
+}
+impl SpvCapability {
+    pub const UniformAndStorageBuffer16BitAccess: SpvCapability = SpvCapability(4434);
+}
+impl SpvCapability {
+    pub const StoragePushConstant16: SpvCapability = SpvCapability(4435);
+}
+impl SpvCapability {
+    pub const StorageInputOutput16: SpvCapability = SpvCapability(4436);
+}
+impl SpvCapability {
+    pub const DeviceGroup: SpvCapability = SpvCapability(4437);
+}
+impl SpvCapability {
+    pub const MultiView: SpvCapability = SpvCapability(4439);
+}
+impl SpvCapability {
+    pub const VariablePointersStorageBuffer: SpvCapability = SpvCapability(4441);
+}
+impl SpvCapability {
+    pub const VariablePointers: SpvCapability = SpvCapability(4442);
+}
+impl SpvCapability {
+    pub const AtomicStorageOps: SpvCapability = SpvCapability(4445);
+}
+impl SpvCapability {
+    pub const SampleMaskPostDepthCoverage: SpvCapability = SpvCapability(4447);
+}
+impl SpvCapability {
+    pub const StorageBuffer8BitAccess: SpvCapability = SpvCapability(4448);
+}
+impl SpvCapability {
+    pub const UniformAndStorageBuffer8BitAccess: SpvCapability = SpvCapability(4449);
+}
+impl SpvCapability {
+    pub const StoragePushConstant8: SpvCapability = SpvCapability(4450);
+}
+impl SpvCapability {
+    pub const DenormPreserve: SpvCapability = SpvCapability(4464);
+}
+impl SpvCapability {
+    pub const DenormFlushToZero: SpvCapability = SpvCapability(4465);
+}
+impl SpvCapability {
+    pub const SignedZeroInfNanPreserve: SpvCapability = SpvCapability(4466);
+}
+impl SpvCapability {
+    pub const RoundingModeRTE: SpvCapability = SpvCapability(4467);
+}
+impl SpvCapability {
+    pub const RoundingModeRTZ: SpvCapability = SpvCapability(4468);
+}
+impl SpvCapability {
+    pub const RayQueryProvisionalKHR: SpvCapability = SpvCapability(4471);
+}
+impl SpvCapability {
+    pub const RayQueryKHR: SpvCapability = SpvCapability(4472);
+}
+impl SpvCapability {
+    pub const RayTraversalPrimitiveCullingKHR: SpvCapability = SpvCapability(4478);
+}
+impl SpvCapability {
+    pub const RayTracingKHR: SpvCapability = SpvCapability(4479);
+}
+impl SpvCapability {
+    pub const TextureSampleWeightedQCOM: SpvCapability = SpvCapability(4484);
+}
+impl SpvCapability {
+    pub const TextureBoxFilterQCOM: SpvCapability = SpvCapability(4485);
+}
+impl SpvCapability {
+    pub const TextureBlockMatchQCOM: SpvCapability = SpvCapability(4486);
+}
+impl SpvCapability {
+    pub const Float16ImageAMD: SpvCapability = SpvCapability(5008);
+}
+impl SpvCapability {
+    pub const ImageGatherBiasLodAMD: SpvCapability = SpvCapability(5009);
+}
+impl SpvCapability {
+    pub const FragmentMaskAMD: SpvCapability = SpvCapability(5010);
+}
+impl SpvCapability {
+    pub const StencilExportEXT: SpvCapability = SpvCapability(5013);
+}
+impl SpvCapability {
+    pub const ImageReadWriteLodAMD: SpvCapability = SpvCapability(5015);
+}
+impl SpvCapability {
+    pub const Int64ImageEXT: SpvCapability = SpvCapability(5016);
+}
+impl SpvCapability {
+    pub const ShaderClockKHR: SpvCapability = SpvCapability(5055);
+}
+impl SpvCapability {
+    pub const SampleMaskOverrideCoverageNV: SpvCapability = SpvCapability(5249);
+}
+impl SpvCapability {
+    pub const GeometryShaderPassthroughNV: SpvCapability = SpvCapability(5251);
+}
+impl SpvCapability {
+    pub const ShaderViewportIndexLayerEXT: SpvCapability = SpvCapability(5254);
+}
+impl SpvCapability {
+    pub const ShaderViewportIndexLayerNV: SpvCapability = SpvCapability(5254);
+}
+impl SpvCapability {
+    pub const ShaderViewportMaskNV: SpvCapability = SpvCapability(5255);
+}
+impl SpvCapability {
+    pub const ShaderStereoViewNV: SpvCapability = SpvCapability(5259);
+}
+impl SpvCapability {
+    pub const PerViewAttributesNV: SpvCapability = SpvCapability(5260);
+}
+impl SpvCapability {
+    pub const FragmentFullyCoveredEXT: SpvCapability = SpvCapability(5265);
+}
+impl SpvCapability {
+    pub const MeshShadingNV: SpvCapability = SpvCapability(5266);
+}
+impl SpvCapability {
+    pub const ImageFootprintNV: SpvCapability = SpvCapability(5282);
+}
+impl SpvCapability {
+    pub const MeshShadingEXT: SpvCapability = SpvCapability(5283);
+}
+impl SpvCapability {
+    pub const FragmentBarycentricKHR: SpvCapability = SpvCapability(5284);
+}
+impl SpvCapability {
+    pub const FragmentBarycentricNV: SpvCapability = SpvCapability(5284);
+}
+impl SpvCapability {
+    pub const ComputeDerivativeGroupQuadsNV: SpvCapability = SpvCapability(5288);
+}
+impl SpvCapability {
+    pub const FragmentDensityEXT: SpvCapability = SpvCapability(5291);
+}
+impl SpvCapability {
+    pub const ShadingRateNV: SpvCapability = SpvCapability(5291);
+}
+impl SpvCapability {
+    pub const GroupNonUniformPartitionedNV: SpvCapability = SpvCapability(5297);
+}
+impl SpvCapability {
+    pub const ShaderNonUniform: SpvCapability = SpvCapability(5301);
+}
+impl SpvCapability {
+    pub const ShaderNonUniformEXT: SpvCapability = SpvCapability(5301);
+}
+impl SpvCapability {
+    pub const RuntimeDescriptorArray: SpvCapability = SpvCapability(5302);
+}
+impl SpvCapability {
+    pub const RuntimeDescriptorArrayEXT: SpvCapability = SpvCapability(5302);
+}
+impl SpvCapability {
+    pub const InputAttachmentArrayDynamicIndexing: SpvCapability = SpvCapability(5303);
+}
+impl SpvCapability {
+    pub const InputAttachmentArrayDynamicIndexingEXT: SpvCapability = SpvCapability(5303);
+}
+impl SpvCapability {
+    pub const UniformTexelBufferArrayDynamicIndexing: SpvCapability = SpvCapability(5304);
+}
+impl SpvCapability {
+    pub const UniformTexelBufferArrayDynamicIndexingEXT: SpvCapability = SpvCapability(5304);
+}
+impl SpvCapability {
+    pub const StorageTexelBufferArrayDynamicIndexing: SpvCapability = SpvCapability(5305);
+}
+impl SpvCapability {
+    pub const StorageTexelBufferArrayDynamicIndexingEXT: SpvCapability = SpvCapability(5305);
+}
+impl SpvCapability {
+    pub const UniformBufferArrayNonUniformIndexing: SpvCapability = SpvCapability(5306);
+}
+impl SpvCapability {
+    pub const UniformBufferArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5306);
+}
+impl SpvCapability {
+    pub const SampledImageArrayNonUniformIndexing: SpvCapability = SpvCapability(5307);
+}
+impl SpvCapability {
+    pub const SampledImageArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5307);
+}
+impl SpvCapability {
+    pub const StorageBufferArrayNonUniformIndexing: SpvCapability = SpvCapability(5308);
+}
+impl SpvCapability {
+    pub const StorageBufferArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5308);
+}
+impl SpvCapability {
+    pub const StorageImageArrayNonUniformIndexing: SpvCapability = SpvCapability(5309);
+}
+impl SpvCapability {
+    pub const StorageImageArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5309);
+}
+impl SpvCapability {
+    pub const InputAttachmentArrayNonUniformIndexing: SpvCapability = SpvCapability(5310);
+}
+impl SpvCapability {
+    pub const InputAttachmentArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5310);
+}
+impl SpvCapability {
+    pub const UniformTexelBufferArrayNonUniformIndexing: SpvCapability = SpvCapability(5311);
+}
+impl SpvCapability {
+    pub const UniformTexelBufferArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5311);
+}
+impl SpvCapability {
+    pub const StorageTexelBufferArrayNonUniformIndexing: SpvCapability = SpvCapability(5312);
+}
+impl SpvCapability {
+    pub const StorageTexelBufferArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5312);
+}
+impl SpvCapability {
+    pub const RayTracingNV: SpvCapability = SpvCapability(5340);
+}
+impl SpvCapability {
+    pub const RayTracingMotionBlurNV: SpvCapability = SpvCapability(5341);
+}
+impl SpvCapability {
+    pub const VulkanMemoryModel: SpvCapability = SpvCapability(5345);
+}
+impl SpvCapability {
+    pub const VulkanMemoryModelKHR: SpvCapability = SpvCapability(5345);
+}
+impl SpvCapability {
+    pub const VulkanMemoryModelDeviceScope: SpvCapability = SpvCapability(5346);
+}
+impl SpvCapability {
+    pub const VulkanMemoryModelDeviceScopeKHR: SpvCapability = SpvCapability(5346);
+}
+impl SpvCapability {
+    pub const PhysicalStorageBufferAddresses: SpvCapability = SpvCapability(5347);
+}
+impl SpvCapability {
+    pub const PhysicalStorageBufferAddressesEXT: SpvCapability = SpvCapability(5347);
+}
+impl SpvCapability {
+    pub const ComputeDerivativeGroupLinearNV: SpvCapability = SpvCapability(5350);
+}
+impl SpvCapability {
+    pub const RayTracingProvisionalKHR: SpvCapability = SpvCapability(5353);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixNV: SpvCapability = SpvCapability(5357);
+}
+impl SpvCapability {
+    pub const FragmentShaderSampleInterlockEXT: SpvCapability = SpvCapability(5363);
+}
+impl SpvCapability {
+    pub const FragmentShaderShadingRateInterlockEXT: SpvCapability = SpvCapability(5372);
+}
+impl SpvCapability {
+    pub const ShaderSMBuiltinsNV: SpvCapability = SpvCapability(5373);
+}
+impl SpvCapability {
+    pub const FragmentShaderPixelInterlockEXT: SpvCapability = SpvCapability(5378);
+}
+impl SpvCapability {
+    pub const DemoteToHelperInvocation: SpvCapability = SpvCapability(5379);
+}
+impl SpvCapability {
+    pub const DemoteToHelperInvocationEXT: SpvCapability = SpvCapability(5379);
+}
+impl SpvCapability {
+    pub const BindlessTextureNV: SpvCapability = SpvCapability(5390);
+}
+impl SpvCapability {
+    pub const SubgroupShuffleINTEL: SpvCapability = SpvCapability(5568);
+}
+impl SpvCapability {
+    pub const SubgroupBufferBlockIOINTEL: SpvCapability = SpvCapability(5569);
+}
+impl SpvCapability {
+    pub const SubgroupImageBlockIOINTEL: SpvCapability = SpvCapability(5570);
+}
+impl SpvCapability {
+    pub const SubgroupImageMediaBlockIOINTEL: SpvCapability = SpvCapability(5579);
+}
+impl SpvCapability {
+    pub const RoundToInfinityINTEL: SpvCapability = SpvCapability(5582);
+}
+impl SpvCapability {
+    pub const FloatingPointModeINTEL: SpvCapability = SpvCapability(5583);
+}
+impl SpvCapability {
+    pub const IntegerFunctions2INTEL: SpvCapability = SpvCapability(5584);
+}
+impl SpvCapability {
+    pub const FunctionPointersINTEL: SpvCapability = SpvCapability(5603);
+}
+impl SpvCapability {
+    pub const IndirectReferencesINTEL: SpvCapability = SpvCapability(5604);
+}
+impl SpvCapability {
+    pub const AsmINTEL: SpvCapability = SpvCapability(5606);
+}
+impl SpvCapability {
+    pub const AtomicFloat32MinMaxEXT: SpvCapability = SpvCapability(5612);
+}
+impl SpvCapability {
+    pub const AtomicFloat64MinMaxEXT: SpvCapability = SpvCapability(5613);
+}
+impl SpvCapability {
+    pub const AtomicFloat16MinMaxEXT: SpvCapability = SpvCapability(5616);
+}
+impl SpvCapability {
+    pub const VectorComputeINTEL: SpvCapability = SpvCapability(5617);
+}
+impl SpvCapability {
+    pub const VectorAnyINTEL: SpvCapability = SpvCapability(5619);
+}
+impl SpvCapability {
+    pub const ExpectAssumeKHR: SpvCapability = SpvCapability(5629);
+}
+impl SpvCapability {
+    pub const SubgroupAvcMotionEstimationINTEL: SpvCapability = SpvCapability(5696);
+}
+impl SpvCapability {
+    pub const SubgroupAvcMotionEstimationIntraINTEL: SpvCapability = SpvCapability(5697);
+}
+impl SpvCapability {
+    pub const SubgroupAvcMotionEstimationChromaINTEL: SpvCapability = SpvCapability(5698);
+}
+impl SpvCapability {
+    pub const VariableLengthArrayINTEL: SpvCapability = SpvCapability(5817);
+}
+impl SpvCapability {
+    pub const FunctionFloatControlINTEL: SpvCapability = SpvCapability(5821);
+}
+impl SpvCapability {
+    pub const FPGAMemoryAttributesINTEL: SpvCapability = SpvCapability(5824);
+}
+impl SpvCapability {
+    pub const FPFastMathModeINTEL: SpvCapability = SpvCapability(5837);
+}
+impl SpvCapability {
+    pub const ArbitraryPrecisionIntegersINTEL: SpvCapability = SpvCapability(5844);
+}
+impl SpvCapability {
+    pub const ArbitraryPrecisionFloatingPointINTEL: SpvCapability = SpvCapability(5845);
+}
+impl SpvCapability {
+    pub const UnstructuredLoopControlsINTEL: SpvCapability = SpvCapability(5886);
+}
+impl SpvCapability {
+    pub const FPGALoopControlsINTEL: SpvCapability = SpvCapability(5888);
+}
+impl SpvCapability {
+    pub const KernelAttributesINTEL: SpvCapability = SpvCapability(5892);
+}
+impl SpvCapability {
+    pub const FPGAKernelAttributesINTEL: SpvCapability = SpvCapability(5897);
+}
+impl SpvCapability {
+    pub const FPGAMemoryAccessesINTEL: SpvCapability = SpvCapability(5898);
+}
+impl SpvCapability {
+    pub const FPGAClusterAttributesINTEL: SpvCapability = SpvCapability(5904);
+}
+impl SpvCapability {
+    pub const LoopFuseINTEL: SpvCapability = SpvCapability(5906);
+}
+impl SpvCapability {
+    pub const MemoryAccessAliasingINTEL: SpvCapability = SpvCapability(5910);
+}
+impl SpvCapability {
+    pub const FPGABufferLocationINTEL: SpvCapability = SpvCapability(5920);
+}
+impl SpvCapability {
+    pub const ArbitraryPrecisionFixedPointINTEL: SpvCapability = SpvCapability(5922);
+}
+impl SpvCapability {
+    pub const USMStorageClassesINTEL: SpvCapability = SpvCapability(5935);
+}
+impl SpvCapability {
+    pub const IOPipesINTEL: SpvCapability = SpvCapability(5943);
+}
+impl SpvCapability {
+    pub const BlockingPipesINTEL: SpvCapability = SpvCapability(5945);
+}
+impl SpvCapability {
+    pub const FPGARegINTEL: SpvCapability = SpvCapability(5948);
+}
+impl SpvCapability {
+    pub const DotProductInputAll: SpvCapability = SpvCapability(6016);
+}
+impl SpvCapability {
+    pub const DotProductInputAllKHR: SpvCapability = SpvCapability(6016);
+}
+impl SpvCapability {
+    pub const DotProductInput4x8Bit: SpvCapability = SpvCapability(6017);
+}
+impl SpvCapability {
+    pub const DotProductInput4x8BitKHR: SpvCapability = SpvCapability(6017);
+}
+impl SpvCapability {
+    pub const DotProductInput4x8BitPacked: SpvCapability = SpvCapability(6018);
+}
+impl SpvCapability {
+    pub const DotProductInput4x8BitPackedKHR: SpvCapability = SpvCapability(6018);
+}
+impl SpvCapability {
+    pub const DotProduct: SpvCapability = SpvCapability(6019);
+}
+impl SpvCapability {
+    pub const DotProductKHR: SpvCapability = SpvCapability(6019);
+}
+impl SpvCapability {
+    pub const RayCullMaskKHR: SpvCapability = SpvCapability(6020);
+}
+impl SpvCapability {
+    pub const BitInstructions: SpvCapability = SpvCapability(6025);
+}
+impl SpvCapability {
+    pub const GroupNonUniformRotateKHR: SpvCapability = SpvCapability(6026);
+}
+impl SpvCapability {
+    pub const AtomicFloat32AddEXT: SpvCapability = SpvCapability(6033);
+}
+impl SpvCapability {
+    pub const AtomicFloat64AddEXT: SpvCapability = SpvCapability(6034);
+}
+impl SpvCapability {
+    pub const LongConstantCompositeINTEL: SpvCapability = SpvCapability(6089);
+}
+impl SpvCapability {
+    pub const OptNoneINTEL: SpvCapability = SpvCapability(6094);
+}
+impl SpvCapability {
+    pub const AtomicFloat16AddEXT: SpvCapability = SpvCapability(6095);
+}
+impl SpvCapability {
+    pub const DebugInfoModuleINTEL: SpvCapability = SpvCapability(6114);
+}
+impl SpvCapability {
+    pub const SplitBarrierINTEL: SpvCapability = SpvCapability(6141);
+}
+impl SpvCapability {
+    pub const GroupUniformArithmeticKHR: SpvCapability = SpvCapability(6400);
+}
+impl SpvCapability {
+    pub const Max: SpvCapability = SpvCapability(2147483647);
+}
+#[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub enum SpvCapability {
-    Matrix = 0,
-    Shader = 1,
-    Geometry = 2,
-    Tessellation = 3,
-    Addresses = 4,
-    Linkage = 5,
-    Kernel = 6,
-    Vector16 = 7,
-    Float16Buffer = 8,
-    Float16 = 9,
-    Float64 = 10,
-    Int64 = 11,
-    Int64Atomics = 12,
-    ImageBasic = 13,
-    ImageReadWrite = 14,
-    ImageMipmap = 15,
-    Pipes = 17,
-    Groups = 18,
-    DeviceEnqueue = 19,
-    LiteralSampler = 20,
-    AtomicStorage = 21,
-    Int16 = 22,
-    TessellationPointSize = 23,
-    GeometryPointSize = 24,
-    ImageGatherExtended = 25,
-    StorageImageMultisample = 27,
-    UniformBufferArrayDynamicIndexing = 28,
-    SampledImageArrayDynamicIndexing = 29,
-    StorageBufferArrayDynamicIndexing = 30,
-    StorageImageArrayDynamicIndexing = 31,
-    ClipDistance = 32,
-    CullDistance = 33,
-    ImageCubeArray = 34,
-    SampleRateShading = 35,
-    ImageRect = 36,
-    SampledRect = 37,
-    GenericPointer = 38,
-    Int8 = 39,
-    InputAttachment = 40,
-    SparseResidency = 41,
-    MinLod = 42,
-    Sampled1D = 43,
-    Image1D = 44,
-    SampledCubeArray = 45,
-    SampledBuffer = 46,
-    ImageBuffer = 47,
-    ImageMSArray = 48,
-    StorageImageExtendedFormats = 49,
-    ImageQuery = 50,
-    DerivativeControl = 51,
-    InterpolationFunction = 52,
-    TransformFeedback = 53,
-    GeometryStreams = 54,
-    StorageImageReadWithoutFormat = 55,
-    StorageImageWriteWithoutFormat = 56,
-    MultiViewport = 57,
-    SubgroupDispatch = 58,
-    NamedBarrier = 59,
-    PipeStorage = 60,
-    GroupNonUniform = 61,
-    GroupNonUniformVote = 62,
-    GroupNonUniformArithmetic = 63,
-    GroupNonUniformBallot = 64,
-    GroupNonUniformShuffle = 65,
-    GroupNonUniformShuffleRelative = 66,
-    GroupNonUniformClustered = 67,
-    GroupNonUniformQuad = 68,
-    ShaderLayer = 69,
-    ShaderViewportIndex = 70,
-    UniformDecoration = 71,
-    FragmentShadingRateKHR = 4422,
-    SubgroupBallotKHR = 4423,
-    DrawParameters = 4427,
-    WorkgroupMemoryExplicitLayoutKHR = 4428,
-    WorkgroupMemoryExplicitLayout8BitAccessKHR = 4429,
-    WorkgroupMemoryExplicitLayout16BitAccessKHR = 4430,
-    SubgroupVoteKHR = 4431,
-    StorageBuffer16BitAccess = 4433,
-    StorageUniform16 = 4434,
-    StoragePushConstant16 = 4435,
-    StorageInputOutput16 = 4436,
-    DeviceGroup = 4437,
-    MultiView = 4439,
-    VariablePointersStorageBuffer = 4441,
-    VariablePointers = 4442,
-    AtomicStorageOps = 4445,
-    SampleMaskPostDepthCoverage = 4447,
-    StorageBuffer8BitAccess = 4448,
-    UniformAndStorageBuffer8BitAccess = 4449,
-    StoragePushConstant8 = 4450,
-    DenormPreserve = 4464,
-    DenormFlushToZero = 4465,
-    SignedZeroInfNanPreserve = 4466,
-    RoundingModeRTE = 4467,
-    RoundingModeRTZ = 4468,
-    RayQueryProvisionalKHR = 4471,
-    RayQueryKHR = 4472,
-    RayTraversalPrimitiveCullingKHR = 4478,
-    RayTracingKHR = 4479,
-    TextureSampleWeightedQCOM = 4484,
-    TextureBoxFilterQCOM = 4485,
-    TextureBlockMatchQCOM = 4486,
-    Float16ImageAMD = 5008,
-    ImageGatherBiasLodAMD = 5009,
-    FragmentMaskAMD = 5010,
-    StencilExportEXT = 5013,
-    ImageReadWriteLodAMD = 5015,
-    Int64ImageEXT = 5016,
-    ShaderClockKHR = 5055,
-    SampleMaskOverrideCoverageNV = 5249,
-    GeometryShaderPassthroughNV = 5251,
-    ShaderViewportIndexLayerEXT = 5254,
-    ShaderViewportMaskNV = 5255,
-    ShaderStereoViewNV = 5259,
-    PerViewAttributesNV = 5260,
-    FragmentFullyCoveredEXT = 5265,
-    MeshShadingNV = 5266,
-    ImageFootprintNV = 5282,
-    MeshShadingEXT = 5283,
-    FragmentBarycentricKHR = 5284,
-    ComputeDerivativeGroupQuadsNV = 5288,
-    FragmentDensityEXT = 5291,
-    GroupNonUniformPartitionedNV = 5297,
-    ShaderNonUniform = 5301,
-    RuntimeDescriptorArray = 5302,
-    InputAttachmentArrayDynamicIndexing = 5303,
-    UniformTexelBufferArrayDynamicIndexing = 5304,
-    StorageTexelBufferArrayDynamicIndexing = 5305,
-    UniformBufferArrayNonUniformIndexing = 5306,
-    SampledImageArrayNonUniformIndexing = 5307,
-    StorageBufferArrayNonUniformIndexing = 5308,
-    StorageImageArrayNonUniformIndexing = 5309,
-    InputAttachmentArrayNonUniformIndexing = 5310,
-    UniformTexelBufferArrayNonUniformIndexing = 5311,
-    StorageTexelBufferArrayNonUniformIndexing = 5312,
-    RayTracingNV = 5340,
-    RayTracingMotionBlurNV = 5341,
-    VulkanMemoryModel = 5345,
-    VulkanMemoryModelDeviceScope = 5346,
-    PhysicalStorageBufferAddresses = 5347,
-    ComputeDerivativeGroupLinearNV = 5350,
-    RayTracingProvisionalKHR = 5353,
-    CooperativeMatrixNV = 5357,
-    FragmentShaderSampleInterlockEXT = 5363,
-    FragmentShaderShadingRateInterlockEXT = 5372,
-    ShaderSMBuiltinsNV = 5373,
-    FragmentShaderPixelInterlockEXT = 5378,
-    DemoteToHelperInvocation = 5379,
-    BindlessTextureNV = 5390,
-    SubgroupShuffleINTEL = 5568,
-    SubgroupBufferBlockIOINTEL = 5569,
-    SubgroupImageBlockIOINTEL = 5570,
-    SubgroupImageMediaBlockIOINTEL = 5579,
-    RoundToInfinityINTEL = 5582,
-    FloatingPointModeINTEL = 5583,
-    IntegerFunctions2INTEL = 5584,
-    FunctionPointersINTEL = 5603,
-    IndirectReferencesINTEL = 5604,
-    AsmINTEL = 5606,
-    AtomicFloat32MinMaxEXT = 5612,
-    AtomicFloat64MinMaxEXT = 5613,
-    AtomicFloat16MinMaxEXT = 5616,
-    VectorComputeINTEL = 5617,
-    VectorAnyINTEL = 5619,
-    ExpectAssumeKHR = 5629,
-    SubgroupAvcMotionEstimationINTEL = 5696,
-    SubgroupAvcMotionEstimationIntraINTEL = 5697,
-    SubgroupAvcMotionEstimationChromaINTEL = 5698,
-    VariableLengthArrayINTEL = 5817,
-    FunctionFloatControlINTEL = 5821,
-    FPGAMemoryAttributesINTEL = 5824,
-    FPFastMathModeINTEL = 5837,
-    ArbitraryPrecisionIntegersINTEL = 5844,
-    ArbitraryPrecisionFloatingPointINTEL = 5845,
-    UnstructuredLoopControlsINTEL = 5886,
-    FPGALoopControlsINTEL = 5888,
-    KernelAttributesINTEL = 5892,
-    FPGAKernelAttributesINTEL = 5897,
-    FPGAMemoryAccessesINTEL = 5898,
-    FPGAClusterAttributesINTEL = 5904,
-    LoopFuseINTEL = 5906,
-    MemoryAccessAliasingINTEL = 5910,
-    FPGABufferLocationINTEL = 5920,
-    ArbitraryPrecisionFixedPointINTEL = 5922,
-    USMStorageClassesINTEL = 5935,
-    IOPipesINTEL = 5943,
-    BlockingPipesINTEL = 5945,
-    FPGARegINTEL = 5948,
-    DotProductInputAll = 6016,
-    DotProductInput4x8Bit = 6017,
-    DotProductInput4x8BitPacked = 6018,
-    DotProduct = 6019,
-    RayCullMaskKHR = 6020,
-    BitInstructions = 6025,
-    GroupNonUniformRotateKHR = 6026,
-    AtomicFloat32AddEXT = 6033,
-    AtomicFloat64AddEXT = 6034,
-    LongConstantCompositeINTEL = 6089,
-    OptNoneINTEL = 6094,
-    AtomicFloat16AddEXT = 6095,
-    DebugInfoModuleINTEL = 6114,
-    SplitBarrierINTEL = 6141,
-    GroupUniformArithmeticKHR = 6400,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvRayFlagsShift {
-    SpvRayFlagsOpaqueKHRShift = 0,
-    SpvRayFlagsNoOpaqueKHRShift = 1,
-    SpvRayFlagsTerminateOnFirstHitKHRShift = 2,
-    SpvRayFlagsSkipClosestHitShaderKHRShift = 3,
-    SpvRayFlagsCullBackFacingTrianglesKHRShift = 4,
-    SpvRayFlagsCullFrontFacingTrianglesKHRShift = 5,
-    SpvRayFlagsCullOpaqueKHRShift = 6,
-    SpvRayFlagsCullNoOpaqueKHRShift = 7,
-    SpvRayFlagsSkipTrianglesKHRShift = 8,
-    SpvRayFlagsSkipAABBsKHRShift = 9,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvRayFlagsMask {
-    None = 0,
-    SpvRayFlagsOpaqueKHRMask = 1,
-    SpvRayFlagsNoOpaqueKHRMask = 2,
-    SpvRayFlagsTerminateOnFirstHitKHRMask = 4,
-    SpvRayFlagsSkipClosestHitShaderKHRMask = 8,
-    SpvRayFlagsCullBackFacingTrianglesKHRMask = 16,
-    SpvRayFlagsCullFrontFacingTrianglesKHRMask = 32,
-    SpvRayFlagsCullOpaqueKHRMask = 64,
-    SpvRayFlagsCullNoOpaqueKHRMask = 128,
-    SpvRayFlagsSkipTrianglesKHRMask = 256,
-    SpvRayFlagsSkipAABBsKHRMask = 512,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvRayQueryIntersection {
-    RayQueryCandidateIntersectionKHR = 0,
-    RayQueryCommittedIntersectionKHR = 1,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvRayQueryCommittedIntersectionType {
-    RayQueryCommittedIntersectionNoneKHR = 0,
-    RayQueryCommittedIntersectionTriangleKHR = 1,
-    RayQueryCommittedIntersectionGeneratedKHR = 2,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvRayQueryCandidateIntersectionType {
-    RayQueryCandidateIntersectionTriangleKHR = 0,
-    RayQueryCandidateIntersectionAABBKHR = 1,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFragmentShadingRateShift {
-    SpvFragmentShadingRateVertical2PixelsShift = 0,
-    SpvFragmentShadingRateVertical4PixelsShift = 1,
-    SpvFragmentShadingRateHorizontal2PixelsShift = 2,
-    SpvFragmentShadingRateHorizontal4PixelsShift = 3,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFragmentShadingRateMask {
-    None = 0,
-    SpvFragmentShadingRateVertical2PixelsMask = 1,
-    SpvFragmentShadingRateVertical4PixelsMask = 2,
-    SpvFragmentShadingRateHorizontal2PixelsMask = 4,
-    SpvFragmentShadingRateHorizontal4PixelsMask = 8,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFPDenormMode {
-    Preserve = 0,
-    FlushToZero = 1,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvFPOperationMode {
-    IEEE = 0,
-    ALT = 1,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvQuantizationModes {
-    TRN = 0,
-    TRN_ZERO = 1,
-    RND = 2,
-    RND_ZERO = 3,
-    RND_INF = 4,
-    RND_MIN_INF = 5,
-    RND_CONV = 6,
-    RND_CONV_ODD = 7,
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvOverflowModes {
-    WRAP = 0,
-    SAT = 1,
-    SAT_ZERO = 2,
-    SAT_SYM = 3,
-}
-impl SpvPackedVectorFormat {
-    pub const PackedVectorFormat4x8BitKHR: SpvPackedVectorFormat =
-        SpvPackedVectorFormat::PackedVectorFormat4x8Bit;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvPackedVectorFormat {
-    PackedVectorFormat4x8Bit = 0,
-}
-impl SpvOp {
-    pub const SDotKHR: SpvOp = SpvOp::SDot;
-}
-impl SpvOp {
-    pub const UDotKHR: SpvOp = SpvOp::UDot;
-}
-impl SpvOp {
-    pub const SUDotKHR: SpvOp = SpvOp::SUDot;
-}
-impl SpvOp {
-    pub const SDotAccSatKHR: SpvOp = SpvOp::SDotAccSat;
-}
-impl SpvOp {
-    pub const UDotAccSatKHR: SpvOp = SpvOp::UDotAccSat;
-}
-impl SpvOp {
-    pub const SUDotAccSatKHR: SpvOp = SpvOp::SUDotAccSat;
-}
-impl SpvOp {
-    pub const ReportIntersectionNV: SpvOp = SpvOp::ReportIntersectionKHR;
-}
-impl SpvOp {
-    pub const TypeAccelerationStructureNV: SpvOp = SpvOp::TypeAccelerationStructureKHR;
-}
-impl SpvOp {
-    pub const DemoteToHelperInvocationEXT: SpvOp = SpvOp::DemoteToHelperInvocation;
-}
-impl SpvOp {
-    pub const DecorateStringGOOGLE: SpvOp = SpvOp::DecorateString;
-}
-impl SpvOp {
-    pub const MemberDecorateStringGOOGLE: SpvOp = SpvOp::MemberDecorateString;
-}
-#[repr(i32)]
-#[non_exhaustive]
-#[derive(
-    Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
-)]
-pub enum SpvOp {
-    Nop = 0,
-    Undef = 1,
-    SourceContinued = 2,
-    Source = 3,
-    SourceExtension = 4,
-    Name = 5,
-    MemberName = 6,
-    String = 7,
-    Line = 8,
-    Extension = 10,
-    ExtInstImport = 11,
-    ExtInst = 12,
-    MemoryModel = 14,
-    EntryPoint = 15,
-    ExecutionMode = 16,
-    Capability = 17,
-    TypeVoid = 19,
-    TypeBool = 20,
-    TypeInt = 21,
-    TypeFloat = 22,
-    TypeVector = 23,
-    TypeMatrix = 24,
-    TypeImage = 25,
-    TypeSampler = 26,
-    TypeSampledImage = 27,
-    TypeArray = 28,
-    TypeRuntimeArray = 29,
-    TypeStruct = 30,
-    TypeOpaque = 31,
-    TypePointer = 32,
-    TypeFunction = 33,
-    TypeEvent = 34,
-    TypeDeviceEvent = 35,
-    TypeReserveId = 36,
-    TypeQueue = 37,
-    TypePipe = 38,
-    TypeForwardPointer = 39,
-    ConstantTrue = 41,
-    ConstantFalse = 42,
-    Constant = 43,
-    ConstantComposite = 44,
-    ConstantSampler = 45,
-    ConstantNull = 46,
-    SpecConstantTrue = 48,
-    SpecConstantFalse = 49,
-    SpecConstant = 50,
-    SpecConstantComposite = 51,
-    SpecConstantOp = 52,
-    Function = 54,
-    FunctionParameter = 55,
-    FunctionEnd = 56,
-    FunctionCall = 57,
-    Variable = 59,
-    ImageTexelPointer = 60,
-    Load = 61,
-    Store = 62,
-    CopyMemory = 63,
-    CopyMemorySized = 64,
-    AccessChain = 65,
-    InBoundsAccessChain = 66,
-    PtrAccessChain = 67,
-    ArrayLength = 68,
-    GenericPtrMemSemantics = 69,
-    InBoundsPtrAccessChain = 70,
-    Decorate = 71,
-    MemberDecorate = 72,
-    DecorationGroup = 73,
-    GroupDecorate = 74,
-    GroupMemberDecorate = 75,
-    VectorExtractDynamic = 77,
-    VectorInsertDynamic = 78,
-    VectorShuffle = 79,
-    CompositeConstruct = 80,
-    CompositeExtract = 81,
-    CompositeInsert = 82,
-    CopyObject = 83,
-    Transpose = 84,
-    SampledImage = 86,
-    ImageSampleImplicitLod = 87,
-    ImageSampleExplicitLod = 88,
-    ImageSampleDrefImplicitLod = 89,
-    ImageSampleDrefExplicitLod = 90,
-    ImageSampleProjImplicitLod = 91,
-    ImageSampleProjExplicitLod = 92,
-    ImageSampleProjDrefImplicitLod = 93,
-    ImageSampleProjDrefExplicitLod = 94,
-    ImageFetch = 95,
-    ImageGather = 96,
-    ImageDrefGather = 97,
-    ImageRead = 98,
-    ImageWrite = 99,
-    Image = 100,
-    ImageQueryFormat = 101,
-    ImageQueryOrder = 102,
-    ImageQuerySizeLod = 103,
-    ImageQuerySize = 104,
-    ImageQueryLod = 105,
-    ImageQueryLevels = 106,
-    ImageQuerySamples = 107,
-    ConvertFToU = 109,
-    ConvertFToS = 110,
-    ConvertSToF = 111,
-    ConvertUToF = 112,
-    UConvert = 113,
-    SConvert = 114,
-    FConvert = 115,
-    QuantizeToF16 = 116,
-    ConvertPtrToU = 117,
-    SatConvertSToU = 118,
-    SatConvertUToS = 119,
-    ConvertUToPtr = 120,
-    PtrCastToGeneric = 121,
-    GenericCastToPtr = 122,
-    GenericCastToPtrExplicit = 123,
-    Bitcast = 124,
-    SNegate = 126,
-    FNegate = 127,
-    IAdd = 128,
-    FAdd = 129,
-    ISub = 130,
-    FSub = 131,
-    IMul = 132,
-    FMul = 133,
-    UDiv = 134,
-    SDiv = 135,
-    FDiv = 136,
-    UMod = 137,
-    SRem = 138,
-    SMod = 139,
-    FRem = 140,
-    FMod = 141,
-    VectorTimesScalar = 142,
-    MatrixTimesScalar = 143,
-    VectorTimesMatrix = 144,
-    MatrixTimesVector = 145,
-    MatrixTimesMatrix = 146,
-    OuterProduct = 147,
-    Dot = 148,
-    IAddCarry = 149,
-    ISubBorrow = 150,
-    UMulExtended = 151,
-    SMulExtended = 152,
-    Any = 154,
-    All = 155,
-    IsNan = 156,
-    IsInf = 157,
-    IsFinite = 158,
-    IsNormal = 159,
-    SignBitSet = 160,
-    LessOrGreater = 161,
-    Ordered = 162,
-    Unordered = 163,
-    LogicalEqual = 164,
-    LogicalNotEqual = 165,
-    LogicalOr = 166,
-    LogicalAnd = 167,
-    LogicalNot = 168,
-    Select = 169,
-    IEqual = 170,
-    INotEqual = 171,
-    UGreaterThan = 172,
-    SGreaterThan = 173,
-    UGreaterThanEqual = 174,
-    SGreaterThanEqual = 175,
-    ULessThan = 176,
-    SLessThan = 177,
-    ULessThanEqual = 178,
-    SLessThanEqual = 179,
-    FOrdEqual = 180,
-    FUnordEqual = 181,
-    FOrdNotEqual = 182,
-    FUnordNotEqual = 183,
-    FOrdLessThan = 184,
-    FUnordLessThan = 185,
-    FOrdGreaterThan = 186,
-    FUnordGreaterThan = 187,
-    FOrdLessThanEqual = 188,
-    FUnordLessThanEqual = 189,
-    FOrdGreaterThanEqual = 190,
-    FUnordGreaterThanEqual = 191,
-    ShiftRightLogical = 194,
-    ShiftRightArithmetic = 195,
-    ShiftLeftLogical = 196,
-    BitwiseOr = 197,
-    BitwiseXor = 198,
-    BitwiseAnd = 199,
-    Not = 200,
-    BitFieldInsert = 201,
-    BitFieldSExtract = 202,
-    BitFieldUExtract = 203,
-    BitReverse = 204,
-    BitCount = 205,
-    DPdx = 207,
-    DPdy = 208,
-    Fwidth = 209,
-    DPdxFine = 210,
-    DPdyFine = 211,
-    FwidthFine = 212,
-    DPdxCoarse = 213,
-    DPdyCoarse = 214,
-    FwidthCoarse = 215,
-    EmitVertex = 218,
-    EndPrimitive = 219,
-    EmitStreamVertex = 220,
-    EndStreamPrimitive = 221,
-    ControlBarrier = 224,
-    MemoryBarrier = 225,
-    AtomicLoad = 227,
-    AtomicStore = 228,
-    AtomicExchange = 229,
-    AtomicCompareExchange = 230,
-    AtomicCompareExchangeWeak = 231,
-    AtomicIIncrement = 232,
-    AtomicIDecrement = 233,
-    AtomicIAdd = 234,
-    AtomicISub = 235,
-    AtomicSMin = 236,
-    AtomicUMin = 237,
-    AtomicAnd = 240,
-    AtomicOr = 241,
-    AtomicXor = 242,
-    Phi = 245,
-    LoopMerge = 246,
-    SelectionMerge = 247,
-    Label = 248,
-    Branch = 249,
-    BranchConditional = 250,
-    Switch = 251,
-    Kill = 252,
-    Return = 253,
-    ReturnValue = 254,
-    Unreachable = 255,
-    LifetimeStart = 256,
-    LifetimeStop = 257,
-    GroupAsyncCopy = 259,
-    GroupWaitEvents = 260,
-    GroupAll = 261,
-    GroupAny = 262,
-    GroupBroadcast = 263,
-    GroupIAdd = 264,
-    GroupFAdd = 265,
-    GroupFMin = 266,
-    GroupUMin = 267,
-    GroupSMin = 268,
-    ReadPipe = 274,
-    WritePipe = 275,
-    ReservedReadPipe = 276,
-    ReservedWritePipe = 277,
-    ReserveReadPipePackets = 278,
-    ReserveWritePipePackets = 279,
-    CommitReadPipe = 280,
-    CommitWritePipe = 281,
-    IsValidReserveId = 282,
-    GetNumPipePackets = 283,
-    GetMaxPipePackets = 284,
-    GroupReserveReadPipePackets = 285,
-    GroupReserveWritePipePackets = 286,
-    GroupCommitReadPipe = 287,
-    GroupCommitWritePipe = 288,
-    EnqueueMarker = 291,
-    EnqueueKernel = 292,
-    GetKernelNDrangeSubGroupCount = 293,
-    GetKernelNDrangeMaxSubGroupSize = 294,
-    GetKernelWorkGroupSize = 295,
-    GetKernelPreferredWorkGroupSizeMultiple = 296,
-    RetainEvent = 297,
-    ReleaseEvent = 298,
-    CreateUserEvent = 299,
-    IsValidEvent = 300,
-    SetUserEventStatus = 301,
-    CaptureEventProfilingInfo = 302,
-    GetDefaultQueue = 303,
-    BuildNDRange = 304,
-    ImageSparseSampleImplicitLod = 305,
-    ImageSparseSampleExplicitLod = 306,
-    ImageSparseSampleDrefImplicitLod = 307,
-    ImageSparseSampleDrefExplicitLod = 308,
-    ImageSparseSampleProjImplicitLod = 309,
-    ImageSparseSampleProjExplicitLod = 310,
-    ImageSparseSampleProjDrefImplicitLod = 311,
-    ImageSparseSampleProjDrefExplicitLod = 312,
-    ImageSparseFetch = 313,
-    ImageSparseGather = 314,
-    ImageSparseDrefGather = 315,
-    ImageSparseTexelsResident = 316,
-    NoLine = 317,
-    AtomicFlagTestAndSet = 318,
-    AtomicFlagClear = 319,
-    ImageSparseRead = 320,
-    SizeOf = 321,
-    TypePipeStorage = 322,
-    ConstantPipeStorage = 323,
-    CreatePipeFromPipeStorage = 324,
-    GetKernelLocalSizeForSubgroupCount = 325,
-    GetKernelMaxNumSubgroups = 326,
-    TypeNamedBarrier = 327,
-    NamedBarrierInitialize = 328,
-    MemoryNamedBarrier = 329,
-    ModuleProcessed = 330,
-    ExecutionModeId = 331,
-    DecorateId = 332,
-    GroupNonUniformElect = 333,
-    GroupNonUniformAll = 334,
-    GroupNonUniformAny = 335,
-    GroupNonUniformAllEqual = 336,
-    GroupNonUniformBroadcast = 337,
-    GroupNonUniformBroadcastFirst = 338,
-    GroupNonUniformBallot = 339,
-    GroupNonUniformInverseBallot = 340,
-    GroupNonUniformBallotBitExtract = 341,
-    GroupNonUniformBallotBitCount = 342,
-    GroupNonUniformBallotFindLSB = 343,
-    GroupNonUniformBallotFindMSB = 344,
-    GroupNonUniformShuffle = 345,
-    GroupNonUniformShuffleXor = 346,
-    GroupNonUniformShuffleUp = 347,
-    GroupNonUniformShuffleDown = 348,
-    GroupNonUniformIAdd = 349,
-    GroupNonUniformFAdd = 350,
-    GroupNonUniformIMul = 351,
-    GroupNonUniformFMul = 352,
-    GroupNonUniformSMin = 353,
-    GroupNonUniformUMin = 354,
-    GroupNonUniformFMin = 355,
-    GroupNonUniformBitwiseAnd = 359,
-    GroupNonUniformBitwiseOr = 360,
-    GroupNonUniformBitwiseXor = 361,
-    GroupNonUniformLogicalAnd = 362,
-    GroupNonUniformLogicalOr = 363,
-    GroupNonUniformLogicalXor = 364,
-    GroupNonUniformQuadBroadcast = 365,
-    GroupNonUniformQuadSwap = 366,
-    CopyLogical = 400,
-    PtrEqual = 401,
-    PtrNotEqual = 402,
-    PtrDiff = 403,
-    TerminateInvocation = 4416,
-    SubgroupBallotKHR = 4421,
-    SubgroupFirstInvocationKHR = 4422,
-    SubgroupAllKHR = 4428,
-    SubgroupAnyKHR = 4429,
-    SubgroupAllEqualKHR = 4430,
-    GroupNonUniformRotateKHR = 4431,
-    SubgroupReadInvocationKHR = 4432,
-    TraceRayKHR = 4445,
-    ExecuteCallableKHR = 4446,
-    ConvertUToAccelerationStructureKHR = 4447,
-    IgnoreIntersectionKHR = 4448,
-    TerminateRayKHR = 4449,
-    SDot = 4450,
-    UDot = 4451,
-    SUDot = 4452,
-    SDotAccSat = 4453,
-    UDotAccSat = 4454,
-    SUDotAccSat = 4455,
-    TypeRayQueryKHR = 4472,
-    RayQueryInitializeKHR = 4473,
-    RayQueryTerminateKHR = 4474,
-    RayQueryGenerateIntersectionKHR = 4475,
-    RayQueryConfirmIntersectionKHR = 4476,
-    RayQueryProceedKHR = 4477,
-    RayQueryGetIntersectionTypeKHR = 4479,
-    ImageSampleWeightedQCOM = 4480,
-    ImageBoxFilterQCOM = 4481,
-    ImageBlockMatchSSDQCOM = 4482,
-    ImageBlockMatchSADQCOM = 4483,
-    GroupIAddNonUniformAMD = 5000,
-    GroupFAddNonUniformAMD = 5001,
-    GroupFMinNonUniformAMD = 5002,
-    GroupUMinNonUniformAMD = 5003,
-    GroupSMinNonUniformAMD = 5004,
-    GroupFMaxNonUniformAMD = 5005,
-    GroupUMaxNonUniformAMD = 5006,
-    GroupSMaxNonUniformAMD = 5007,
-    FragmentMaskFetchAMD = 5011,
-    FragmentFetchAMD = 5012,
-    ReadClockKHR = 5056,
-    ImageSampleFootprintNV = 5283,
-    EmitMeshTasksEXT = 5294,
-    SetMeshOutputsEXT = 5295,
-    GroupNonUniformPartitionNV = 5296,
-    WritePackedPrimitiveIndices4x8NV = 5299,
-    ReportIntersectionKHR = 5334,
-    IgnoreIntersectionNV = 5335,
-    TerminateRayNV = 5336,
-    TraceNV = 5337,
-    TraceMotionNV = 5338,
-    TraceRayMotionNV = 5339,
-    TypeAccelerationStructureKHR = 5341,
-    ExecuteCallableNV = 5344,
-    TypeCooperativeMatrixNV = 5358,
-    CooperativeMatrixLoadNV = 5359,
-    CooperativeMatrixStoreNV = 5360,
-    CooperativeMatrixMulAddNV = 5361,
-    CooperativeMatrixLengthNV = 5362,
-    BeginInvocationInterlockEXT = 5364,
-    EndInvocationInterlockEXT = 5365,
-    DemoteToHelperInvocation = 5380,
-    IsHelperInvocationEXT = 5381,
-    ConvertUToImageNV = 5391,
-    ConvertUToSamplerNV = 5392,
-    ConvertImageToUNV = 5393,
-    ConvertSamplerToUNV = 5394,
-    ConvertUToSampledImageNV = 5395,
-    ConvertSampledImageToUNV = 5396,
-    SamplerImageAddressingModeNV = 5397,
-    SubgroupShuffleINTEL = 5571,
-    SubgroupShuffleDownINTEL = 5572,
-    SubgroupShuffleUpINTEL = 5573,
-    SubgroupShuffleXorINTEL = 5574,
-    SubgroupBlockReadINTEL = 5575,
-    SubgroupBlockWriteINTEL = 5576,
-    SubgroupImageBlockReadINTEL = 5577,
-    SubgroupImageBlockWriteINTEL = 5578,
-    SubgroupImageMediaBlockReadINTEL = 5580,
-    SubgroupImageMediaBlockWriteINTEL = 5581,
-    UCountLeadingZerosINTEL = 5585,
-    UCountTrailingZerosINTEL = 5586,
-    AbsISubINTEL = 5587,
-    AbsUSubINTEL = 5588,
-    IAddSatINTEL = 5589,
-    UAddSatINTEL = 5590,
-    IAverageINTEL = 5591,
-    UAverageINTEL = 5592,
-    IAverageRoundedINTEL = 5593,
-    UAverageRoundedINTEL = 5594,
-    ISubSatINTEL = 5595,
-    USubSatINTEL = 5596,
-    IMul32x16INTEL = 5597,
-    UMul32x16INTEL = 5598,
-    ConstantFunctionPointerINTEL = 5600,
-    FunctionPointerCallINTEL = 5601,
-    AsmTargetINTEL = 5609,
-    AsmINTEL = 5610,
-    AsmCallINTEL = 5611,
-    AtomicFMinEXT = 5614,
-    AtomicFMaxEXT = 5615,
-    AssumeTrueKHR = 5630,
-    ExpectKHR = 5631,
-    DecorateString = 5632,
-    MemberDecorateString = 5633,
-    VmeImageINTEL = 5699,
-    TypeVmeImageINTEL = 5700,
-    TypeAvcImePayloadINTEL = 5701,
-    TypeAvcRefPayloadINTEL = 5702,
-    TypeAvcSicPayloadINTEL = 5703,
-    TypeAvcMcePayloadINTEL = 5704,
-    TypeAvcMceResultINTEL = 5705,
-    TypeAvcImeResultINTEL = 5706,
-    TypeAvcImeResultSingleReferenceStreamoutINTEL = 5707,
-    TypeAvcImeResultDualReferenceStreamoutINTEL = 5708,
-    TypeAvcImeSingleReferenceStreaminINTEL = 5709,
-    TypeAvcImeDualReferenceStreaminINTEL = 5710,
-    TypeAvcRefResultINTEL = 5711,
-    TypeAvcSicResultINTEL = 5712,
-    SubgroupAvcMceGetDefaultInterBaseMultiReferencePenaltyINTEL = 5713,
-    SubgroupAvcMceSetInterBaseMultiReferencePenaltyINTEL = 5714,
-    SubgroupAvcMceGetDefaultInterShapePenaltyINTEL = 5715,
-    SubgroupAvcMceSetInterShapePenaltyINTEL = 5716,
-    SubgroupAvcMceGetDefaultInterDirectionPenaltyINTEL = 5717,
-    SubgroupAvcMceSetInterDirectionPenaltyINTEL = 5718,
-    SubgroupAvcMceGetDefaultIntraLumaShapePenaltyINTEL = 5719,
-    SubgroupAvcMceGetDefaultInterMotionVectorCostTableINTEL = 5720,
-    SubgroupAvcMceGetDefaultHighPenaltyCostTableINTEL = 5721,
-    SubgroupAvcMceGetDefaultMediumPenaltyCostTableINTEL = 5722,
-    SubgroupAvcMceGetDefaultLowPenaltyCostTableINTEL = 5723,
-    SubgroupAvcMceSetMotionVectorCostFunctionINTEL = 5724,
-    SubgroupAvcMceGetDefaultIntraLumaModePenaltyINTEL = 5725,
-    SubgroupAvcMceGetDefaultNonDcLumaIntraPenaltyINTEL = 5726,
-    SubgroupAvcMceGetDefaultIntraChromaModeBasePenaltyINTEL = 5727,
-    SubgroupAvcMceSetAcOnlyHaarINTEL = 5728,
-    SubgroupAvcMceSetSourceInterlacedFieldPolarityINTEL = 5729,
-    SubgroupAvcMceSetSingleReferenceInterlacedFieldPolarityINTEL = 5730,
-    SubgroupAvcMceSetDualReferenceInterlacedFieldPolaritiesINTEL = 5731,
-    SubgroupAvcMceConvertToImePayloadINTEL = 5732,
-    SubgroupAvcMceConvertToImeResultINTEL = 5733,
-    SubgroupAvcMceConvertToRefPayloadINTEL = 5734,
-    SubgroupAvcMceConvertToRefResultINTEL = 5735,
-    SubgroupAvcMceConvertToSicPayloadINTEL = 5736,
-    SubgroupAvcMceConvertToSicResultINTEL = 5737,
-    SubgroupAvcMceGetMotionVectorsINTEL = 5738,
-    SubgroupAvcMceGetInterDistortionsINTEL = 5739,
-    SubgroupAvcMceGetBestInterDistortionsINTEL = 5740,
-    SubgroupAvcMceGetInterMajorShapeINTEL = 5741,
-    SubgroupAvcMceGetInterMinorShapeINTEL = 5742,
-    SubgroupAvcMceGetInterDirectionsINTEL = 5743,
-    SubgroupAvcMceGetInterMotionVectorCountINTEL = 5744,
-    SubgroupAvcMceGetInterReferenceIdsINTEL = 5745,
-    SubgroupAvcMceGetInterReferenceInterlacedFieldPolaritiesINTEL = 5746,
-    SubgroupAvcImeInitializeINTEL = 5747,
-    SubgroupAvcImeSetSingleReferenceINTEL = 5748,
-    SubgroupAvcImeSetDualReferenceINTEL = 5749,
-    SubgroupAvcImeRefWindowSizeINTEL = 5750,
-    SubgroupAvcImeAdjustRefOffsetINTEL = 5751,
-    SubgroupAvcImeConvertToMcePayloadINTEL = 5752,
-    SubgroupAvcImeSetMaxMotionVectorCountINTEL = 5753,
-    SubgroupAvcImeSetUnidirectionalMixDisableINTEL = 5754,
-    SubgroupAvcImeSetEarlySearchTerminationThresholdINTEL = 5755,
-    SubgroupAvcImeSetWeightedSadINTEL = 5756,
-    SubgroupAvcImeEvaluateWithSingleReferenceINTEL = 5757,
-    SubgroupAvcImeEvaluateWithDualReferenceINTEL = 5758,
-    SubgroupAvcImeEvaluateWithSingleReferenceStreaminINTEL = 5759,
-    SubgroupAvcImeEvaluateWithDualReferenceStreaminINTEL = 5760,
-    SubgroupAvcImeEvaluateWithSingleReferenceStreamoutINTEL = 5761,
-    SubgroupAvcImeEvaluateWithDualReferenceStreamoutINTEL = 5762,
-    SubgroupAvcImeEvaluateWithSingleReferenceStreaminoutINTEL = 5763,
-    SubgroupAvcImeEvaluateWithDualReferenceStreaminoutINTEL = 5764,
-    SubgroupAvcImeConvertToMceResultINTEL = 5765,
-    SubgroupAvcImeGetSingleReferenceStreaminINTEL = 5766,
-    SubgroupAvcImeGetDualReferenceStreaminINTEL = 5767,
-    SubgroupAvcImeStripSingleReferenceStreamoutINTEL = 5768,
-    SubgroupAvcImeStripDualReferenceStreamoutINTEL = 5769,
-    SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeMotionVectorsINTEL = 5770,
-    SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeDistortionsINTEL = 5771,
-    SubgroupAvcImeGetStreamoutSingleReferenceMajorShapeReferenceIdsINTEL = 5772,
-    SubgroupAvcImeGetStreamoutDualReferenceMajorShapeMotionVectorsINTEL = 5773,
-    SubgroupAvcImeGetStreamoutDualReferenceMajorShapeDistortionsINTEL = 5774,
-    SubgroupAvcImeGetStreamoutDualReferenceMajorShapeReferenceIdsINTEL = 5775,
-    SubgroupAvcImeGetBorderReachedINTEL = 5776,
-    SubgroupAvcImeGetTruncatedSearchIndicationINTEL = 5777,
-    SubgroupAvcImeGetUnidirectionalEarlySearchTerminationINTEL = 5778,
-    SubgroupAvcImeGetWeightingPatternMinimumMotionVectorINTEL = 5779,
-    SubgroupAvcImeGetWeightingPatternMinimumDistortionINTEL = 5780,
-    SubgroupAvcFmeInitializeINTEL = 5781,
-    SubgroupAvcBmeInitializeINTEL = 5782,
-    SubgroupAvcRefConvertToMcePayloadINTEL = 5783,
-    SubgroupAvcRefSetBidirectionalMixDisableINTEL = 5784,
-    SubgroupAvcRefSetBilinearFilterEnableINTEL = 5785,
-    SubgroupAvcRefEvaluateWithSingleReferenceINTEL = 5786,
-    SubgroupAvcRefEvaluateWithDualReferenceINTEL = 5787,
-    SubgroupAvcRefEvaluateWithMultiReferenceINTEL = 5788,
-    SubgroupAvcRefEvaluateWithMultiReferenceInterlacedINTEL = 5789,
-    SubgroupAvcRefConvertToMceResultINTEL = 5790,
-    SubgroupAvcSicInitializeINTEL = 5791,
-    SubgroupAvcSicConfigureSkcINTEL = 5792,
-    SubgroupAvcSicConfigureIpeLumaINTEL = 5793,
-    SubgroupAvcSicConfigureIpeLumaChromaINTEL = 5794,
-    SubgroupAvcSicGetMotionVectorMaskINTEL = 5795,
-    SubgroupAvcSicConvertToMcePayloadINTEL = 5796,
-    SubgroupAvcSicSetIntraLumaShapePenaltyINTEL = 5797,
-    SubgroupAvcSicSetIntraLumaModeCostFunctionINTEL = 5798,
-    SubgroupAvcSicSetIntraChromaModeCostFunctionINTEL = 5799,
-    SubgroupAvcSicSetBilinearFilterEnableINTEL = 5800,
-    SubgroupAvcSicSetSkcForwardTransformEnableINTEL = 5801,
-    SubgroupAvcSicSetBlockBasedRawSkipSadINTEL = 5802,
-    SubgroupAvcSicEvaluateIpeINTEL = 5803,
-    SubgroupAvcSicEvaluateWithSingleReferenceINTEL = 5804,
-    SubgroupAvcSicEvaluateWithDualReferenceINTEL = 5805,
-    SubgroupAvcSicEvaluateWithMultiReferenceINTEL = 5806,
-    SubgroupAvcSicEvaluateWithMultiReferenceInterlacedINTEL = 5807,
-    SubgroupAvcSicConvertToMceResultINTEL = 5808,
-    SubgroupAvcSicGetIpeLumaShapeINTEL = 5809,
-    SubgroupAvcSicGetBestIpeLumaDistortionINTEL = 5810,
-    SubgroupAvcSicGetBestIpeChromaDistortionINTEL = 5811,
-    SubgroupAvcSicGetPackedIpeLumaModesINTEL = 5812,
-    SubgroupAvcSicGetIpeChromaModeINTEL = 5813,
-    SubgroupAvcSicGetPackedSkcLumaCountThresholdINTEL = 5814,
-    SubgroupAvcSicGetPackedSkcLumaSumThresholdINTEL = 5815,
-    SubgroupAvcSicGetInterRawSadsINTEL = 5816,
-    VariableLengthArrayINTEL = 5818,
-    SaveMemoryINTEL = 5819,
-    RestoreMemoryINTEL = 5820,
-    ArbitraryFloatSinCosPiINTEL = 5840,
-    ArbitraryFloatCastINTEL = 5841,
-    ArbitraryFloatCastFromIntINTEL = 5842,
-    ArbitraryFloatCastToIntINTEL = 5843,
-    ArbitraryFloatAddINTEL = 5846,
-    ArbitraryFloatSubINTEL = 5847,
-    ArbitraryFloatMulINTEL = 5848,
-    ArbitraryFloatDivINTEL = 5849,
-    ArbitraryFloatGTINTEL = 5850,
-    ArbitraryFloatGEINTEL = 5851,
-    ArbitraryFloatLTINTEL = 5852,
-    ArbitraryFloatLEINTEL = 5853,
-    ArbitraryFloatEQINTEL = 5854,
-    ArbitraryFloatRecipINTEL = 5855,
-    ArbitraryFloatRSqrtINTEL = 5856,
-    ArbitraryFloatCbrtINTEL = 5857,
-    ArbitraryFloatHypotINTEL = 5858,
-    ArbitraryFloatSqrtINTEL = 5859,
-    ArbitraryFloatLogINTEL = 5860,
-    ArbitraryFloatLog2INTEL = 5861,
-    ArbitraryFloatLog10INTEL = 5862,
-    ArbitraryFloatLog1pINTEL = 5863,
-    ArbitraryFloatExpINTEL = 5864,
-    ArbitraryFloatExp2INTEL = 5865,
-    ArbitraryFloatExp10INTEL = 5866,
-    ArbitraryFloatExpm1INTEL = 5867,
-    ArbitraryFloatSinINTEL = 5868,
-    ArbitraryFloatCosINTEL = 5869,
-    ArbitraryFloatSinCosINTEL = 5870,
-    ArbitraryFloatSinPiINTEL = 5871,
-    ArbitraryFloatCosPiINTEL = 5872,
-    ArbitraryFloatASinINTEL = 5873,
-    ArbitraryFloatASinPiINTEL = 5874,
-    ArbitraryFloatACosINTEL = 5875,
-    ArbitraryFloatACosPiINTEL = 5876,
-    ArbitraryFloatATanINTEL = 5877,
-    ArbitraryFloatATanPiINTEL = 5878,
-    ArbitraryFloatATan2INTEL = 5879,
-    ArbitraryFloatPowINTEL = 5880,
-    ArbitraryFloatPowRINTEL = 5881,
-    ArbitraryFloatPowNINTEL = 5882,
-    LoopControlINTEL = 5887,
-    AliasDomainDeclINTEL = 5911,
-    AliasScopeDeclINTEL = 5912,
-    AliasScopeListDeclINTEL = 5913,
-    FixedSqrtINTEL = 5923,
-    FixedRecipINTEL = 5924,
-    FixedRsqrtINTEL = 5925,
-    FixedSinINTEL = 5926,
-    FixedCosINTEL = 5927,
-    FixedSinCosINTEL = 5928,
-    FixedSinPiINTEL = 5929,
-    FixedCosPiINTEL = 5930,
-    FixedSinCosPiINTEL = 5931,
-    FixedLogINTEL = 5932,
-    FixedExpINTEL = 5933,
-    PtrCastToCrossWorkgroupINTEL = 5934,
-    CrossWorkgroupCastToPtrINTEL = 5938,
-    ReadPipeBlockingINTEL = 5946,
-    WritePipeBlockingINTEL = 5947,
-    FPGARegINTEL = 5949,
-    RayQueryGetRayTMinKHR = 6016,
-    RayQueryGetRayFlagsKHR = 6017,
-    RayQueryGetIntersectionTKHR = 6018,
-    RayQueryGetIntersectionInstanceCustomIndexKHR = 6019,
-    RayQueryGetIntersectionInstanceIdKHR = 6020,
-    RayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR = 6021,
-    RayQueryGetIntersectionGeometryIndexKHR = 6022,
-    RayQueryGetIntersectionPrimitiveIndexKHR = 6023,
-    RayQueryGetIntersectionBarycentricsKHR = 6024,
-    RayQueryGetIntersectionFrontFaceKHR = 6025,
-    RayQueryGetIntersectionCandidateAABBOpaqueKHR = 6026,
-    RayQueryGetIntersectionObjectRayDirectionKHR = 6027,
-    RayQueryGetIntersectionObjectRayOriginKHR = 6028,
-    RayQueryGetWorldRayDirectionKHR = 6029,
-    RayQueryGetWorldRayOriginKHR = 6030,
-    RayQueryGetIntersectionObjectToWorldKHR = 6031,
-    RayQueryGetIntersectionWorldToObjectKHR = 6032,
-    AtomicFAddEXT = 6035,
-    TypeBufferSurfaceINTEL = 6086,
-    TypeStructContinuedINTEL = 6090,
-    ConstantCompositeContinuedINTEL = 6091,
-    SpecConstantCompositeContinuedINTEL = 6092,
-    ControlBarrierArriveINTEL = 6142,
-    ControlBarrierWaitINTEL = 6143,
-    GroupIMulKHR = 6401,
-    GroupFMulKHR = 6402,
-    GroupBitwiseAndKHR = 6403,
-    GroupBitwiseOrKHR = 6404,
-    GroupBitwiseXorKHR = 6405,
-    GroupLogicalAndKHR = 6406,
-    GroupLogicalOrKHR = 6407,
-    GroupLogicalXorKHR = 6408,
-}
+pub struct SpvCapability(pub i32);
 extern "C" {
     pub fn spvc_get_version(
         major: *mut crate::ctypes::c_uint,

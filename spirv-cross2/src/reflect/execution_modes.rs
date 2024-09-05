@@ -1,10 +1,10 @@
+use crate::error;
 use crate::error::ToContextError;
 use crate::handle::Handle;
 use crate::reflect::try_valid_slice;
 use crate::Compiler;
-use crate::{error, spirv};
 use spirv_cross_sys as sys;
-use spirv_cross_sys::ConstantId;
+use spirv_cross_sys::{ConstantId, SpvExecutionMode};
 
 /// Arguments to an `OpExecutionMode`.
 #[derive(Debug)]
@@ -58,12 +58,21 @@ impl<'ctx, T> Compiler<'ctx, T> {
     ) {
         unsafe {
             let Some(arguments) = arguments else {
-                return sys::spvc_compiler_unset_execution_mode(self.ptr.as_ptr(), mode);
+                return sys::spvc_compiler_unset_execution_mode(
+                    self.ptr.as_ptr(),
+                    SpvExecutionMode(mode as u32 as i32),
+                );
             };
 
             let [x, y, z] = arguments.expand();
 
-            sys::spvc_compiler_set_execution_mode_with_arguments(self.ptr.as_ptr(), mode, x, y, z);
+            sys::spvc_compiler_set_execution_mode_with_arguments(
+                self.ptr.as_ptr(),
+                SpvExecutionMode(mode as u32 as i32),
+                x,
+                y,
+                z,
+            );
         }
     }
 
@@ -81,7 +90,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             const _: () =
                 assert!(std::mem::size_of::<spirv::ExecutionMode>() == std::mem::size_of::<u32>());
-            try_valid_slice(modes, size)
+            try_valid_slice(modes.cast(), size)
         }
     }
 
@@ -99,17 +108,17 @@ impl<'ctx, T> Compiler<'ctx, T> {
             spirv::ExecutionMode::LocalSize => unsafe {
                 let x = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    mode,
+                    SpvExecutionMode(mode as u32 as i32),
                     0,
                 );
                 let y = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    mode,
+                    SpvExecutionMode(mode as u32 as i32),
                     1,
                 );
                 let z = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    mode,
+                    SpvExecutionMode(mode as u32 as i32),
                     2,
                 );
 
@@ -122,17 +131,17 @@ impl<'ctx, T> Compiler<'ctx, T> {
             spirv::ExecutionMode::LocalSizeId => unsafe {
                 let x = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    mode,
+                    SpvExecutionMode(mode as u32 as i32),
                     0,
                 );
                 let y = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    mode,
+                    SpvExecutionMode(mode as u32 as i32),
                     1,
                 );
                 let z = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    mode,
+                    SpvExecutionMode(mode as u32 as i32),
                     2,
                 );
 
@@ -156,7 +165,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
                 let x = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    mode,
+                    SpvExecutionMode(mode as u32 as i32),
                     0,
                 );
                 Some(ExecutionModeArguments::Literal(x))
@@ -176,7 +185,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{spirv, targets, Module, SpirvCrossContext};
+    use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 

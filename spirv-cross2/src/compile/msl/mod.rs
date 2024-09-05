@@ -620,7 +620,7 @@ pub enum ResourceBinding {
         binding: u32,
     },
     /// The push constant buffer.
-    PushConstant,
+    PushConstantBuffer,
     /// The swizzle buffer, at the given index.
     SwizzleBuffer(u32),
     /// The buffer binding for buffer size
@@ -647,7 +647,7 @@ impl ResourceBinding {
             | ResourceBinding::SwizzleBuffer(set)
             | ResourceBinding::BufferSizeBuffer(set)
             | ResourceBinding::ArgumentBuffer(set) => *set,
-            ResourceBinding::PushConstant => PUSH_CONSTANT_DESCRIPTOR_SET,
+            ResourceBinding::PushConstantBuffer => PUSH_CONSTANT_DESCRIPTOR_SET,
         }
     }
 
@@ -659,7 +659,7 @@ impl ResourceBinding {
 
         match self {
             ResourceBinding::Qualified { binding, .. } => *binding,
-            ResourceBinding::PushConstant => PUSH_CONSTANT_BINDING,
+            ResourceBinding::PushConstantBuffer => PUSH_CONSTANT_BINDING,
             ResourceBinding::SwizzleBuffer(_) => SWIZZLE_BUFFER_BINDING,
             ResourceBinding::BufferSizeBuffer(_) => BUFFER_SIZE_BUFFER_BINDING,
             ResourceBinding::ArgumentBuffer(_) => ARGUMENT_BUFFER_BINDING,

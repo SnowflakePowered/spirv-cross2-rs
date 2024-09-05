@@ -11,7 +11,7 @@ use spirv_cross_sys as sys;
 use spirv_cross_sys::{FromPrimitive, SpvId, ToPrimitive};
 
 /// A value accompanying an `OpDecoration`
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum DecorationValue<'a> {
     /// Returned by the following decorations.
     ///
@@ -45,6 +45,14 @@ impl DecorationValue<'_> {
     /// [`Compiler::set_decoration`].
     pub const fn unset() -> Option<Self> {
         None
+    }
+
+    /// Get the value if it is a literal `u32`.
+    pub fn as_literal(&self) -> Option<u32> {
+        match self {
+            Self::Literal(l) => Some(*l),
+            _ => None,
+        }
     }
 }
 

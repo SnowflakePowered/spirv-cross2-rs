@@ -1,12 +1,12 @@
+use crate::error;
 use crate::Compiler;
-use crate::{error, spirv};
+use spirv::StorageClass;
 use spirv_cross_sys::{BaseType, SpvId, VariableId};
 
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::handle::{ConstantId, TypeId};
 use crate::sealed::Sealed;
-use crate::spirv::StorageClass;
 use crate::string::ContextStr;
 use spirv_cross_sys as sys;
 
@@ -589,6 +589,13 @@ impl<T> Compiler<'_, T> {
 
             let storage_class = sys::spvc_type_get_storage_class(ty);
 
+            let Some(storage_class) = spirv::StorageClass::from_u32(storage_class.0 as u32) else {
+                return Err(SpirvCrossError::InvalidSpirv(format!(
+                    "Unknown StorageClass found: {}",
+                    storage_class.0
+                )));
+            };
+
             let array_dims = array_dims
                 .into_iter()
                 .enumerate()
@@ -635,6 +642,20 @@ impl<T> Compiler<'_, T> {
             let storage = sys::spvc_type_get_image_is_storage(ty);
             let multisampled = sys::spvc_type_get_image_multisampled(ty);
             let format = sys::spvc_type_get_image_storage_format(ty);
+
+            let Some(format) = spirv::ImageFormat::from_u32(format.0 as u32) else {
+                return Err(SpirvCrossError::InvalidSpirv(format!(
+                    "Unknown image format found: {}",
+                    format.0
+                )));
+            };
+
+            let Some(dimension) = spirv::Dim::from_u32(dimension.0 as u32) else {
+                return Err(SpirvCrossError::InvalidSpirv(format!(
+                    "Unknown image dimension found: {}",
+                    dimension.0
+                )));
+            };
 
             let class = if storage {
                 ImageClass::Storage { format }
@@ -694,6 +715,14 @@ impl<T> Compiler<'_, T> {
             // pointer types
             if sys::spvc_rs_type_is_pointer(ty) {
                 let storage_class = sys::spvc_type_get_storage_class(ty);
+                let Some(storage_class) = spirv::StorageClass::from_u32(storage_class.0 as u32)
+                else {
+                    return Err(SpirvCrossError::InvalidSpirv(format!(
+                        "Unknown StorageClass found: {}",
+                        storage_class.0
+                    )));
+                };
+
                 let forward = sys::spvc_rs_type_is_forward_pointer(ty);
 
                 let inner = TypeInner::Pointer {
@@ -759,6 +788,14 @@ impl<T> Compiler<'_, T> {
                 BaseType::AtomicCounter => {
                     // This should be covered by the pointer type above.
                     let storage_class = sys::spvc_type_get_storage_class(ty);
+                    let Some(storage_class) = spirv::StorageClass::from_u32(storage_class.0 as u32)
+                    else {
+                        return Err(SpirvCrossError::InvalidSpirv(format!(
+                            "Unknown StorageClass found: {}",
+                            storage_class.0
+                        )));
+                    };
+
                     let forward = sys::spvc_rs_type_is_forward_pointer(ty);
 
                     TypeInner::Pointer {

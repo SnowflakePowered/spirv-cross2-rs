@@ -108,7 +108,7 @@ impl Iterator for SpecializationConstantIter<'_> {
 }
 
 /// Iterator for specialization subconstants created by
-/// [`Compiler::specialization_sub_contants`].
+/// [`Compiler::specialization_sub_constants`].
 pub struct SpecializationSubConstantIter<'a>(PhantomCompiler<'a>, slice::Iter<'a, ConstantId>);
 
 impl ExactSizeIterator for SpecializationSubConstantIter<'_> {

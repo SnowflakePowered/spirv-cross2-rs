@@ -85,11 +85,11 @@
 //!
 //!     for resource in resources.resources_for_type(ResourceType::SampledImage)? {
 //!         let Some(DecorationValue::Literal(set)) =
-//!                 compiler.decoration(resource.id,  spirv::Decoration::DescriptorSet)? else {
+//!                 compiler.decoration(resource.id, spirv::Decoration::DescriptorSet)? else {
 //!             continue;
 //!         };
 //!         let Some(DecorationValue::Literal(binding)) =
-//!             compiler.decoration(resource.id,  spirv::Decoration::Binding)? else {
+//!             compiler.decoration(resource.id, spirv::Decoration::Binding)? else {
 //!             continue;
 //!         };
 //!
@@ -126,9 +126,6 @@ use std::rc::Rc;
 /// Compilation of SPIR-V to a textual format.
 pub mod compile;
 
-/// SPIR-V types and definitions.
-pub mod spirv;
-
 /// Handles to SPIR-V IDs from reflection.
 pub mod handle;
 
@@ -143,6 +140,19 @@ pub(crate) mod error;
 
 /// String helpers
 pub(crate) mod string;
+
+/// SPIR-V types and definitions.
+pub mod spirv {
+    pub use spirv::BuiltIn;
+    pub use spirv::Capability;
+    pub use spirv::Decoration;
+    pub use spirv::Dim;
+    pub use spirv::ExecutionMode;
+    pub use spirv::ExecutionModel;
+    pub use spirv::FPRoundingMode;
+    pub use spirv::ImageFormat;
+    pub use spirv::StorageClass;
+}
 
 pub(crate) mod sealed {
     use spirv_cross_sys::spvc_context_s;

@@ -48,12 +48,10 @@ use crate::handle::{Handle, VariableId};
 use crate::sealed::Sealed;
 use crate::string::ContextStr;
 use crate::targets::Msl;
-use crate::{error, spirv, Compiler, ContextRooted};
-use spirv_cross_sys::{MslResourceBinding2, MslShaderInterfaceVar2};
+use crate::{error, Compiler, ContextRooted};
+use spirv_cross_sys::{MslResourceBinding2, MslShaderInterfaceVar2, SpvBuiltIn, SpvExecutionModel};
 use std::fmt::{Debug, Formatter};
-use std::mem::MaybeUninit;
 use std::num::NonZeroU32;
-use std::ptr::addr_of_mut;
 
 impl Sealed for CompilerOptions {}
 /// MSL compiler options
@@ -721,37 +719,23 @@ impl ShaderInterfaceVariable {
     /// which is invalid in Rust. I don't want to expose it just for this, so we'll just
     /// do some magic.
     #[must_use]
-    fn to_raw(&self, location: u32) -> MaybeUninit<MslShaderInterfaceVar2> {
+    fn to_raw(&self, location: u32) -> MslShaderInterfaceVar2 {
         let mut base = MslShaderInterfaceVar2 {
             location,
             format: self.format,
-            builtin: spirv::BuiltIn::Position,
+            builtin: SpvBuiltIn::Position,
             vecsize: self.vecsize.map_or(0, NonZeroU32::get),
             rate: self.rate,
         };
 
         if let Some(builtin) = self.builtin {
             // happy path, we can just set the builtin.
-            base.builtin = builtin;
-            MaybeUninit::new(base)
+            base.builtin = SpvBuiltIn(builtin as u32 as i32);
         } else {
-            // sad path...
-
-            // ensure layout
-            const _: () =
-                assert!(std::mem::size_of::<spirv::BuiltIn>() == std::mem::size_of::<i32>());
-
-            let mut base = MaybeUninit::new(base);
-            unsafe {
-                let base_ptr = base.as_mut_ptr();
-                let builtin_ptr = addr_of_mut!((*base_ptr).builtin).cast::<i32>();
-
-                // from this point forward, the MslShaderInterfaceVar2 is a hot potato.
-                builtin_ptr.write(i32::MAX)
-            }
-
-            base
+            base.builtin = SpvBuiltIn(i32::MAX);
         }
+
+        base
     }
 }
 
@@ -799,8 +783,7 @@ impl Compiler<'_, Msl> {
     ) -> error::Result<()> {
         let variable = variable.to_raw(location);
         unsafe {
-            sys::spvc_compiler_msl_add_shader_input_2(self.ptr.as_ptr(), variable.as_ptr())
-                .ok(&*self)
+            sys::spvc_compiler_msl_add_shader_input_2(self.ptr.as_ptr(), &variable).ok(&*self)
         }
     }
 
@@ -818,8 +801,7 @@ impl Compiler<'_, Msl> {
     ) -> error::Result<()> {
         let variable = variable.to_raw(location);
         unsafe {
-            sys::spvc_compiler_msl_add_shader_output_2(self.ptr.as_ptr(), variable.as_ptr())
-                .ok(&*self)
+            sys::spvc_compiler_msl_add_shader_output_2(self.ptr.as_ptr(), &variable).ok(&*self)
         }
     }
 
@@ -836,7 +818,7 @@ impl Compiler<'_, Msl> {
         bind_target: &BindTarget,
     ) -> error::Result<()> {
         let binding = MslResourceBinding2 {
-            stage,
+            stage: SpvExecutionModel(stage as u32 as i32),
             desc_set: binding.descriptor_set(),
             binding: binding.binding(),
             count: bind_target.count.map_or(0, NonZeroU32::get),
@@ -1067,7 +1049,11 @@ impl Compiler<'_, Msl> {
         builtin: spirv::BuiltIn,
     ) -> crate::error::Result<()> {
         unsafe {
-            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin).ok(&*self)
+            sys::spvc_compiler_mask_stage_output_by_builtin(
+                self.ptr.as_ptr(),
+                SpvBuiltIn(builtin as u32 as i32),
+            )
+            .ok(&*self)
         }
     }
 }
@@ -1097,7 +1083,7 @@ impl CompiledArtifact<'_, Msl> {
         unsafe {
             sys::spvc_compiler_msl_is_resource_used(
                 self.compiler.ptr.as_ptr(),
-                model,
+                SpvExecutionModel(model as u32 as i32),
                 binding.descriptor_set(),
                 binding.binding(),
             )

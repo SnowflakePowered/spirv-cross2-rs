@@ -2,16 +2,15 @@ use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
 use crate::handle::{Handle, TypeId, VariableId};
 use crate::sealed::Sealed;
 use crate::string::ContextStr;
-use crate::{error, spirv, Compiler, PhantomCompiler, ToStatic};
+use crate::{error, Compiler, PhantomCompiler, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
     spvc_set,
 };
 use std::marker::PhantomData;
-use std::mem::MaybeUninit;
 use std::ptr::NonNull;
-use std::{ptr, slice};
+use std::slice;
 
 /// The type of built-in resources to query.
 pub use spirv_cross_sys::BuiltinResourceType;
@@ -180,7 +179,7 @@ impl<'a> Iterator for ResourceIter<'a> {
 /// Iterator over reflected builtin resources, created by [`ShaderResources::builtin_resources_for_type`].
 pub struct BuiltinResourceIter<'a>(
     PhantomCompiler<'a>,
-    slice::Iter<'a, MaybeUninit<spvc_reflected_builtin_resource>>,
+    slice::Iter<'a, spvc_reflected_builtin_resource>,
 );
 
 impl<'a> Iterator for BuiltinResourceIter<'a> {
@@ -285,24 +284,19 @@ impl From<BuiltinResource<'_>> for Handle<VariableId> {
 impl<'a> BuiltinResource<'a> {
     fn from_raw(
         comp: PhantomCompiler<'a>,
-        value: &'a MaybeUninit<spvc_reflected_builtin_resource>,
+        value: &'a spvc_reflected_builtin_resource,
     ) -> Option<Self> {
         // builtin is potentially uninit, we need to check.
-        let value = unsafe {
-            let builtin = ptr::addr_of!((*value.as_ptr()).builtin);
-            if builtin.cast::<i32>().read() == i32::MAX {
-                if cfg!(debug_assertions) {
-                    panic!("Unexpected SpvBuiltIn in spvc_reflected_builtin_resource!")
-                } else {
-                    return None;
-                }
+        let Some(builtin) = spirv::BuiltIn::from_u32(value.builtin.0 as u32) else {
+            if cfg!(debug_assertions) {
+                panic!("Unexpected SpvBuiltIn in spvc_reflected_builtin_resource!")
+            } else {
+                return None;
             }
-
-            value.assume_init_ref()
         };
 
         Some(Self {
-            builtin: value.builtin,
+            builtin,
             value_type_id: comp.create_handle(value.value_type_id),
             resource: Resource::from_raw(comp, &value.resource),
         })

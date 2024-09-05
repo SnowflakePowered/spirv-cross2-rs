@@ -1,10 +1,10 @@
 use crate::compile::{CommonOptions, CompiledArtifact};
 use crate::targets::Hlsl;
-use crate::{error, spirv, Compiler};
+use crate::{error, Compiler};
 use bitflags::bitflags;
 
-use spirv_cross_sys::HlslResourceBinding;
 use spirv_cross_sys::HlslResourceBindingMapping;
+use spirv_cross_sys::{HlslResourceBinding, SpvBuiltIn, SpvExecutionModel};
 
 /// Specifies an HLSL root constant layout.
 pub use spirv_cross_sys::HlslRootConstants as RootConstants;
@@ -288,7 +288,7 @@ impl Compiler<'_, Hlsl> {
         };
 
         let hlsl_resource_binding = HlslResourceBinding {
-            stage,
+            stage: SpvExecutionModel(stage as u32 as i32),
             desc_set: binding.descriptor_set(),
             binding: binding.binding(),
             cbv: bind_target.cbv.map_or(DEFAULT_BINDING, From::from),
@@ -425,7 +425,11 @@ impl Compiler<'_, Hlsl> {
         builtin: spirv::BuiltIn,
     ) -> crate::error::Result<()> {
         unsafe {
-            sys::spvc_compiler_mask_stage_output_by_builtin(self.ptr.as_ptr(), builtin).ok(&*self)
+            sys::spvc_compiler_mask_stage_output_by_builtin(
+                self.ptr.as_ptr(),
+                SpvBuiltIn(builtin as u32 as i32),
+            )
+            .ok(&*self)
         }
     }
 }
@@ -437,7 +441,7 @@ impl CompiledArtifact<'_, Hlsl> {
         unsafe {
             sys::spvc_compiler_hlsl_is_resource_used(
                 self.compiler.ptr.as_ptr(),
-                model,
+                SpvExecutionModel(model as u32 as i32),
                 binding.descriptor_set(),
                 binding.binding(),
             )

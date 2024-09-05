@@ -260,7 +260,7 @@ mod test {
     use crate::compile::CompilableTarget;
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::targets::Glsl;
-    use crate::{spirv, Compiler};
+    use crate::Compiler;
     use crate::{targets, Module, SpirvCrossContext};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");

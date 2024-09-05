@@ -3,8 +3,8 @@ use glslang::{
     CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion,
 };
 use spirv_cross2::reflect::TypeInner;
+use spirv_cross2::Module;
 use spirv_cross2::SpirvCrossError;
-use spirv_cross2::{spirv, Module};
 
 #[test]
 pub fn spec_constant() -> Result<(), SpirvCrossError> {

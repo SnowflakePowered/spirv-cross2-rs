@@ -141,6 +141,9 @@ impl ParseCallbacks for SpirvCrossCallbacks {
         original_variant_name: &str,
         _variant_value: EnumVariantValue,
     ) -> Option<EnumVariantCustomBehavior> {
+        if original_variant_name.starts_with("Spv") {
+            return None;
+        };
         if original_variant_name.ends_with("_MAX") {
             return Some(EnumVariantCustomBehavior::Hide);
         };
@@ -176,9 +179,6 @@ impl ParseCallbacks for SpirvCrossCallbacks {
             return vec![String::from("#[non_exhaustive]")];
         };
 
-        if info.kind == TypeKind::Enum && info.name.starts_with("Spv") {
-            return vec![String::from("#[non_exhaustive]")];
-        }
         vec![]
     }
 }

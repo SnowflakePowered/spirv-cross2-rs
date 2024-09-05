@@ -898,31 +898,6 @@ impl<T> Compiler<'_, T> {
         })
     }
 
-    /// Get the size of the struct with the specified runtime array size,
-    /// if the struct contains a runtime array.
-    pub fn declared_struct_size_with_runtime_array(
-        &self,
-        struct_type: StructType,
-        array_size: usize,
-    ) -> error::Result<usize> {
-        // port from https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross.cpp#L2006C1-L2007C1
-        let mut size = struct_type.size;
-        if let Some(last) = struct_type.members.last() {
-            let Some(stride) = last.array_stride else {
-                return Ok(size);
-            };
-
-            let inner = self.type_description(last.id)?.inner;
-            if let TypeInner::Array { dimensions, .. } = inner {
-                if let Some(ArrayDimension::Literal(0)) = dimensions.first() {
-                    size += array_size * stride as usize
-                }
-            }
-        }
-
-        Ok(size)
-    }
-
     /// Check if the struct has a runtime array. If so, return the stride
     /// of the array.
     pub fn struct_has_runtime_array(&self, struct_type: &StructType) -> error::Result<Option<u32>> {

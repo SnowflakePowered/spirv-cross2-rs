@@ -1,6 +1,6 @@
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
-use crate::reflect::{try_valid_slice, CombinedImageSamplerIter};
+use crate::reflect::try_valid_slice;
 use crate::string::ContextStr;
 use crate::{error, spirv};
 use crate::{Compiler, ContextRoot};

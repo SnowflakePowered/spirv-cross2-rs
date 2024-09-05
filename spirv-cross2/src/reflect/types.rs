@@ -5,6 +5,7 @@ use spirv_cross_sys::{BaseType, SpvId, VariableId};
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::handle::{ConstantId, TypeId};
+use crate::sealed::Sealed;
 use crate::spirv::StorageClass;
 use crate::string::ContextStr;
 use spirv_cross_sys as sys;
@@ -27,16 +28,31 @@ pub enum ScalarKind {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[repr(u8)]
 pub enum BitWidth {
-    /// 1 bit
+    /// 1 bit, padded to 1 byte.
     Bit = 1,
-    /// 8 bits
+    /// 8 bits, 1 byte.
     Byte = 8,
-    /// 16 bits
+    /// 16 bits, 2 bytes.
     HalfWord = 16,
-    /// 32 bits
+    /// 32 bits, 4 bytes.
     Word = 32,
-    /// 64 bits
+    /// 64 bits, 8 bytes.
     DoubleWord = 64,
+}
+
+impl BitWidth {
+    /// Get the size of the bit width in bytes.
+    ///
+    /// Bit-sized types are padded to a whole byte.
+    pub const fn byte_size(&self) -> usize {
+        match self {
+            BitWidth::Bit => 1,
+            BitWidth::Byte => 1,
+            BitWidth::HalfWord => 2,
+            BitWidth::Word => 4,
+            BitWidth::DoubleWord => 8,
+        }
+    }
 }
 
 /// A scalar type.
@@ -120,6 +136,9 @@ pub struct Type<'a> {
     pub name: Option<ContextStr<'a>>,
     /// Inner details about the type.
     pub inner: TypeInner<'a>,
+    /// A size hint for the type,
+    /// representing the minimum size the type could be.
+    pub size_hint: TypeSizeHint,
 }
 
 /// Type definition for a struct member.
@@ -285,6 +304,9 @@ pub enum TypeInner<'a> {
         ///
         /// i.e. `int a[4][6]` will return as `[Linear(6), Linear(4)]`.
         dimensions: Vec<ArrayDimension>,
+        /// The stride, in bytes, of the array’s elements, if this array type
+        /// appears as a struct member.
+        stride: Option<u32>,
     },
     /// A texture or image handle.
     Image(ImageType),
@@ -294,12 +316,146 @@ pub enum TypeInner<'a> {
     Sampler,
 }
 
-impl TypeInner<'_> {
+/// A size hole requiring the stride of a matrix,
+/// and whether the matrix is column or row major.
+///
+/// The hole is a `(usize, bool)` tuple, which
+/// is the stride of the matrix, and whether the
+/// matrix is row major. By default, the matrix is
+/// considered column major.
+#[derive(Debug, Clone)]
+pub struct MatrixStrideHole {
+    columns: usize,
+    rows: usize,
+    declared: usize,
+}
 
-    /// Get the size of this type in bytes.
-    pub fn size(&self) -> u32 {
+impl Sealed for MatrixStrideHole {}
+impl ResolveSize for MatrixStrideHole {
+    type Hole = (usize, bool);
 
+    fn declared(&self) -> usize {
+        self.declared
     }
+
+    fn resolve(&self, hole: Self::Hole) -> usize {
+        let (stride, is_row_major) = hole;
+        if is_row_major {
+            stride * self.rows
+        } else {
+            stride * self.columns
+        }
+    }
+}
+
+/// A size hole requiring the number of elements in a runtime array.
+///
+/// This hole must be resolved with the size of the array.
+#[derive(Debug, Clone)]
+pub struct ArraySizeHole {
+    stride: usize,
+    declared: usize,
+}
+
+/// A size hole requiring the number of elements in a runtime array.
+///
+/// This hole must be resolved with the size of the array.
+///
+/// The declared size of this hole is the number of elements
+/// times the declared size of the unknown hole.
+#[derive(Debug, Clone)]
+pub struct UnknownStrideHole {
+    hint: Box<TypeSizeHint>,
+    count: usize,
+}
+
+impl Sealed for UnknownStrideHole {}
+impl ResolveSize for UnknownStrideHole {
+    type Hole = Box<dyn FnOnce(&TypeSizeHint) -> usize>;
+
+    fn declared(&self) -> usize {
+        self.count * self.hint.declared()
+    }
+
+    fn resolve(&self, hole: Self::Hole) -> usize {
+        self.count * hole(&self.hint)
+    }
+}
+
+impl ResolveSize for usize {
+    type Hole = core::convert::Infallible;
+
+    fn declared(&self) -> usize {
+        *self
+    }
+
+    fn resolve(&self, _hole: Self::Hole) -> usize {
+        self.declared()
+    }
+}
+
+impl ResolveSize for ArraySizeHole {
+    type Hole = usize;
+
+    fn declared(&self) -> usize {
+        self.declared
+    }
+
+    fn resolve(&self, count: Self::Hole) -> usize {
+        count * self.stride
+    }
+}
+
+impl Sealed for ArraySizeHole {}
+impl Sealed for usize {}
+
+/// A size hint for a type. This could be a statically known size,
+/// or need to resolve a hole before getting a more accurate.
+///
+/// Size hints resolve array sizes involving specialization constants.
+///
+/// If an array stride is found, it will calculate a statically known size with
+/// the array stride.
+#[derive(Debug, Clone)]
+pub enum TypeSizeHint {
+    /// A statically known type size hint.
+    Static(usize),
+    /// The size of a runtime array, which is missing an element count.
+    RuntimeArray(ArraySizeHole),
+    /// A matrix type.
+    Matrix(MatrixStrideHole),
+    /// The array stride is missing or unknowable.
+    UnknownArrayStride(UnknownStrideHole),
+}
+
+impl TypeSizeHint {
+    /// Get the statically known, declared size of a type hint,
+    /// ignoring any holes in the calculation.
+    pub fn declared(&self) -> usize {
+        match &self {
+            TypeSizeHint::Static(sz) => *sz,
+            TypeSizeHint::RuntimeArray(hole) => hole.declared(),
+            TypeSizeHint::UnknownArrayStride(hole) => hole.declared(),
+            TypeSizeHint::Matrix(hole) => hole.declared(),
+        }
+    }
+
+    /// Whether the size hint is statically known.
+    pub fn is_static(&self) -> bool {
+        matches!(self, TypeSizeHint::Static(_))
+    }
+}
+
+/// Trait for size hints that need to be resolved against a hole.
+pub trait ResolveSize: Sealed {
+    /// The type of the hole needed to resolve the size.
+    type Hole;
+
+    /// Get the declared size in bytes, regardless of any holes.
+    fn declared(&self) -> usize;
+
+    /// Resolve the size (in bytes) against the hole.
+    fn resolve(&self, hole: Self::Hole) -> usize;
 }
 
 /// Reflection of SPIR-V types.
@@ -445,14 +601,25 @@ impl<T> Compiler<'_, T> {
                 })
                 .collect();
 
+            let id = self.create_handle(id);
+            let stride = self
+                .decoration(id, spirv::Decoration::ArrayStride)?
+                .and_then(|s| s.as_literal());
+
+            let inner = TypeInner::Array {
+                base: self.create_handle(base_type_id),
+                storage: storage_class,
+                dimensions: array_dims,
+                stride,
+            };
+
+            let size_hint = self.type_size_hint(&inner)?;
+
             Ok(Type {
                 name,
-                id: self.create_handle(id),
-                inner: TypeInner::Array {
-                    base: self.create_handle(base_type_id),
-                    storage: storage_class,
-                    dimensions: array_dims,
-                },
+                id,
+                inner,
+                size_hint,
             })
         }
     }
@@ -529,14 +696,19 @@ impl<T> Compiler<'_, T> {
                 let storage_class = sys::spvc_type_get_storage_class(ty);
                 let forward = sys::spvc_rs_type_is_forward_pointer(ty);
 
+                let inner = TypeInner::Pointer {
+                    base: self.create_handle(base_type_id),
+                    storage: storage_class,
+                    forward,
+                };
+
+                let size_hint = self.type_size_hint(&inner)?;
+
                 return Ok(Type {
                     name,
                     id: self.create_handle(id),
-                    inner: TypeInner::Pointer {
-                        base: self.create_handle(base_type_id),
-                        storage: storage_class,
-                        forward,
-                    },
+                    inner,
+                    size_hint,
                 });
             }
 
@@ -559,19 +731,9 @@ impl<T> Compiler<'_, T> {
                     TypeInner::Struct(ty)
                 }
                 BaseType::Image | BaseType::SampledImage => {
-                    return Ok(Type {
-                        id: self.create_handle(id),
-                        name,
-                        inner: TypeInner::Image(self.process_image(id)?),
-                    });
+                    TypeInner::Image(self.process_image(id)?)
                 }
-                BaseType::Sampler => {
-                    return Ok(Type {
-                        id: self.create_handle(id),
-                        name,
-                        inner: TypeInner::Sampler,
-                    });
-                }
+                BaseType::Sampler => TypeInner::Sampler,
                 BaseType::Boolean
                 | BaseType::Int8
                 | BaseType::Uint8
@@ -599,33 +761,104 @@ impl<T> Compiler<'_, T> {
                     let storage_class = sys::spvc_type_get_storage_class(ty);
                     let forward = sys::spvc_rs_type_is_forward_pointer(ty);
 
-                    return Ok(Type {
-                        name,
-                        id: self.create_handle(id),
-                        inner: TypeInner::Pointer {
-                            base: self.create_handle(base_type_id),
-                            storage: storage_class,
-                            forward,
-                        },
-                    });
+                    TypeInner::Pointer {
+                        base: self.create_handle(base_type_id),
+                        storage: storage_class,
+                        forward,
+                    }
                 }
 
-                BaseType::AccelerationStructure => {
-                    return Ok(Type {
-                        id: self.create_handle(id),
-                        name,
-                        inner: TypeInner::AccelerationStructure,
-                    })
-                }
+                BaseType::AccelerationStructure => TypeInner::AccelerationStructure,
             };
 
+            let size_hint = self.type_size_hint(&inner)?;
             let ty = Type {
                 name,
                 id: self.create_handle(id),
                 inner,
+                size_hint,
             };
             Ok(ty)
         }
+    }
+
+    /// Get the minimum size of this type in bytes,
+    /// as declared in the shader.
+    ///
+    /// This will resolve array sizes involving specialization constants.
+    fn type_size_hint(&self, ty: &TypeInner) -> error::Result<TypeSizeHint> {
+        Ok(match ty {
+            TypeInner::Pointer { .. } => TypeSizeHint::Static(BitWidth::Word.byte_size()),
+            TypeInner::Struct(s) => {
+                if let Some(stride) = self.struct_has_runtime_array(s)? {
+                    TypeSizeHint::RuntimeArray(ArraySizeHole {
+                        stride: stride as usize,
+                        declared: s.size,
+                    })
+                } else {
+                    TypeSizeHint::Static(s.size)
+                }
+            }
+            TypeInner::Scalar(s) => TypeSizeHint::Static(s.size.byte_size()),
+            TypeInner::Vector { width, scalar } => {
+                TypeSizeHint::Static((*width as usize) * scalar.size.byte_size())
+            }
+
+            TypeInner::Matrix {
+                columns,
+                rows,
+                scalar,
+            } => {
+                // Matrices have alignment 4, so we get the next power of 4.
+                let rows_aligned = (rows + 3 & !0x3) as usize;
+
+                let scalar_width = scalar.size.byte_size();
+                let columns = *columns as usize;
+                let declared = rows_aligned * scalar_width * columns;
+                TypeSizeHint::Matrix(MatrixStrideHole {
+                    columns,
+                    rows: *rows as usize,
+                    declared,
+                })
+            }
+            TypeInner::Array {
+                dimensions,
+                stride,
+                base,
+                ..
+            } => {
+                let mut count = 1usize;
+                for dim in dimensions.iter() {
+                    match dim {
+                        ArrayDimension::Literal(a) => count = count * (*a as usize),
+                        ArrayDimension::Constant(c) => {
+                            let value = self.specialization_constant_value::<u32>(*c)?;
+                            count = count * value as usize;
+                        } // prod = prod * 1
+                    }
+                }
+
+                if let Some(stride) = stride {
+                    TypeSizeHint::Static(count * (*stride as usize))
+                } else {
+                    // resolve the size of the basetype
+                    let base_stride = self.type_description(*base)?.size_hint;
+                    if base_stride.is_static() {
+                        TypeSizeHint::Static(count * base_stride.declared())
+                    } else {
+                        TypeSizeHint::UnknownArrayStride(UnknownStrideHole {
+                            hint: Box::new(base_stride),
+                            count,
+                        })
+                    }
+                }
+            }
+            TypeInner::Image(_)
+            | TypeInner::AccelerationStructure
+            | TypeInner::Sampler
+            | TypeInner::Unknown
+            | TypeInner::Void => TypeSizeHint::Static(0),
+        })
     }
 
     /// Get the size of the struct with the specified runtime array size,
@@ -651,6 +884,25 @@ impl<T> Compiler<'_, T> {
         }
 
         Ok(size)
+    }
+
+    /// Check if the struct has a runtime array. If so, return the stride
+    /// of the array.
+    pub fn struct_has_runtime_array(&self, struct_type: &StructType) -> error::Result<Option<u32>> {
+        if let Some(last) = struct_type.members.last() {
+            let Some(array_stride) = last.array_stride else {
+                return Ok(None);
+            };
+
+            let inner = self.type_description(last.id)?.inner;
+            if let TypeInner::Array { dimensions, .. } = inner {
+                if let Some(ArrayDimension::Literal(0)) = dimensions.first() {
+                    return Ok(Some(array_stride));
+                }
+            }
+        }
+
+        Ok(None)
     }
 
     /// Get the underlying type of the variable.

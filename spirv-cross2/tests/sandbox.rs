@@ -224,6 +224,8 @@ void main() {
         panic!("unknown type")
     };
 
+    eprintln!("{:?}", struct_ty);
+
     eprintln!(
         "{:?}",
         compiler.declared_struct_size_with_runtime_array(struct_ty, 4)
@@ -236,10 +238,18 @@ void main() {
 pub fn image_type_sandbox() -> Result<(), SpirvCrossError> {
     const SHADER: &str = r##"#version 450
 
-layout (constant_id = 0) const int SSAO_KERNEL_SIZE = 2;
+layout (constant_id = 0) const int SSAO_KERNEL_SIZE = 13;
+
+layout(set = 0, binding = 0, std140) uniform UBO
+{
+    float data[SSAO_KERNEL_SIZE];
+    mat4 matrix;
+    vec2 vec;
+};
 
 
-layout(location = 0) out vec4[SSAO_KERNEL_SIZE][4] color;
+
+layout(location = 0) out vec4[SSAO_KERNEL_SIZE] color;
 layout(binding = 1) uniform sampler2D tex;
 layout(binding = 1, rgba32f) writeonly uniform image3D threeD;
 layout(binding = 2) uniform texture2DMSArray texArrayMs[4];
@@ -250,7 +260,7 @@ layout(binding = 3, rgba32f) uniform readonly imageBuffer arrayBufAS;
 layout(binding = 3) uniform samplerCubeArrayShadow depth;
 
 void main() {
-    color[0][0] = texture(tex, vec2(0.0));
+    color[0] = texture(tex, vec2(0.0));
 }"##;
 
     let glslang = glslang::Compiler::acquire().unwrap();
@@ -270,9 +280,16 @@ void main() {
     let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
     let res = compiler.shader_resources()?.all_resources()?;
 
-    let counter = &res.sampled_images[1];
+    let counter = &res.uniform_buffers[0];
 
-    eprintln!("{:?}", compiler.type_description(counter.base_type_id));
+    let TypeInner::Struct(stru) = compiler.type_description(counter.base_type_id)?.inner else {
+        panic!("unexpected")
+    };
+
+    eprintln!("{:#?}", stru);
+    let arrdesc = compiler.type_description(stru.members[1].id)?;
+
+    eprintln!("{:?}", arrdesc);
 
     Ok(())
 }

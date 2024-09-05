@@ -107,6 +107,24 @@ impl Iterator for SpecializationConstantIter<'_> {
     }
 }
 
+/// Iterator for specialization subconstants created by
+/// [`Compiler::specialization_sub_contants`].
+pub struct SpecializationSubConstantIter<'a>(PhantomCompiler<'a>, slice::Iter<'a, ConstantId>);
+
+impl ExactSizeIterator for SpecializationSubConstantIter<'_> {
+    fn len(&self) -> usize {
+        self.1.len()
+    }
+}
+
+impl Iterator for SpecializationSubConstantIter<'_> {
+    type Item = Handle<ConstantId>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.1.next().map(|o| self.0.create_handle(*o))
+    }
+}
+
 /// Reflection of specialization constants.
 impl<'ctx, T> Compiler<'ctx, T> {
     // check bounds of the constant, otherwise you can write to arbitrary memory.
@@ -209,7 +227,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     pub fn specialization_sub_constants(
         &self,
         constant: Handle<ConstantId>,
-    ) -> error::Result<Vec<Handle<ConstantId>>> {
+    ) -> error::Result<SpecializationSubConstantIter> {
         let id = self.yield_id(constant)?;
         unsafe {
             let constant = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), id);
@@ -217,10 +235,10 @@ impl<'ctx, T> Compiler<'ctx, T> {
             let mut size = 0;
             sys::spvc_constant_get_subconstants(constant, &mut constants, &mut size);
 
-            Ok(slice::from_raw_parts(constants, size)
-                .iter()
-                .map(|id| self.create_handle(*id))
-                .collect())
+            Ok(SpecializationSubConstantIter(
+                self.phantom(),
+                slice::from_raw_parts(constants, size).iter(),
+            ))
         }
     }
 

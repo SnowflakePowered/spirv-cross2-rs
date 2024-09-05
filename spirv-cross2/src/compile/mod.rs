@@ -87,6 +87,11 @@ pub struct CompiledArtifact<'a, T> {
     source: ContextStr<'a>,
 }
 
+// SAFETY: SpirvCrossContext is Send.
+// CompiledArtifact is immutable.
+unsafe impl<T> Send for CompiledArtifact<'_, T> {}
+unsafe impl<T> Sync for CompiledArtifact<'_, T> {}
+
 impl<T> AsRef<str> for CompiledArtifact<'_, T> {
     fn as_ref(&self) -> &str {
         self.source.as_ref()

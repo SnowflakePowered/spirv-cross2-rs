@@ -43,6 +43,8 @@ pub struct ContextStr<'a, T = SpirvCrossContext> {
 // Once created, the ContextStr is immutable, so it is also sync.
 // cloning the string doesn't affect the memory, as long as it
 // is alive for 'a.
+//
+// There is no interior mutability of a
 unsafe impl<T: Send> Send for ContextStr<'_, T> {}
 unsafe impl<T: Send> Sync for ContextStr<'_, T> {}
 

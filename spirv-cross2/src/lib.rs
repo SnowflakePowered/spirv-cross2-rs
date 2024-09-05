@@ -173,15 +173,6 @@ pub use crate::string::ContextStr;
 #[repr(transparent)]
 pub struct SpirvCrossContext(NonNull<spvc_context_s>);
 
-// SAFETY: SpirvCrossContext is not clone.
-//
-// While allocations are interior mutability,
-// they should be safe one thread at a time.
-//
-// C++ new and delete operators are thread safe,
-// which is what this uses to allocate.s
-unsafe impl Send for SpirvCrossContext {}
-
 /// The root lifetime of a SPIRV-Cross context.
 ///
 /// There are mainly two lifetimes to worry about in the entire crate,
@@ -443,15 +434,6 @@ pub struct Compiler<'a, T> {
     _pd: PhantomData<T>,
 }
 
-// SAFETY: Compiler is not clone.
-//
-// While allocations are interior mutability,
-// they should be safe one thread at a time.
-//
-// C++ new and delete operators are thread safe,
-// which is what this uses to allocate.s
-unsafe impl<T> Send for Compiler<'_, T> {}
-
 impl<T> Compiler<'_, T> {
     /// Create a new compiler instance.
     ///
@@ -518,3 +500,13 @@ impl<'ctx, T> Compiler<'ctx, T> {
         }
     }
 }
+
+// SAFETY: SpirvCrossContext is not clone.
+//
+// While allocations are interior mutability,
+// they should be safe one thread at a time.
+//
+// C++ new and delete operators are thread safe,
+// which is what this uses to allocate.s
+unsafe impl Send for SpirvCrossContext {}
+static_assertions::assert_not_impl_any!(SpirvCrossContext: Clone);

@@ -45,7 +45,7 @@ pub struct Scalar {
     /// How the value’s bits are to be interpreted.
     pub kind: ScalarKind,
     /// The size of the value in bits.
-    pub width: BitWidth,
+    pub size: BitWidth,
 }
 
 impl TryFrom<BaseType> for Scalar {
@@ -55,51 +55,51 @@ impl TryFrom<BaseType> for Scalar {
         Ok(match value {
             BaseType::Boolean => Scalar {
                 kind: ScalarKind::Bool,
-                width: BitWidth::Bit,
+                size: BitWidth::Bit,
             },
             BaseType::Int8 => Scalar {
                 kind: ScalarKind::Int,
-                width: BitWidth::Byte,
+                size: BitWidth::Byte,
             },
             BaseType::Int16 => Scalar {
                 kind: ScalarKind::Int,
-                width: BitWidth::HalfWord,
+                size: BitWidth::HalfWord,
             },
             BaseType::Int32 => Scalar {
                 kind: ScalarKind::Int,
-                width: BitWidth::Word,
+                size: BitWidth::Word,
             },
             BaseType::Int64 => Scalar {
                 kind: ScalarKind::Int,
-                width: BitWidth::DoubleWord,
+                size: BitWidth::DoubleWord,
             },
             BaseType::Uint8 => Scalar {
                 kind: ScalarKind::Uint,
-                width: BitWidth::Byte,
+                size: BitWidth::Byte,
             },
             BaseType::Uint16 => Scalar {
                 kind: ScalarKind::Uint,
-                width: BitWidth::HalfWord,
+                size: BitWidth::HalfWord,
             },
             BaseType::Uint32 => Scalar {
                 kind: ScalarKind::Uint,
-                width: BitWidth::Word,
+                size: BitWidth::Word,
             },
             BaseType::Uint64 => Scalar {
                 kind: ScalarKind::Uint,
-                width: BitWidth::DoubleWord,
+                size: BitWidth::DoubleWord,
             },
             BaseType::Fp16 => Scalar {
                 kind: ScalarKind::Float,
-                width: BitWidth::HalfWord,
+                size: BitWidth::HalfWord,
             },
             BaseType::Fp32 => Scalar {
                 kind: ScalarKind::Float,
-                width: BitWidth::Word,
+                size: BitWidth::Word,
             },
             BaseType::Fp64 => Scalar {
                 kind: ScalarKind::Float,
-                width: BitWidth::DoubleWord,
+                size: BitWidth::DoubleWord,
             },
 
             _ => {
@@ -292,6 +292,14 @@ pub enum TypeInner<'a> {
     AccelerationStructure,
     /// An opaque sampler.
     Sampler,
+}
+
+impl TypeInner<'_> {
+
+    /// Get the size of this type in bytes.
+    pub fn size(&self) -> u32 {
+
+    }
 }
 
 /// Reflection of SPIR-V types.

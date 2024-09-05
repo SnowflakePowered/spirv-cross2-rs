@@ -193,7 +193,7 @@ pub enum ResourceBinding {
         binding: u32,
     },
     /// The push constant buffer.
-    PushConstant,
+    PushConstantBuffer,
 }
 
 impl ResourceBinding {
@@ -207,7 +207,7 @@ impl ResourceBinding {
         const PUSH_CONSTANT_DESCRIPTOR_SET: u32 = !0;
         match self {
             ResourceBinding::Qualified { set, .. } => *set,
-            ResourceBinding::PushConstant => PUSH_CONSTANT_DESCRIPTOR_SET,
+            ResourceBinding::PushConstantBuffer => PUSH_CONSTANT_DESCRIPTOR_SET,
         }
     }
 
@@ -215,7 +215,7 @@ impl ResourceBinding {
         const PUSH_CONSTANT_BINDING: u32 = 0;
         match self {
             ResourceBinding::Qualified { binding, .. } => *binding,
-            ResourceBinding::PushConstant => PUSH_CONSTANT_BINDING,
+            ResourceBinding::PushConstantBuffer => PUSH_CONSTANT_BINDING,
         }
     }
 }

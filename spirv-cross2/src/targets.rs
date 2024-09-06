@@ -1,5 +1,5 @@
 use crate::compile;
-use crate::compile::{CompilableTarget, NoOptions};
+use crate::compile::CompilableTarget;
 use crate::sealed::Sealed;
 use spirv_cross_sys::CompilerBackend;
 
@@ -86,7 +86,7 @@ mod msl {
 mod json {
     use super::*;
     impl CompilableTarget for Json {
-        type Options = NoOptions;
+        type Options = compile::NoOptions;
     }
     impl Sealed for Json {}
     impl Target for Json {
@@ -100,7 +100,7 @@ mod cpp {
     use super::*;
     #[allow(deprecated)]
     impl CompilableTarget for Cpp {
-        type Options = NoOptions;
+        type Options = compile::NoOptions;
     }
 
     #[allow(deprecated)]

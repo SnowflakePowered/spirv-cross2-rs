@@ -36,4 +36,4 @@ jobs:
         with:
           toolchain: stable
       - name: Test
-        run: cargo test -p spirv-cross2
+        run: cargo test -p spirv-cross2 --features=full

@@ -5,8 +5,8 @@ use std::ops::{Index, IndexMut};
 use std::slice;
 
 use crate::error::{SpirvCrossError, ToContextError};
-use crate::handle::{ConstantId, Handle};
-use crate::{error, Compiler, PhantomCompiler};
+use crate::handle::{ConstantId, Handle, PhantomCompiler};
+use crate::{error, Compiler};
 use spirv_cross_sys as sys;
 
 /// A marker trait for types that can be represented as a scalar SPIR-V constant.

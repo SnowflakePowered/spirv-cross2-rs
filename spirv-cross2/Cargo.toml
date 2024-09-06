@@ -28,6 +28,7 @@ memchr = "2.7.4"
 spirv = "0.3.0"
 
 static_assertions = "1.1.0"
+parking_lot = "0.12.3"
 
 [features]
 default = ["gfx-math-types", "f16"]

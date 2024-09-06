@@ -60,7 +60,11 @@ pub enum SpirvCrossError {
 }
 
 pub(crate) trait ToContextError {
-    fn ok(self, context: impl ContextRooted) -> Result<()>;
+    fn ok<Ptr>(self, context: impl WithContext<Ptr>) -> Result<()> {
+        context.with_context(|context| Self::ok_raw(self, context.ptr()))
+    }
+
+    fn ok_raw(self, nonnull: NonNull<spvc_context_s>) -> Result<()>;
 }
 
 fn get_last_error(context: NonNull<spvc_context_s>) -> String {
@@ -70,23 +74,24 @@ fn get_last_error(context: NonNull<spvc_context_s>) -> String {
 }
 
 impl ToContextError for spvc_result {
-    fn ok(self, context: impl ContextRooted) -> Result<()> {
+    fn ok_raw(self, context: NonNull<spvc_context_s>) -> Result<()> {
         match self {
             spvc_result::SPVC_SUCCESS => Ok(()),
-            spvc_result::SPVC_ERROR_INVALID_SPIRV => Err(SpirvCrossError::InvalidSpirv(
-                get_last_error(context.context()),
-            )),
-            spvc_result::SPVC_ERROR_UNSUPPORTED_SPIRV => Err(SpirvCrossError::UnsupportedSpirv(
-                get_last_error(context.context()),
-            )),
-            spvc_result::SPVC_ERROR_OUT_OF_MEMORY => Err(SpirvCrossError::OutOfMemory(
-                get_last_error(context.context()),
-            )),
-            spvc_result::SPVC_ERROR_INVALID_ARGUMENT => Err(SpirvCrossError::InvalidArgument(
-                get_last_error(context.context()),
-            )),
+            spvc_result::SPVC_ERROR_INVALID_SPIRV => {
+                Err(SpirvCrossError::InvalidSpirv(get_last_error(context)))
+            }
+            spvc_result::SPVC_ERROR_UNSUPPORTED_SPIRV => {
+                Err(SpirvCrossError::UnsupportedSpirv(get_last_error(context)))
+            }
+            spvc_result::SPVC_ERROR_OUT_OF_MEMORY => {
+                Err(SpirvCrossError::OutOfMemory(get_last_error(context)))
+            }
+            spvc_result::SPVC_ERROR_INVALID_ARGUMENT => {
+                Err(SpirvCrossError::InvalidArgument(get_last_error(context)))
+            }
         }
     }
 }
 
 pub(crate) use crate::sealed::ContextRooted;
+use crate::sync::WithContext;

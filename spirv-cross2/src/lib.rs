@@ -74,12 +74,13 @@
 //! use spirv_cross2::reflect::{DecorationValue, ResourceType};
 //! use spirv_cross2::spirv;
 //! use spirv_cross2::targets::Glsl;
+//! use spirv_cross2::sync::UnsendContext;
 //!
 //! fn compile_spirv(words: &[u32]) -> Result<CompiledArtifact<'static, Glsl>, SpirvCrossError> {
 //!     let module = Module::from_words(words);
 //!     let context = SpirvCrossContext::new()?;
 //!
-//!     let mut compiler = context.into_compiler::<Glsl>(module)?;
+//!     let mut compiler = context.into_compiler::<Glsl, UnsendContext>(module)?;
 //!
 //!     let resources = compiler.shader_resources()?;
 //!
@@ -122,6 +123,8 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::sync::Arc;
+use handle::PhantomCompiler;
+use sync::ContextRoot;
 
 /// Compilation of SPIR-V to a textual format.
 pub mod compile;
@@ -140,6 +143,7 @@ pub(crate) mod error;
 
 /// String helpers
 pub(crate) mod string;
+pub mod sync;
 
 /// SPIR-V types and definitions.
 pub mod spirv {
@@ -167,72 +171,12 @@ pub(crate) mod sealed {
 
 pub use crate::error::SpirvCrossError;
 pub use crate::string::ContextStr;
+use crate::sync::WithContext;
 
 /// The SPIRV-Cross context. All memory allocations originating from
 /// this context will have the same lifetime as the context.
 #[repr(transparent)]
 pub struct SpirvCrossContext(NonNull<spvc_context_s>);
-
-/// The root lifetime of a SPIRV-Cross context.
-///
-/// There are mainly two lifetimes to worry about in the entire crate,
-/// the context lifetime (`'ctx`), and the compiler lifetime, (unnamed, `'_`).
-///
-/// The context lifetime must outlive every compiler. That is, every compiler-lifetimed value
-/// has lifetime at least 'ctx, **for drop purposes**. In qcell terminology, the drop-owner for
-/// every value is `SpirvCrossContext`. This is because the lifetime of the compiler is rooted
-/// at the lifetime of the context.
-///
-/// However, particularly strings, can be borrow-owned by either the context, or the compiler.
-/// Values that are borrow-owned by the context are moved into [`spvc_context_s::allocations`](https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L115).
-/// Note that compiler instances are borrow-owned by the context, which is why the compiler needs to carry
-/// a reference in the form of a borrow or Rc to the context to maintain its liveness. It can not **own**
-/// a context, because that would lead to a self-referential struct; a compiler can not be borrow-owned
-/// by itself.
-///
-/// Values that are borrow-owned by the compiler are those that do not get copied into a buffer, and
-/// can be mutated by `set` functions. These need to ensure that the lifetime of the value returned
-/// matches the lifetime of the immutable borrow of the compiler.
-enum ContextRoot<'a, T = SpirvCrossContext> {
-    Borrowed(&'a T),
-    RefCounted(Arc<T>),
-}
-
-impl<'a, T> Clone for ContextRoot<'a, T> {
-    fn clone(&self) -> Self {
-        match self {
-            &ContextRoot::Borrowed(a) => ContextRoot::Borrowed(a),
-            ContextRoot::RefCounted(rc) => ContextRoot::RefCounted(Arc::clone(rc)),
-        }
-    }
-}
-
-impl<'a, T> Borrow<T> for ContextRoot<'a, T> {
-    fn borrow(&self) -> &T {
-        match self {
-            ContextRoot::Borrowed(a) => a,
-            ContextRoot::RefCounted(a) => a.deref(),
-        }
-    }
-}
-
-impl<'a, T> AsRef<T> for ContextRoot<'a, T> {
-    fn as_ref(&self) -> &T {
-        match self {
-            ContextRoot::Borrowed(a) => a,
-            ContextRoot::RefCounted(a) => a.deref(),
-        }
-    }
-}
-
-impl ContextRoot<'_, SpirvCrossContext> {
-    fn ptr(&self) -> NonNull<spvc_context_s> {
-        match self {
-            ContextRoot::Borrowed(a) => a.0,
-            ContextRoot::RefCounted(a) => a.0,
-        }
-    }
-}
 
 /// A SPIR-V Module represented as SPIR-V words.
 pub struct Module<'a>(&'a [SpvId]);
@@ -264,7 +208,7 @@ impl SpirvCrossContext {
     }
 
     /// Create a compiler instance from a SPIR-V module.
-    pub fn create_compiler<T: Target>(&self, spirv: Module) -> error::Result<Compiler<T>> {
+    pub fn create_compiler<T: Target, Lock: WithContext>(&self, spirv: Module) -> error::Result<Compiler<T, Lock>> {
         // SAFETY:
         //
         // `SpirvCross::create_compiler` is not mut here, because
@@ -311,10 +255,10 @@ impl SpirvCrossContext {
     /// The compiler instance created carries with it a refcounted
     /// pointer to the SPIRV-Cross context, and thus has a `'static`
     /// lifetime.
-    pub fn create_compiler_refcounted<T: Target>(
+    pub fn create_compiler_refcounted<T: Target, Lock: WithContext>(
         self: &Arc<Self>,
         spirv: Module,
-    ) -> error::Result<Compiler<'static, T>> {
+    ) -> error::Result<Compiler<'static, T, Lock>> {
         unsafe {
             let mut ir = std::ptr::null_mut();
             sys::spvc_context_parse_spirv(
@@ -323,7 +267,7 @@ impl SpirvCrossContext {
                 spirv.0.len(),
                 &mut ir,
             )
-            .ok(&**self)?;
+            .ok_raw(self.0)?;
 
             let mut compiler = std::ptr::null_mut();
             sys::spvc_context_create_compiler(
@@ -333,7 +277,7 @@ impl SpirvCrossContext {
                 spirv_cross_sys::spvc_capture_mode::TakeOwnership,
                 &mut compiler,
             )
-            .ok(&**self)?;
+            .ok_raw(self.0)?;
 
             let Some(compiler) = NonNull::new(compiler) else {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
@@ -353,7 +297,7 @@ impl SpirvCrossContext {
     ///
     /// This allows for instances to be stored without keeping a reference to the
     /// context separately.
-    pub fn into_compiler<T: Target>(self, spirv: Module) -> error::Result<Compiler<'static, T>> {
+    pub fn into_compiler<T: Target, Lock: WithContext>(self, spirv: Module) -> error::Result<Compiler<'static, T, Lock>> {
         unsafe {
             let mut ir = std::ptr::null_mut();
             sys::spvc_context_parse_spirv(
@@ -362,7 +306,7 @@ impl SpirvCrossContext {
                 spirv.0.len(),
                 &mut ir,
             )
-            .ok(&self)?;
+            .ok_raw(self.0)?;
 
             let mut compiler = std::ptr::null_mut();
             sys::spvc_context_create_compiler(
@@ -372,7 +316,7 @@ impl SpirvCrossContext {
                 spirv_cross_sys::spvc_capture_mode::TakeOwnership,
                 &mut compiler,
             )
-            .ok(&self)?;
+            .ok_raw(self.0)?;
 
             let Some(compiler) = NonNull::new(compiler) else {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
@@ -389,12 +333,6 @@ impl SpirvCrossContext {
 impl Drop for SpirvCrossContext {
     fn drop(&mut self) {
         unsafe { sys::spvc_context_destroy(self.0.as_ptr()) }
-    }
-}
-
-impl ContextRooted for &SpirvCrossContext {
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.0
     }
 }
 
@@ -428,75 +366,22 @@ mod test {
 /// Once compiled into a [`CompiledArtifact`](compile::CompiledArtifact),
 /// reflection methods will still remain available, but the instance will be frozen,
 /// and no more mutation will be available.
-pub struct Compiler<'a, T> {
-    pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: ContextRoot<'a>,
-    _pd: PhantomData<T>,
+pub struct Compiler<'a, Target, Lock> {
+    lock: Lock,
+    _pd: PhantomData<Target>,
 }
 
-impl<T> Compiler<'_, T> {
+impl<Target, Lock: WithContext> Compiler<'_, Target, Lock> {
     /// Create a new compiler instance.
     ///
     /// The pointer to the `spvc_compiler_s` must have the same lifetime as the context root.
-    pub(crate) unsafe fn new_from_raw(
+    pub(crate) unsafe fn new_from_raw<T>(
         ptr: NonNull<spvc_compiler_s>,
         ctx: ContextRoot,
-    ) -> Compiler<T> {
+    ) -> Compiler<Target, Lock> {
         Compiler {
-            ptr,
-            ctx,
+            lock: Lock::new(ctx, ptr),
             _pd: PhantomData,
-        }
-    }
-}
-
-impl<T> ContextRooted for &Compiler<'_, T> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
-    }
-}
-
-impl<T> ContextRooted for &mut Compiler<'_, T> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
-    }
-}
-
-/// Holds on to the pointer for a compiler instance,
-/// but type erased.
-///
-/// This is used so that child resources of a compiler track the
-/// lifetime of a compiler, or create handles attached with the
-/// compiler instance, without needing to refer to the typed
-/// output of a compiler.
-///
-/// The only thing a [`PhantomCompiler`] is able to do is create handles or
-/// refer to the root context. It's lifetime should be the same as the lifetime
-/// of the **context**, or **shorter**, but at least the lifetime of the compiler.
-#[derive(Clone)]
-pub(crate) struct PhantomCompiler<'ctx> {
-    pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: ContextRoot<'ctx>,
-}
-
-impl ContextRooted for PhantomCompiler<'_> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
-    }
-}
-
-impl<'ctx, T> Compiler<'ctx, T> {
-    /// Create a type erased phantom for lifetime tracking purposes.
-    ///
-    /// This function is unsafe because a [`PhantomCompiler`] can be used to
-    /// **safely** create handles originating from the compiler.
-    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'ctx> {
-        PhantomCompiler {
-            ptr: self.ptr,
-            ctx: self.ctx.clone(),
         }
     }
 }

@@ -1,8 +1,8 @@
 use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
-use crate::handle::{Handle, TypeId, VariableId};
+use crate::handle::{Handle, PhantomCompiler, TypeId, VariableId};
 use crate::sealed::Sealed;
 use crate::string::ContextStr;
-use crate::{error, Compiler, PhantomCompiler, ToStatic};
+use crate::{error, Compiler, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
     spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,

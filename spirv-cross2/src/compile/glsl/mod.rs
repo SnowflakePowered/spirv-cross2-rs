@@ -1,10 +1,10 @@
 use super::CommonOptions;
 use crate::compile::sealed::ApplyCompilerOptions;
 use crate::error::ToContextError;
-use crate::handle::Handle;
+use crate::handle::{Handle, PhantomCompiler};
 use crate::sealed::Sealed;
 use crate::targets::Glsl;
-use crate::{error, Compiler, ContextRooted, ContextStr, PhantomCompiler};
+use crate::{error, Compiler, ContextRooted, ContextStr};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options, VariableId};
 use std::ops::Range;

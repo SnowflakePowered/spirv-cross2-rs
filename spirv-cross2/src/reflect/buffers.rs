@@ -7,9 +7,10 @@ use spirv_cross_sys::{SpvId, VariableId};
 
 /// A range over a buffer.
 pub use spirv_cross_sys::BufferRange;
+use crate::sync::WithContext;
 
 /// Reflection of buffers (UBO, SSBOs, and PushConstant blocks).
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<'ctx, T, L: WithContext> Compiler<'ctx, T, L> {
     /// Returns a list of which members of a struct are potentially in use by a
     /// SPIR-V shader. The granularity of this analysis is per-member of a struct.
     /// This can be used for Buffer (UBO), BufferBlock/StorageBuffer (SSBO) and PushConstant blocks.
@@ -20,21 +21,23 @@ impl<'ctx, T> Compiler<'ctx, T> {
         let handle = handle.into();
         let handle = self.yield_id(handle)?;
 
-        unsafe {
+        self.lock.with_ptr(|ptr| unsafe {
             let mut ranges = std::ptr::null();
             let mut size = 0;
             sys::spvc_compiler_get_active_buffer_ranges(
-                self.ptr.as_ptr(),
+                ptr.as_ptr(),
                 handle,
                 &mut ranges,
                 &mut size,
             )
-            .ok(self)?;
+                .ok(self)?;
 
             // SAFETY: 'ctx is sound here
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2575
+            // The slice does not mutate the FFI pointee, so it is sound
+            // to extend beyond the lifetime of the lock.
             Ok(std::slice::from_raw_parts(ranges, size))
-        }
+        })
     }
 
     /// Queries if a buffer object has a neighbor "counter" buffer.
@@ -50,10 +53,11 @@ impl<'ctx, T> Compiler<'ctx, T> {
     ) -> error::Result<Option<Handle<VariableId>>> {
         let variable = variable.into();
         let id = self.yield_id(variable)?;
-        unsafe {
+
+        self.lock.with_ptr(|ptr| unsafe {
             let mut counter = VariableId(SpvId(0));
             if sys::spvc_compiler_buffer_get_hlsl_counter_buffer(
-                self.ptr.as_ptr(),
+                ptr.as_ptr(),
                 id,
                 &mut counter,
             ) {
@@ -61,7 +65,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             } else {
                 Ok(None)
             }
-        }
+        })
     }
 }
 
@@ -72,6 +76,7 @@ mod test {
     use crate::Compiler;
     use crate::{Module, SpirvCrossContext};
     use spirv_cross_sys::ResourceType;
+    use crate::sync::UnsendContext;
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
@@ -81,7 +86,7 @@ mod test {
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None, UnsendContext> = spv.create_compiler(words)?;
         let ubo: Vec<_> = compiler
             .shader_resources()?
             .resources_for_type(ResourceType::UniformBuffer)?

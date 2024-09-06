@@ -1,8 +1,9 @@
 use crate::error::{SpirvCrossError, ToContextError};
-use crate::handle::{Handle, VariableId};
-use crate::{error, Compiler, PhantomCompiler};
+use crate::handle::{Handle, PhantomCompiler, VariableId};
+use crate::{error, Compiler};
 use spirv_cross_sys as sys;
 use std::slice;
+use crate::sync::WithContext;
 
 /// A proof that [`Compiler::create_dummy_sampler_for_combined_images`] was called.
 #[derive(Debug, Copy, Clone)]
@@ -52,7 +53,7 @@ pub struct CombinedImageSampler {
     pub sampler_id: Handle<VariableId>,
 }
 
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<'ctx, T, L: WithContext> Compiler<'ctx, T, L> {
     /// Analyzes all OpImageFetch (texelFetch) opcodes and checks if there are instances where
     /// said instruction is used without a combined image sampler.
     /// GLSL targets do not support the use of texelFetch without a sampler.
@@ -69,7 +70,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
         unsafe {
             let mut var_id = VariableId::from(0);
             sys::spvc_compiler_build_dummy_sampler_for_combined_images(
-                self.ptr.as_ptr(),
+                self.lock.ptr_mut().as_ptr(),
                 &mut var_id,
             )
             .ok(&*self)?;

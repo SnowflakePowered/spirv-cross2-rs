@@ -1,4 +1,5 @@
-use crate::{ContextRoot, SpirvCrossContext, SpirvCrossError};
+use crate::sync::ContextRoot;
+use crate::{SpirvCrossContext, SpirvCrossError};
 use std::borrow::Cow;
 use std::ffi::{c_char, CStr, CString};
 use std::fmt::{Debug, Display, Formatter};
@@ -314,9 +315,8 @@ impl<'a, T> ContextStr<'a, T> {
 #[cfg(test)]
 mod test {
     use crate::string::ContextStr;
-    use crate::ContextRoot;
+    use crate::sync::ContextRoot;
     use std::ffi::{c_char, CStr, CString};
-    use std::rc::Rc;
     use std::sync::Arc;
 
     struct LifetimeContext(*mut c_char);

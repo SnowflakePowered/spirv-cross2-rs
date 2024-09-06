@@ -1,5 +1,5 @@
 use crate::error::SpirvCrossError;
-use crate::{error, Compiler, PhantomCompiler};
+use crate::{error, Compiler};
 use spirv_cross_sys::spvc_compiler_s;
 use std::fmt::{Debug, Formatter};
 use std::ptr::NonNull;
@@ -14,10 +14,11 @@ pub use spirv_cross_sys::TypeId;
 
 /// A SPIR-V ID to a variable.
 pub use spirv_cross_sys::VariableId;
+use crate::sync::WithContext;
 
 #[derive(Copy, Clone)]
 #[repr(transparent)]
-struct PointerOnlyForComparison<T>(NonNull<T>);
+pub(crate) struct PointerOnlyForComparison<T>(NonNull<T>);
 
 // SAFETY: pointer is only for comparison.
 unsafe impl<T> Send for PointerOnlyForComparison<T> {}
@@ -109,7 +110,7 @@ impl<T: Id> Handle<T> {
 }
 
 /// APIs for comparing handles
-impl<T> Compiler<'_, T> {
+impl<T, L: WithContext> Compiler<'_, T, L> {
     #[inline(always)]
     /// Create a handle for the given ID tagged with this compiler instance.
     ///
@@ -141,7 +142,7 @@ impl<T> Compiler<'_, T> {
 
     /// Returns whether the given handle is valid for this compiler instance.
     pub fn handle_is_valid<I>(&self, handle: &Handle<I>) -> bool {
-        handle.tag == PointerOnlyForComparison(self.ptr)
+        handle.tag == self.lock.tag()
     }
 
     /// Yield the value of the handle, if it originated from the same context,
@@ -152,6 +153,16 @@ impl<T> Compiler<'_, T> {
         } else {
             Err(SpirvCrossError::InvalidHandle(handle.erase_type()))
         }
+    }
+}
+
+impl<'ctx, T, Lock: WithContext> Compiler<'ctx, T, Lock> {
+    /// Create a type erased phantom for lifetime tracking purposes.
+    ///
+    /// This function is unsafe because a [`PhantomCompiler`] can be used to
+    /// **safely** create handles originating from the compiler.
+    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'ctx> {
+        PhantomCompiler { tag: self.lock.tag() }
     }
 }
 
@@ -168,7 +179,24 @@ impl PhantomCompiler<'_> {
     pub(crate) fn create_handle<I>(&self, id: I) -> Handle<I> {
         Handle {
             id,
-            tag: PointerOnlyForComparison(self.ptr),
+            tag: self.tag,
         }
     }
+}
+
+/// Holds on to the pointer for a compiler instance,
+/// but type erased.
+///
+/// This is used so that child resources of a compiler track the
+/// lifetime of a compiler, or create handles attached with the
+/// compiler instance, without needing to refer to the typed
+/// output of a compiler.
+///
+/// The only thing a [`PhantomCompiler`] is able to do is create handles.
+///
+/// It's lifetime should be the same as the lifetime
+/// of the **context**, or **shorter**, but at least the lifetime of the compiler.
+#[derive(Clone)]
+pub(crate) struct PhantomCompiler<'ctx> {
+    tag: PointerOnlyForComparison<spvc_compiler_s>
 }

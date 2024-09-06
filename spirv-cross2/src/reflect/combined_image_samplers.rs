@@ -1,5 +1,6 @@
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, VariableId};
+use crate::iter::impl_iterator;
 use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 use std::slice;
@@ -18,29 +19,18 @@ pub struct CombinedImageSamplerIter<'a>(
     slice::Iter<'a, sys::spvc_combined_image_sampler>,
 );
 
-impl ExactSizeIterator for CombinedImageSamplerIter<'_> {
-    fn len(&self) -> usize {
-        self.1.len()
-    }
-}
-
-impl Iterator for CombinedImageSamplerIter<'_> {
-    type Item = CombinedImageSampler;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.1.next().map(|c| {
-            let combined_id = self.0.create_handle(c.combined_id);
-            let image_id = self.0.create_handle(c.image_id);
-            let sampler_id = self.0.create_handle(c.sampler_id);
+impl_iterator!(CombinedImageSamplerIter<'_>: CombinedImageSampler
+    as map |s, c: &sys::spvc_combined_image_sampler| {
+        let combined_id = s.0.create_handle(c.combined_id);
+            let image_id = s.0.create_handle(c.image_id);
+            let sampler_id = s.0.create_handle(c.sampler_id);
 
             CombinedImageSampler {
                 combined_id,
                 image_id,
                 sampler_id,
             }
-        })
-    }
-}
+} for [1]);
 
 /// A combined image sampler.
 pub struct CombinedImageSampler {

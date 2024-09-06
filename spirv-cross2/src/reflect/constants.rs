@@ -6,6 +6,7 @@ use std::slice;
 
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{ConstantId, Handle};
+use crate::iter::impl_iterator;
 use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 
@@ -90,40 +91,20 @@ pub struct SpecializationConstantIter<'a>(
     slice::Iter<'a, spvc_specialization_constant>,
 );
 
-impl ExactSizeIterator for SpecializationConstantIter<'_> {
-    fn len(&self) -> usize {
-        self.1.len()
+impl_iterator!(SpecializationConstantIter<'_>: SpecializationConstant as map |s, o: &spvc_specialization_constant| {
+    SpecializationConstant {
+        id: s.0.create_handle(o.id),
+        constant_id: o.constant_id,
     }
-}
-
-impl Iterator for SpecializationConstantIter<'_> {
-    type Item = SpecializationConstant;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.1.next().map(|o| SpecializationConstant {
-            id: self.0.create_handle(o.id),
-            constant_id: o.constant_id,
-        })
-    }
-}
+} for [1]);
 
 /// Iterator for specialization subconstants created by
 /// [`Compiler::specialization_sub_constants`].
 pub struct SpecializationSubConstantIter<'a>(PhantomCompiler, slice::Iter<'a, ConstantId>);
 
-impl ExactSizeIterator for SpecializationSubConstantIter<'_> {
-    fn len(&self) -> usize {
-        self.1.len()
-    }
-}
-
-impl Iterator for SpecializationSubConstantIter<'_> {
-    type Item = Handle<ConstantId>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.1.next().map(|o| self.0.create_handle(*o))
-    }
-}
+impl_iterator!(SpecializationSubConstantIter<'_>: Handle<ConstantId> as map |s, o: &ConstantId| {
+    s.0.create_handle(*o)
+} for [1]);
 
 /// Reflection of specialization constants.
 impl<T> Compiler<T> {

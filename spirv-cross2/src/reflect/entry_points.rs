@@ -2,6 +2,7 @@ use crate::cell::AllocationDropGuard;
 use crate::error;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
+use crate::iter::impl_iterator;
 use crate::reflect::try_valid_slice;
 use crate::string::CompilerStr;
 use crate::Compiler;
@@ -13,21 +14,11 @@ use std::ffi::c_char;
 /// Iterator for declared extensions, created by [`Compiler::declared_extensions`].
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>, AllocationDropGuard);
 
-impl<'a> Iterator for ExtensionsIter<'a> {
-    type Item = CompilerStr<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0
-            .next()
-            .map(|ptr| unsafe { CompilerStr::from_ptr(*ptr, self.1.clone()) })
+impl_iterator!(ExtensionsIter<'c>: CompilerStr<'c> as map |s, ptr: &*const c_char| {
+    unsafe {
+        CompilerStr::from_ptr(*ptr, s.1.clone())
     }
-}
-
-impl ExactSizeIterator for ExtensionsIter<'_> {
-    fn len(&self) -> usize {
-        self.0.len()
-    }
-}
+} for <'c> [0]);
 
 /// Querying declared properties of the SPIR-V module.
 impl<T> Compiler<T> {
@@ -129,36 +120,23 @@ pub struct EntryPoint<'a> {
     pub name: CompilerStr<'a>,
 }
 
-impl ExactSizeIterator for EntryPointIter<'_> {
-    fn len(&self) -> usize {
-        self.0.len()
-    }
-}
+impl_iterator!(EntryPointIter<'a>: EntryPoint<'a> as and_then|s, entry: &spvc_entry_point| {
+    unsafe {
+        let Some(execution_model) = spirv::ExecutionModel::from_u32(entry.execution_model.0 as u32) else {
+            if cfg!(debug_assertions) {
+                panic!("Unexpected SpvExecutionModelMax in valid entry point!")
+            } else {
+                return None;
+            }
+        };
 
-impl<'a> Iterator for EntryPointIter<'a> {
-    type Item = EntryPoint<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.next().and_then(|entry| unsafe {
-            // execution_model is potentially uninit, we need to check.
-            let Some(execution_model) =
-                spirv::ExecutionModel::from_u32(entry.execution_model.0 as u32)
-            else {
-                if cfg!(debug_assertions) {
-                    panic!("Unexpected SpvExecutionModelMax in valid entry point!")
-                } else {
-                    return None;
-                }
-            };
-
-            let name = CompilerStr::from_ptr(entry.name, self.1.clone());
-            Some(EntryPoint {
-                name,
-                execution_model,
-            })
+        let name = CompilerStr::from_ptr(entry.name, s.1.clone());
+        Some(EntryPoint {
+            name,
+            execution_model,
         })
     }
-}
+} for <'a> [0]);
 
 /// Reflection of entry points.
 impl<T> Compiler<T> {

@@ -2,9 +2,10 @@ use super::CommonOptions;
 use crate::compile::sealed::ApplyCompilerOptions;
 use crate::error::ToContextError;
 use crate::handle::Handle;
+use crate::iter::impl_iterator;
 use crate::sealed::Sealed;
 use crate::targets::Glsl;
-use crate::{error, Compiler, ContextRooted, CompilerStr, PhantomCompiler};
+use crate::{error, Compiler, CompilerStr, ContextRooted, PhantomCompiler};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options, VariableId};
 use std::marker::PhantomData;
@@ -229,30 +230,20 @@ pub struct GlslExtensionsIter<'a>(
     PhantomData<&'a Glsl>,
 );
 
-impl ExactSizeIterator for GlslExtensionsIter<'_> {
-    fn len(&self) -> usize {
-        self.0.len()
+impl_iterator!(GlslExtensionsIter<'c>: CompilerStr<'c> as and_then |s, index: usize| {
+    unsafe {
+        let extension = sys::spvc_compiler_get_required_extension(s.1.ptr.as_ptr(), index);
+        if extension.is_null() {
+            if cfg!(debug_assertions) {
+                panic!("Unexpected null string returned by `spvc_compiler_get_required_extension`.\
+                            The index of `spvc_compiler_get_num_required_extensions` did not match, complain to SPIRV-Cross.")
+            };
+            None
+        } else {
+            Some(CompilerStr::from_ptr(extension, s.1.ctx.clone()))
+        }
     }
-}
-
-impl<'comp> Iterator for GlslExtensionsIter<'comp> {
-    type Item = CompilerStr<'comp>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.next()
-            .and_then(|index| unsafe {
-                let extension = sys::spvc_compiler_get_required_extension(self.1.ptr.as_ptr(), index);
-                if extension.is_null() {
-                    if cfg!(debug_assertions) {
-                        panic!("Unexpected null string returned by `spvc_compiler_get_required_extension`. The index of `spvc_compiler_get_num_required_extensions` did not match, complain to SPIRV-Cross.")
-                    };
-                    None
-                } else {
-                    Some(CompilerStr::from_ptr(extension, self.1.ctx.clone()))
-                }
-            })
-    }
-}
+} for <'c> [0]);
 
 #[cfg(test)]
 mod test {

@@ -13,6 +13,7 @@ use std::slice;
 /// The type of built-in resources to query.
 pub use spirv_cross_sys::BuiltinResourceType;
 
+use crate::iter::impl_iterator;
 /// The type of resource to query.
 pub use spirv_cross_sys::ResourceType;
 
@@ -150,19 +151,9 @@ impl<T> Compiler<T> {
 /// Iterator over reflected resources, created by [`ShaderResources::resources_for_type`].
 pub struct ResourceIter<'a>(PhantomCompiler, slice::Iter<'a, spvc_reflected_resource>);
 
-impl ExactSizeIterator for ResourceIter<'_> {
-    fn len(&self) -> usize {
-        self.1.len()
-    }
-}
-
-impl<'a> Iterator for ResourceIter<'a> {
-    type Item = Resource<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.1.next().map(|o| Resource::from_raw(self.0.clone(), o))
-    }
-}
+impl_iterator!(ResourceIter<'a>: Resource<'a> as map |s, o: &'a spvc_reflected_resource| {
+    Resource::from_raw(s.0.clone(), o)
+} for <'a> [1]);
 
 /// Iterator over reflected builtin resources, created by [`ShaderResources::builtin_resources_for_type`].
 pub struct BuiltinResourceIter<'a>(
@@ -170,15 +161,9 @@ pub struct BuiltinResourceIter<'a>(
     slice::Iter<'a, spvc_reflected_builtin_resource>,
 );
 
-impl<'a> Iterator for BuiltinResourceIter<'a> {
-    type Item = BuiltinResource<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.1
-            .next()
-            .and_then(|o| BuiltinResource::from_raw(self.0.clone(), o))
-    }
-}
+impl_iterator!(BuiltinResourceIter<'a>: BuiltinResource<'a> as and_then |s, o: &'a spvc_reflected_builtin_resource| {
+    BuiltinResource::from_raw(s.0.clone(), o)
+} for <'a> [1]);
 
 /// Description of a shader resource.
 #[derive(Debug)]
@@ -237,7 +222,6 @@ impl ToStatic for Resource<'_> {
         }
     }
 }
-
 
 impl Clone for Resource<'_> {
     fn clone(&self) -> Resource<'static> {
@@ -308,12 +292,6 @@ impl ToStatic for BuiltinResource<'_> {
 impl Clone for BuiltinResource<'_> {
     fn clone(&self) -> BuiltinResource<'static> {
         self.to_static()
-    }
-}
-
-impl ExactSizeIterator for BuiltinResourceIter<'_> {
-    fn len(&self) -> usize {
-        self.1.len()
     }
 }
 

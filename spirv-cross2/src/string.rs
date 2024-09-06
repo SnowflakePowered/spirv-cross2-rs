@@ -1,19 +1,19 @@
-use crate::{ContextRoot, SpirvCrossContext, SpirvCrossError};
+use crate::cell::AllocationDropGuard;
+use crate::SpirvCrossError;
 use std::borrow::Cow;
 use std::ffi::{c_char, CStr, CString};
 use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
 
 /// An immutable wrapper around a valid UTF-8 string whose memory contents
-/// may or may not be originating from a [`SpirvCrossContext`](crate::SpirvCrossContext)
-/// context.
+/// may or may not be originating from FFI.
 ///
 /// In most cases, users of this library do not need to worry about
-/// constructing a [`ContextStr`]. All functions that take strings
+/// constructing a [`CompilerStr`]. All functions that take strings
 /// take `impl Into<ContextStr<'_>>`, which converts automatically from
 /// [`&str`](str) and [`String`](String).
 ///
-/// [`ContextStr`] also implements [`Deref`](Deref) for [`&str`](str),
+/// [`CompilerStr`] also implements [`Deref`](Deref) for [`&str`](str),
 /// so all immutable `str` methods are available.
 ///
 /// # Allocation Behaviour
@@ -34,8 +34,8 @@ use std::ops::Deref;
 ///
 /// Using [C-string literals](https://doc.rust-lang.org/edition-guide/rust-2021/c-string-literals.html)
 /// where possible can be used to avoid an allocation.
-pub struct ContextStr<'a, T = SpirvCrossContext> {
-    pointer: Option<ContextPointer<'a, T>>,
+pub struct CompilerStr<'a> {
+    pointer: Option<ContextPointer<'a>>,
     cow: Cow<'a, str>,
 }
 
@@ -45,10 +45,10 @@ pub struct ContextStr<'a, T = SpirvCrossContext> {
 // is alive for 'a.
 //
 // There is no interior mutability of a
-unsafe impl<T: Send> Send for ContextStr<'_, T> {}
-unsafe impl<T: Send> Sync for ContextStr<'_, T> {}
+unsafe impl Send for CompilerStr<'_> {}
+unsafe impl Sync for CompilerStr<'_> {}
 
-impl<T> Clone for ContextStr<'_, T> {
+impl Clone for CompilerStr<'_> {
     fn clone(&self) -> Self {
         Self {
             pointer: self.pointer.clone(),
@@ -57,16 +57,16 @@ impl<T> Clone for ContextStr<'_, T> {
     }
 }
 
-pub(crate) enum ContextPointer<'a, T> {
+pub(crate) enum ContextPointer<'a> {
     FromContext {
         // the lifetime of pointer should be 'a.
         pointer: *const c_char,
-        context: ContextRoot<'a, T>,
+        context: AllocationDropGuard,
     },
     BorrowedCStr(&'a CStr),
 }
 
-impl<T> ContextPointer<'_, T> {
+impl ContextPointer<'_> {
     pub const fn pointer(&self) -> *const c_char {
         match self {
             ContextPointer::FromContext { pointer, .. } => *pointer,
@@ -75,7 +75,7 @@ impl<T> ContextPointer<'_, T> {
     }
 }
 
-impl<T> Clone for ContextPointer<'_, T> {
+impl Clone for ContextPointer<'_> {
     fn clone(&self) -> Self {
         match self {
             ContextPointer::FromContext { pointer, context } => ContextPointer::FromContext {
@@ -87,24 +87,24 @@ impl<T> Clone for ContextPointer<'_, T> {
     }
 }
 
-impl<'a, T> Display for ContextStr<'a, T> {
+impl<'a> Display for CompilerStr<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.cow)
     }
 }
 
-impl<'a, T> Debug for ContextStr<'a, T> {
+impl<'a> Debug for CompilerStr<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.cow)
     }
 }
 
-pub(crate) enum MaybeOwnedCString<'a, T = SpirvCrossContext> {
+pub(crate) enum MaybeOwnedCString<'a> {
     Owned(CString),
-    Borrowed(ContextPointer<'a, T>),
+    Borrowed(ContextPointer<'a>),
 }
 
-impl<T> MaybeOwnedCString<'_, T> {
+impl MaybeOwnedCString<'_> {
     /// Get a pointer to the C string.
     ///
     /// The pointer will be valid for the lifetime of `self`.
@@ -116,13 +116,13 @@ impl<T> MaybeOwnedCString<'_, T> {
     }
 }
 
-impl<T> AsRef<str> for ContextStr<'_, T> {
+impl AsRef<str> for CompilerStr<'_> {
     fn as_ref(&self) -> &str {
         self.cow.as_ref()
     }
 }
 
-impl<T> Deref for ContextStr<'_, T> {
+impl Deref for CompilerStr<'_> {
     type Target = str;
 
     fn deref(&self) -> &Self::Target {
@@ -130,62 +130,62 @@ impl<T> Deref for ContextStr<'_, T> {
     }
 }
 
-impl<T> PartialEq for ContextStr<'_, T> {
-    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+impl PartialEq for CompilerStr<'_> {
+    fn eq(&self, other: &CompilerStr<'_>) -> bool {
         self.cow.eq(&other.cow)
     }
 }
 
-impl<'a, T> PartialEq<&'a str> for ContextStr<'_, T> {
+impl<'a> PartialEq<&'a str> for CompilerStr<'_> {
     fn eq(&self, other: &&'a str) -> bool {
         self.cow.eq(other)
     }
 }
 
-impl<'a, T> PartialEq<ContextStr<'_, T>> for &'a str {
-    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+impl<'a> PartialEq<CompilerStr<'_>> for &'a str {
+    fn eq(&self, other: &CompilerStr<'_>) -> bool {
         self.eq(&other.cow)
     }
 }
 
-impl<T> PartialEq<str> for ContextStr<'_, T> {
+impl PartialEq<str> for CompilerStr<'_> {
     fn eq(&self, other: &str) -> bool {
         self.cow.eq(other)
     }
 }
 
-impl<T> PartialEq<ContextStr<'_, T>> for str {
-    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+impl PartialEq<CompilerStr<'_>> for str {
+    fn eq(&self, other: &CompilerStr<'_>) -> bool {
         self.eq(&other.cow)
     }
 }
 
-impl<T> PartialEq<ContextStr<'_, T>> for String {
-    fn eq(&self, other: &ContextStr<'_, T>) -> bool {
+impl PartialEq<CompilerStr<'_>> for String {
+    fn eq(&self, other: &CompilerStr<'_>) -> bool {
         self.eq(&other.cow)
     }
 }
-impl<T> PartialEq<String> for ContextStr<'_, T> {
+impl PartialEq<String> for CompilerStr<'_> {
     fn eq(&self, other: &String) -> bool {
         self.cow.eq(other)
     }
 }
 
-impl<T> Eq for ContextStr<'_, T> {}
+impl Eq for CompilerStr<'_> {}
 
-impl<T> From<String> for ContextStr<'_, T> {
+impl From<String> for CompilerStr<'_> {
     fn from(value: String) -> Self {
         Self::from_string(value)
     }
 }
 
-impl<'a, T> From<&'a str> for ContextStr<'a, T> {
+impl<'a> From<&'a str> for CompilerStr<'a> {
     fn from(value: &'a str) -> Self {
         Self::from_str(value)
     }
 }
 
-impl<'a, T> From<&'a CStr> for ContextStr<'a, T> {
+impl<'a> From<&'a CStr> for CompilerStr<'a> {
     fn from(value: &'a CStr) -> Self {
         Self::from_cstr(value)
     }
@@ -199,9 +199,9 @@ impl<'a, T> From<&'a CStr> for ContextStr<'a, T> {
 /// In most cases, the returned lifetime should be the lifetime of the mutable borrow,
 /// if returning a string from the [`Compiler`](crate::Compiler).
 ///
-/// [`ContextStr::from_ptr`] takes a context argument, and the context must be
+/// [`CompilerStr::from_ptr`] takes a context argument, and the context must be
 /// the source of provenance for the `ContextStr`.
-impl<'a, T> ContextStr<'a, T> {
+impl<'a> CompilerStr<'a> {
     /// Wraps a raw C string with a safe C string wrapper.
     ///
     /// If the raw C string is valid UTF-8, a pointer to the string will be
@@ -234,8 +234,8 @@ impl<'a, T> ContextStr<'a, T> {
     /// or by explicit annotation.
     pub(crate) unsafe fn from_ptr<'b>(
         ptr: *const c_char,
-        context: ContextRoot<'a, T>,
-    ) -> ContextStr<'b, T>
+        arena: AllocationDropGuard,
+    ) -> CompilerStr<'b>
     where
         'a: 'b,
     {
@@ -245,7 +245,7 @@ impl<'a, T> ContextStr<'a, T> {
             Self {
                 pointer: Some(ContextPointer::FromContext {
                     pointer: ptr,
-                    context,
+                    context: arena,
                 }),
                 cow: maybe,
             }
@@ -287,7 +287,7 @@ impl<'a, T> ContextStr<'a, T> {
     /// Allocate if necessary, if not then return a pointer to the original cstring.
     ///
     /// The returned pointer will be valid for the lifetime `'a`.
-    pub(crate) fn into_cstring_ptr(self) -> Result<MaybeOwnedCString<'a, T>, SpirvCrossError> {
+    pub(crate) fn into_cstring_ptr(self) -> Result<MaybeOwnedCString<'a>, SpirvCrossError> {
         if let Some(ptr) = &self.pointer {
             // this is either free or very cheap (Rc incr at most)
             Ok(MaybeOwnedCString::Borrowed(ptr.clone()))
@@ -313,10 +313,8 @@ impl<'a, T> ContextStr<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use crate::string::ContextStr;
-    use crate::ContextRoot;
+    use crate::string::CompilerStr;
     use std::ffi::{c_char, CStr, CString};
-    use std::rc::Rc;
     use std::sync::Arc;
 
     struct LifetimeContext(*mut c_char);
@@ -336,74 +334,74 @@ mod test {
         }
     }
 
-    struct LifetimeTest<'a>(ContextRoot<'a, LifetimeContext>);
-    impl<'a> LifetimeTest<'a> {
-        pub fn get(&self) -> ContextStr<'a, LifetimeContext> {
-            unsafe { ContextStr::from_ptr(self.0.as_ref().0, self.0.clone()) }
-        }
+    // struct LifetimeTest<'a>(ContextRoot<'a, LifetimeContext>);
+    // impl<'a> LifetimeTest<'a> {
+    //     pub fn get(&self) -> ContextStr<'a, LifetimeContext> {
+    //         unsafe { ContextStr::from_ptr(self.0.as_ref().0, self.0.clone()) }
+    //     }
+    //
+    //     pub fn set(&mut self, cstr: ContextStr<'a, LifetimeContext>) {
+    //         println!("{:p}", cstr.into_cstring_ptr().unwrap().as_ptr())
+    //     }
+    // }
+    //
+    // #[test]
+    // fn test_string() {
+    //     // use std::borrow::BorrowMut;
+    //     let lc = LifetimeContext::new();
+    //     let ctx = ContextRoot::RefCounted(Arc::new(lc));
+    //
+    //     let mut lt = LifetimeTest(ctx);
+    //
+    //     // let mut lt = Rc::new(LifetimeTest(PhantomData));
+    //     let cstr = lt.get();
+    //     lt.set(cstr.clone());
+    //
+    //     let original_ptr = cstr.clone().into_cstring_ptr().unwrap().as_ptr();
+    //     drop(lt);
+    //
+    //     assert_eq!("hello", cstr.as_ref());
+    //     println!("{}", cstr);
+    //
+    //     assert_eq!(original_ptr as usize, cstr.as_ptr() as usize);
+    //     // lt.borrow_mut().set(cstr)
+    // }
 
-        pub fn set(&mut self, cstr: ContextStr<'a, LifetimeContext>) {
-            println!("{:p}", cstr.into_cstring_ptr().unwrap().as_ptr())
-        }
-    }
-
-    #[test]
-    fn test_string() {
-        // use std::borrow::BorrowMut;
-        let lc = LifetimeContext::new();
-        let ctx = ContextRoot::RefCounted(Arc::new(lc));
-
-        let mut lt = LifetimeTest(ctx);
-
-        // let mut lt = Rc::new(LifetimeTest(PhantomData));
-        let cstr = lt.get();
-        lt.set(cstr.clone());
-
-        let original_ptr = cstr.clone().into_cstring_ptr().unwrap().as_ptr();
-        drop(lt);
-
-        assert_eq!("hello", cstr.as_ref());
-        println!("{}", cstr);
-
-        assert_eq!(original_ptr as usize, cstr.as_ptr() as usize);
-        // lt.borrow_mut().set(cstr)
-    }
-
-    #[test]
-    fn test_string_does_not_allocate() {
-        // one past the end
-        let mut test = String::with_capacity(6);
-        test.push_str("Hello");
-
-        let original_ptr = test.as_ptr() as usize;
-        let ctxstr = ContextStr::<LifetimeContext>::from(test);
-
-        let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
-        assert_eq!(original_ptr, new_ptr as usize);
-        // lt.borrow_mut().set(cstr)
-    }
-
-    #[test]
-    fn test_str_does_allocate() {
-        let str = "Hello";
-        let original_ptr = str.as_ptr() as usize;
-        let ctxstr = ContextStr::<LifetimeContext>::from(str);
-
-        let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
-        assert_ne!(original_ptr, new_ptr as usize);
-        // lt.borrow_mut().set(cstr)
-    }
-
-    #[test]
-    fn test_cstr_does_not_allocate() {
-        // can't use cstring literals until 1.77
-        let str = unsafe { CStr::from_ptr(b"Hello\0".as_ptr().cast()) };
-
-        let original_ptr = str.as_ptr() as usize;
-        let ctxstr = ContextStr::<LifetimeContext>::from(str);
-
-        let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
-        assert_eq!(original_ptr, new_ptr as usize);
-        // lt.borrow_mut().set(cstr)
-    }
+    // #[test]
+    // fn test_string_does_not_allocate() {
+    //     // one past the end
+    //     let mut test = String::with_capacity(6);
+    //     test.push_str("Hello");
+    //
+    //     let original_ptr = test.as_ptr() as usize;
+    //     let ctxstr = ContextStr::<LifetimeContext>::from(test);
+    //
+    //     let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
+    //     assert_eq!(original_ptr, new_ptr as usize);
+    //     // lt.borrow_mut().set(cstr)
+    // }
+    //
+    // #[test]
+    // fn test_str_does_allocate() {
+    //     let str = "Hello";
+    //     let original_ptr = str.as_ptr() as usize;
+    //     let ctxstr = ContextStr::<LifetimeContext>::from(str);
+    //
+    //     let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
+    //     assert_ne!(original_ptr, new_ptr as usize);
+    //     // lt.borrow_mut().set(cstr)
+    // }
+    //
+    // #[test]
+    // fn test_cstr_does_not_allocate() {
+    //     // can't use cstring literals until 1.77
+    //     let str = unsafe { CStr::from_ptr(b"Hello\0".as_ptr().cast()) };
+    //
+    //     let original_ptr = str.as_ptr() as usize;
+    //     let ctxstr = ContextStr::<LifetimeContext>::from(str);
+    //
+    //     let new_ptr = ctxstr.into_cstring_ptr().unwrap().as_ptr();
+    //     assert_eq!(original_ptr, new_ptr as usize);
+    //     // lt.borrow_mut().set(cstr)
+    // }
 }

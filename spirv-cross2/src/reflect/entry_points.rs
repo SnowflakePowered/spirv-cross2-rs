@@ -1,24 +1,25 @@
+use crate::cell::AllocationDropGuard;
 use crate::error;
 use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::reflect::try_valid_slice;
-use crate::string::ContextStr;
-use crate::{Compiler, ContextRoot};
+use crate::string::CompilerStr;
+use crate::Compiler;
 use core::slice;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_entry_point, SpvBuiltIn, SpvExecutionModel, SpvStorageClass};
 use std::ffi::c_char;
 
 /// Iterator for declared extensions, created by [`Compiler::declared_extensions`].
-pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>, ContextRoot<'a>);
+pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>, AllocationDropGuard);
 
 impl<'a> Iterator for ExtensionsIter<'a> {
-    type Item = ContextStr<'a>;
+    type Item = CompilerStr<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0
             .next()
-            .map(|ptr| unsafe { ContextStr::from_ptr(*ptr, self.1.clone()) })
+            .map(|ptr| unsafe { CompilerStr::from_ptr(*ptr, self.1.clone()) })
     }
 }
 
@@ -29,9 +30,9 @@ impl ExactSizeIterator for ExtensionsIter<'_> {
 }
 
 /// Querying declared properties of the SPIR-V module.
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Gets the list of all SPIR-V Capabilities which were declared in the SPIR-V module.
-    pub fn declared_capabilities(&self) -> error::Result<&'ctx [spirv::Capability]> {
+    pub fn declared_capabilities(&self) -> error::Result<&[spirv::Capability]> {
         unsafe {
             let mut caps = std::ptr::null();
             let mut size = 0;
@@ -46,7 +47,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     }
 
     /// Gets the list of all SPIR-V extensions which were declared in the SPIR-V module.
-    pub fn declared_extensions(&self) -> error::Result<ExtensionsIter<'ctx>> {
+    pub fn declared_extensions(&self) -> error::Result<ExtensionsIter<'static>> {
         // SAFETY: 'a is OK to return here
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2756
         unsafe {
@@ -58,7 +59,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             let ptr_slice = slice::from_raw_parts(caps, size);
 
-            Ok(ExtensionsIter(ptr_slice.iter(), self.ctx.clone()))
+            Ok(ExtensionsIter(ptr_slice.iter(), self.ctx.drop_guard()))
         }
     }
 
@@ -81,7 +82,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 pub struct ActiveBuiltinsUpdatedProof(Handle<()>);
 
 /// Querying builtins in the SPIR-V module
-impl<T> Compiler<'_, T> {
+impl<T> Compiler<T> {
     /// Update active built-ins in the SPIR-V module.
     pub fn update_active_builtins(&mut self) -> ActiveBuiltinsUpdatedProof {
         unsafe {
@@ -117,7 +118,7 @@ impl<T> Compiler<'_, T> {
 }
 
 /// Iterator type created by [`Compiler::entry_points`].
-pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>, ContextRoot<'a>);
+pub struct EntryPointIter<'a>(slice::Iter<'a, spvc_entry_point>, AllocationDropGuard);
 
 /// A SPIR-V entry point.
 #[derive(Debug)]
@@ -125,7 +126,7 @@ pub struct EntryPoint<'a> {
     /// The execution model for the entry point.
     pub execution_model: spirv::ExecutionModel,
     /// The name of the entry point.
-    pub name: ContextStr<'a>,
+    pub name: CompilerStr<'a>,
 }
 
 impl ExactSizeIterator for EntryPointIter<'_> {
@@ -150,7 +151,7 @@ impl<'a> Iterator for EntryPointIter<'a> {
                 }
             };
 
-            let name = ContextStr::from_ptr(entry.name, self.1.clone());
+            let name = CompilerStr::from_ptr(entry.name, self.1.clone());
             Some(EntryPoint {
                 name,
                 execution_model,
@@ -160,7 +161,7 @@ impl<'a> Iterator for EntryPointIter<'a> {
 }
 
 /// Reflection of entry points.
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// All operations work on the current entry point.
     ///
     /// Entry points can be swapped out with [`Compiler::set_entry_point`].
@@ -183,7 +184,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     ///
     /// If the name is not illegal, and has not been renamed this function will simply return the
     /// original name.
-    pub fn entry_points(&self) -> error::Result<EntryPointIter<'ctx>> {
+    pub fn entry_points(&self) -> error::Result<EntryPointIter<'static>> {
         unsafe {
             // SAFETY: 'ctx is sound here
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2170
@@ -194,7 +195,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             Ok(EntryPointIter(
                 slice::from_raw_parts(entry_points.cast(), size).iter(),
-                self.ctx.clone(),
+                self.ctx.drop_guard(),
             ))
         }
     }
@@ -202,9 +203,9 @@ impl<'ctx, T> Compiler<'ctx, T> {
     /// Get the cleansed name of the entry point for the given original name.
     pub fn cleansed_entry_point_name<'str>(
         &self,
-        name: impl Into<ContextStr<'str>>,
+        name: impl Into<CompilerStr<'str>>,
         model: spirv::ExecutionModel,
-    ) -> error::Result<Option<ContextStr<'ctx>>> {
+    ) -> error::Result<Option<CompilerStr<'static>>> {
         // SAFETY: 'ctx is sound here
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2217
         let name = name.into();
@@ -220,7 +221,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             if name.is_null() {
                 return Ok(None);
             }
-            Ok(Some(ContextStr::from_ptr(name, self.ctx.clone())))
+            Ok(Some(CompilerStr::from_ptr(name, self.ctx.drop_guard())))
         }
     }
 
@@ -244,7 +245,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     /// alternate name by the MSL backend.
     pub fn set_entry_point<'str>(
         &mut self,
-        name: impl Into<ContextStr<'str>>,
+        name: impl Into<CompilerStr<'str>>,
         model: spirv::ExecutionModel,
     ) -> error::Result<()> {
         let name = name.into();
@@ -268,8 +269,8 @@ impl<'ctx, T> Compiler<'ctx, T> {
     /// Values returned from [`Compiler::entry_points`] before this call will be outdated.
     pub fn rename_entry_point<'str>(
         &mut self,
-        from: impl Into<ContextStr<'str>>,
-        to: impl Into<ContextStr<'str>>,
+        from: impl Into<CompilerStr<'str>>,
+        to: impl Into<CompilerStr<'str>>,
         model: spirv::ExecutionModel,
     ) -> error::Result<()> {
         let from = from.into();
@@ -294,17 +295,17 @@ impl<'ctx, T> Compiler<'ctx, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
+    use spirv::ExecutionModel;
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_entry_points() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let mut compiler: Compiler<targets::None> = Compiler::new(words)?;
         let old_entry_points: Vec<_> = compiler.entry_points()?.collect();
         let main = &old_entry_points[0];
 
@@ -329,12 +330,11 @@ mod test {
 
     #[test]
     pub fn entry_point_soundness() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let mut compiler: Compiler<targets::None> = spv.into_compiler(words)?;
-
+        let mut compiler: Compiler<targets::None> = Compiler::new(words)?;
+        let entry_points = compiler.entry_points()?;
         let name = compiler
             .cleansed_entry_point_name("main", spirv::ExecutionModel::Fragment)?
             .unwrap();
@@ -344,20 +344,22 @@ mod test {
         drop(compiler);
 
         assert_eq!("main", name.as_ref());
+        let entries: Vec<_> = entry_points.collect();
 
+        eprintln!("{:?}", entries);
         Ok(())
     }
 
     #[test]
     pub fn capabilities() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let mut compiler: Compiler<targets::None> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         let ty = compiler.declared_capabilities()?;
+
         assert_eq!([spirv::Capability::Shader], ty);
 
         Ok(())

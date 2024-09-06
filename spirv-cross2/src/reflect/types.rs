@@ -7,7 +7,7 @@ use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::Handle;
 use crate::handle::{ConstantId, TypeId};
 use crate::sealed::Sealed;
-use crate::string::ContextStr;
+use crate::string::CompilerStr;
 use spirv_cross_sys as sys;
 
 /// The kind of scalar
@@ -133,7 +133,7 @@ pub struct Type<'a> {
     /// The SPIR-V ID of the type.
     pub id: Handle<TypeId>,
     /// The name of the type, if any.
-    pub name: Option<ContextStr<'a>>,
+    pub name: Option<CompilerStr<'a>>,
     /// Inner details about the type.
     pub inner: TypeInner<'a>,
     /// A size hint for the type,
@@ -149,7 +149,7 @@ pub struct StructMember<'a> {
     /// The type ID of the parent struct.
     pub struct_type: Handle<TypeId>,
     /// The name of the struct member.
-    pub name: Option<ContextStr<'a>>,
+    pub name: Option<CompilerStr<'a>>,
     /// The index of the member inside the struct.
     pub index: usize,
     /// The offset in bytes from the beginning of the struct.
@@ -459,7 +459,7 @@ pub trait ResolveSize: Sealed {
 }
 
 /// Reflection of SPIR-V types.
-impl<T> Compiler<'_, T> {
+impl<T> Compiler<T> {
     // None of the names here belong to the context, they belong to the compiler.
     // so 'ctx is unsound to return.
 
@@ -477,9 +477,9 @@ impl<T> Compiler<'_, T> {
             let mut members = Vec::with_capacity(member_type_len as usize);
             for i in 0..member_type_len {
                 let id = sys::spvc_type_get_member_type(ty, i);
-                let name = ContextStr::from_ptr(
+                let name = CompilerStr::from_ptr(
                     sys::spvc_compiler_get_member_name(self.ptr.as_ptr(), struct_ty_id, i),
-                    self.ctx.clone(),
+                    self.ctx.drop_guard(),
                 );
 
                 let name = if name.as_ref().is_empty() {
@@ -569,7 +569,7 @@ impl<T> Compiler<'_, T> {
     fn process_array<'a>(
         &self,
         id: TypeId,
-        name: Option<ContextStr<'a>>,
+        name: Option<CompilerStr<'a>>,
     ) -> error::Result<Type<'a>> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
@@ -696,9 +696,9 @@ impl<T> Compiler<'_, T> {
             let base_type_id = sys::spvc_type_get_base_type_id(ty);
 
             let base_ty = sys::spvc_type_get_basetype(ty);
-            let name = ContextStr::from_ptr(
+            let name = CompilerStr::from_ptr(
                 sys::spvc_compiler_get_name(self.ptr.as_ptr(), id.0),
-                self.ctx.clone(),
+                self.ctx.drop_guard(),
             );
 
             let name = if name.as_ref().is_empty() {
@@ -900,7 +900,7 @@ impl<T> Compiler<'_, T> {
 
     /// Check if the struct has a runtime array. If so, return the stride
     /// of the array.
-    pub fn struct_has_runtime_array(&self, struct_type: &StructType) -> error::Result<Option<u32>> {
+    fn struct_has_runtime_array(&self, struct_type: &StructType) -> error::Result<Option<u32>> {
         if let Some(last) = struct_type.members.last() {
             let Some(array_stride) = last.array_stride else {
                 return Ok(None);
@@ -939,17 +939,16 @@ impl<T> Compiler<'_, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_stage_outputs() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.into_compiler(words)?;
+        let compiler: Compiler<targets::None> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         // println!("{:#?}", resources);
@@ -972,11 +971,10 @@ mod test {
 
     #[test]
     pub fn set_member_name_validity_test() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let mut compiler: Compiler<targets::None> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         // println!("{:#?}", resources);
@@ -996,23 +994,15 @@ mod test {
 
         let ty = compiler.type_description(resources.uniform_buffers[0].base_type_id)?;
 
-        // match ty.inner {
-        //     TypeInner::Struct(ty) => {
-        //         compiler.get_type(ty.members[0].id)?;
-        //     }
-        //     TypeInner::Vector { .. } => {}
-        //     _ => {}
-        // }
         Ok(())
     }
 
     #[test]
     pub fn get_variable_type_test() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let mut compiler: Compiler<targets::None> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         let variable = resources.uniform_buffers[0].id;
@@ -1020,6 +1010,8 @@ mod test {
             resources.uniform_buffers[0].type_id.id(),
             compiler.variable_type(variable)?.id()
         );
+
+        eprintln!("{:?}", resources);
         Ok(())
     }
 }

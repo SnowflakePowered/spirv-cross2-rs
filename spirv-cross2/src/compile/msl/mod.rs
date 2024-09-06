@@ -46,7 +46,7 @@ pub const MAX_ARGUMENT_BUFFERS: u32 = 8;
 use crate::error::ToContextError;
 use crate::handle::{Handle, VariableId};
 use crate::sealed::Sealed;
-use crate::string::ContextStr;
+use crate::string::CompilerStr;
 use crate::targets::Msl;
 use crate::{error, Compiler, ContextRooted};
 use spirv_cross_sys::{MslResourceBinding2, MslShaderInterfaceVar2, SpvBuiltIn, SpvExecutionModel};
@@ -740,7 +740,7 @@ impl ShaderInterfaceVariable {
 }
 
 /// MSL specific APIs.
-impl Compiler<'_, Msl> {
+impl Compiler<Msl> {
     /// Get whether the vertex shader requires rasterization to be disabled.
     pub fn is_rasterization_disabled(&self) -> bool {
         unsafe { sys::spvc_compiler_msl_is_rasterization_disabled(self.ptr.as_ptr()) }
@@ -991,7 +991,7 @@ impl Compiler<'_, Msl> {
     /// Set the suffix for combined image samplers.
     pub fn set_combined_sampler_suffix<'str>(
         &mut self,
-        str: impl Into<ContextStr<'str>>,
+        str: impl Into<CompilerStr<'str>>,
     ) -> error::Result<()> {
         unsafe {
             let str = str.into();
@@ -1004,10 +1004,10 @@ impl Compiler<'_, Msl> {
     }
 
     /// Get the suffix for combined image samplers.
-    pub fn combined_sampler_suffix(&self) -> ContextStr {
+    pub fn combined_sampler_suffix(&self) -> CompilerStr {
         unsafe {
             let suffix = sys::spvc_compiler_msl_get_combined_sampler_suffix(self.ptr.as_ptr());
-            ContextStr::from_ptr(suffix, self.ctx.clone())
+            CompilerStr::from_ptr(suffix, self.ctx.drop_guard())
         }
     }
 
@@ -1076,7 +1076,7 @@ pub enum AutomaticResourceBindingTier {
     Secondary,
 }
 
-impl CompiledArtifact<'_, Msl> {
+impl CompiledArtifact<Msl> {
     /// Returns whether the set/binding combination provided in [`Compiler<Msl>::add_resource_binding`]
     /// was used.
     pub fn is_resource_used(&self, model: spirv::ExecutionModel, binding: ResourceBinding) -> bool {
@@ -1170,17 +1170,16 @@ mod test {
     use crate::compile::sealed::ApplyCompilerOptions;
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");
 
     #[test]
     pub fn msl_opts() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
 
-        let compiler: Compiler<targets::Msl> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::Msl> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         let mut opts_ptr = std::ptr::null_mut();

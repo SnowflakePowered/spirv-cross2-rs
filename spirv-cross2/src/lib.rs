@@ -17,22 +17,13 @@
 //! made to ensure that these bindings are sound, and that mutations occur strictly within Rust's
 //! borrow rules.
 //!
-//! ## Context
-//! The entry point to the library is [`SpirvCrossContext`], which owns all foreign allocations.
-//! Hence, structs wrapping SPIRV-Cross objects have a lifetime parameter that refers to the
-//! lifetime of the context.
-//!
-//! [`Compiler`] instances can share a context, in which case the context must outlive all associated
-//! objects, or it can take ownership of a context and have a `'static` lifetime, in which case the
-//! context becomes internally ref-counted and will be dropped when the last child resource is dropped.
-//!
 //! ## Strings
-//! Methods on [`Compiler`] return and accept [`ContextStr`] instead of a normal string type. A
-//! [`ContextStr`] may or may not be owned by the context, or may come from Rust. Rust string types
-//! can be coerced automatically to [`ContextStr`] as an input, and [`ContextStr`] can easily be copied
+//! Methods on [`Compiler`] return and accept [`CompilerStr`] instead of a normal string type. A
+//! [`CompilerStr`] may or may not be owned by the compiler, or may come from Rust. Rust string types
+//! can be coerced automatically to [`CompilerStr`] as an input, and [`CompilerStr`] can easily be copied
 //! to a Rust string type.
 //!
-//! If a returned [`ContextStr`] is owned by the context and is immutable,
+//! If a returned [`CompilerStr`] is owned by the context and is immutable,
 //! it will share the lifetime of the context. Some functions return _short lived_ strings which
 //! are owned by the compiler instance, rather than the context.
 //!
@@ -62,24 +53,29 @@
 //! Handles can be unsafely forged with [`Compiler::create_handle`], but there are very few if any
 //! situations where this would be needed.
 //!
+//! ## Context
+//! The SPIRV-Cross API puts all allocations behind a context object, which is encapsulated
+//! within [`Compiler`]. All allocations originating from this context are refcounted, and
+//! will have `'static` lifetime, and are immutable once created.
+//!
+//! Some allocations are made directly in the SPIRV-Cross compiler object. Such allocations
+//! can only live for as long as the borrow to [`Compiler`].
+//!
 //! ## Usage
 //! Here is an example of using the API to do some reflection and compile to GLSL.
 //!
-//! Note the `'static` lifetime of the artifact, as the context is owned by the compiler.
-//!
 //! ```
 //! use spirv_cross2::compile::{CompilableTarget, CompiledArtifact};
-//! use spirv_cross2::{Module, SpirvCrossContext, SpirvCrossError};
+//! use spirv_cross2::{Compiler, Module, SpirvCrossError};
 //! use spirv_cross2::compile::glsl::GlslVersion;
 //! use spirv_cross2::reflect::{DecorationValue, ResourceType};
 //! use spirv_cross2::spirv;
 //! use spirv_cross2::targets::Glsl;
 //!
-//! fn compile_spirv(words: &[u32]) -> Result<CompiledArtifact<'static, Glsl>, SpirvCrossError> {
+//! fn compile_spirv(words: &[u32]) -> Result<CompiledArtifact<Glsl>, SpirvCrossError> {
 //!     let module = Module::from_words(words);
-//!     let context = SpirvCrossContext::new()?;
 //!
-//!     let mut compiler = context.into_compiler::<Glsl>(module)?;
+//!     let mut compiler = Compiler::<Glsl>::new(module)?;
 //!
 //!     let resources = compiler.shader_resources()?;
 //!
@@ -110,18 +106,13 @@
 //!     compiler.compile(&options)
 //! }
 //! ```
-use spirv_cross_sys as sys;
-use spirv_cross_sys::{spvc_compiler_s, spvc_context_s, SpvId};
-use std::borrow::Borrow;
+use spirv_cross_sys::{spvc_compiler_s, SpvId};
 
-use crate::error::ToContextError;
-
+use crate::cell::{AllocationDropGuard, CrossAllocationCell};
 use crate::sealed::{ContextRooted, Sealed};
 use crate::targets::Target;
 use std::marker::PhantomData;
-use std::ops::Deref;
 use std::ptr::NonNull;
-use std::sync::Arc;
 
 /// Compilation of SPIR-V to a textual format.
 pub mod compile;
@@ -138,6 +129,7 @@ pub mod targets;
 /// Error handling traits and support.
 pub(crate) mod error;
 
+mod cell;
 /// String helpers
 pub(crate) mod string;
 
@@ -166,73 +158,7 @@ pub(crate) mod sealed {
 }
 
 pub use crate::error::SpirvCrossError;
-pub use crate::string::ContextStr;
-
-/// The SPIRV-Cross context. All memory allocations originating from
-/// this context will have the same lifetime as the context.
-#[repr(transparent)]
-pub struct SpirvCrossContext(NonNull<spvc_context_s>);
-
-/// The root lifetime of a SPIRV-Cross context.
-///
-/// There are mainly two lifetimes to worry about in the entire crate,
-/// the context lifetime (`'ctx`), and the compiler lifetime, (unnamed, `'_`).
-///
-/// The context lifetime must outlive every compiler. That is, every compiler-lifetimed value
-/// has lifetime at least 'ctx, **for drop purposes**. In qcell terminology, the drop-owner for
-/// every value is `SpirvCrossContext`. This is because the lifetime of the compiler is rooted
-/// at the lifetime of the context.
-///
-/// However, particularly strings, can be borrow-owned by either the context, or the compiler.
-/// Values that are borrow-owned by the context are moved into [`spvc_context_s::allocations`](https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L115).
-/// Note that compiler instances are borrow-owned by the context, which is why the compiler needs to carry
-/// a reference in the form of a borrow or Rc to the context to maintain its liveness. It can not **own**
-/// a context, because that would lead to a self-referential struct; a compiler can not be borrow-owned
-/// by itself.
-///
-/// Values that are borrow-owned by the compiler are those that do not get copied into a buffer, and
-/// can be mutated by `set` functions. These need to ensure that the lifetime of the value returned
-/// matches the lifetime of the immutable borrow of the compiler.
-enum ContextRoot<'a, T = SpirvCrossContext> {
-    Borrowed(&'a T),
-    RefCounted(Arc<T>),
-}
-
-impl<'a, T> Clone for ContextRoot<'a, T> {
-    fn clone(&self) -> Self {
-        match self {
-            &ContextRoot::Borrowed(a) => ContextRoot::Borrowed(a),
-            ContextRoot::RefCounted(rc) => ContextRoot::RefCounted(Arc::clone(rc)),
-        }
-    }
-}
-
-impl<'a, T> Borrow<T> for ContextRoot<'a, T> {
-    fn borrow(&self) -> &T {
-        match self {
-            ContextRoot::Borrowed(a) => a,
-            ContextRoot::RefCounted(a) => a.deref(),
-        }
-    }
-}
-
-impl<'a, T> AsRef<T> for ContextRoot<'a, T> {
-    fn as_ref(&self) -> &T {
-        match self {
-            ContextRoot::Borrowed(a) => a,
-            ContextRoot::RefCounted(a) => a.deref(),
-        }
-    }
-}
-
-impl ContextRoot<'_, SpirvCrossContext> {
-    fn ptr(&self) -> NonNull<spvc_context_s> {
-        match self {
-            ContextRoot::Borrowed(a) => a.0,
-            ContextRoot::RefCounted(a) => a.0,
-        }
-    }
-}
+pub use crate::string::CompilerStr;
 
 /// A SPIR-V Module represented as SPIR-V words.
 pub struct Module<'a>(&'a [SpvId]);
@@ -241,160 +167,6 @@ impl<'a> Module<'a> {
     /// Create a new `Module` from SPIR-V words.
     pub fn from_words(words: &'a [u32]) -> Self {
         Module(bytemuck::must_cast_slice(words))
-    }
-}
-
-impl SpirvCrossContext {
-    /// Initialize a new SPIRV-Cross context.
-    pub fn new() -> error::Result<Self> {
-        unsafe {
-            let mut context = std::ptr::null_mut();
-            let result = sys::spvc_context_create(&mut context);
-
-            if result != sys::spvc_result::SPVC_SUCCESS {
-                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
-            }
-
-            let Some(context) = NonNull::new(context) else {
-                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
-            };
-
-            Ok(Self(context))
-        }
-    }
-
-    /// Create a compiler instance from a SPIR-V module.
-    pub fn create_compiler<T: Target>(&self, spirv: Module) -> error::Result<Compiler<T>> {
-        // SAFETY:
-        //
-        // `SpirvCross::create_compiler` is not mut here, because
-        // it only mutates the [allocations](https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L343)
-        // field, which is never observable from Rust.
-        //
-        // While `allocations` can reallocate being a `SmallVector<std::unique_ptr>`,
-        // the actual pointer returned is pinned to `spvc_context` for the lifetime of `Self`.
-        // Even if `allocations` reallocates, the pointer returned will always be valid
-        // for the lifetime of `spvc_context`.
-        unsafe {
-            let mut ir = std::ptr::null_mut();
-            sys::spvc_context_parse_spirv(
-                self.0.as_ptr(),
-                spirv.0.as_ptr(),
-                spirv.0.len(),
-                &mut ir,
-            )
-            .ok(self)?;
-
-            let mut compiler = std::ptr::null_mut();
-            sys::spvc_context_create_compiler(
-                self.0.as_ptr(),
-                T::BACKEND,
-                ir,
-                spirv_cross_sys::spvc_capture_mode::TakeOwnership,
-                &mut compiler,
-            )
-            .ok(self)?;
-
-            let Some(compiler) = NonNull::new(compiler) else {
-                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
-            };
-
-            Ok(Compiler::new_from_raw(
-                compiler,
-                ContextRoot::Borrowed(self),
-            ))
-        }
-    }
-
-    /// Create a compiler instance from a SPIR-V module.
-    ///
-    /// The compiler instance created carries with it a refcounted
-    /// pointer to the SPIRV-Cross context, and thus has a `'static`
-    /// lifetime.
-    pub fn create_compiler_refcounted<T: Target>(
-        self: &Arc<Self>,
-        spirv: Module,
-    ) -> error::Result<Compiler<'static, T>> {
-        unsafe {
-            let mut ir = std::ptr::null_mut();
-            sys::spvc_context_parse_spirv(
-                self.0.as_ptr(),
-                spirv.0.as_ptr(),
-                spirv.0.len(),
-                &mut ir,
-            )
-            .ok(&**self)?;
-
-            let mut compiler = std::ptr::null_mut();
-            sys::spvc_context_create_compiler(
-                self.0.as_ptr(),
-                T::BACKEND,
-                ir,
-                spirv_cross_sys::spvc_capture_mode::TakeOwnership,
-                &mut compiler,
-            )
-            .ok(&**self)?;
-
-            let Some(compiler) = NonNull::new(compiler) else {
-                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
-            };
-
-            Ok(Compiler::new_from_raw(
-                compiler,
-                ContextRoot::RefCounted(Arc::clone(self)),
-            ))
-        }
-    }
-
-    /// Create a compiler instance from a SPIR-V module.
-    ///
-    /// This consumes the instance so the resulting compiler instance is static,
-    /// and allocations will be dropped with the compiler.
-    ///
-    /// This allows for instances to be stored without keeping a reference to the
-    /// context separately.
-    pub fn into_compiler<T: Target>(self, spirv: Module) -> error::Result<Compiler<'static, T>> {
-        unsafe {
-            let mut ir = std::ptr::null_mut();
-            sys::spvc_context_parse_spirv(
-                self.0.as_ptr(),
-                spirv.0.as_ptr(),
-                spirv.0.len(),
-                &mut ir,
-            )
-            .ok(&self)?;
-
-            let mut compiler = std::ptr::null_mut();
-            sys::spvc_context_create_compiler(
-                self.0.as_ptr(),
-                T::BACKEND,
-                ir,
-                spirv_cross_sys::spvc_capture_mode::TakeOwnership,
-                &mut compiler,
-            )
-            .ok(&self)?;
-
-            let Some(compiler) = NonNull::new(compiler) else {
-                return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
-            };
-
-            Ok(Compiler::new_from_raw(
-                compiler,
-                ContextRoot::RefCounted(Arc::new(self)),
-            ))
-        }
-    }
-}
-
-impl Drop for SpirvCrossContext {
-    fn drop(&mut self) {
-        unsafe { sys::spvc_context_destroy(self.0.as_ptr()) }
-    }
-}
-
-impl ContextRooted for &SpirvCrossContext {
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.0
     }
 }
 
@@ -410,16 +182,6 @@ pub trait ToStatic: Sealed {
     fn to_static(&self) -> Self::Static<'static>;
 }
 
-#[cfg(test)]
-mod test {
-    use crate::SpirvCrossContext;
-
-    #[test]
-    pub fn init_context_test() {
-        SpirvCrossContext::new().unwrap();
-    }
-}
-
 /// An instance of a SPIRV-Cross compiler.
 ///
 /// Depending on the target, different methods will be
@@ -428,39 +190,37 @@ mod test {
 /// Once compiled into a [`CompiledArtifact`](compile::CompiledArtifact),
 /// reflection methods will still remain available, but the instance will be frozen,
 /// and no more mutation will be available.
-pub struct Compiler<'a, T> {
+pub struct Compiler<T> {
     pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: ContextRoot<'a>,
+    ctx: CrossAllocationCell,
     _pd: PhantomData<T>,
 }
 
-impl<T> Compiler<'_, T> {
+impl<T: Target> Compiler<T> {
+    /// Create a compiler instance from a SPIR-V module.
+    ///
+    /// This consumes the instance so the resulting compiler instance is static,
+    /// and allocations will be dropped with the compiler.
+    ///
+    /// This allows for instances to be stored without keeping a reference to the
+    /// context separately.
+    pub fn new(spirv: Module) -> error::Result<Compiler<T>> {
+        let allocs = CrossAllocationCell::new()?;
+        allocs.into_compiler(spirv)
+    }
+
     /// Create a new compiler instance.
     ///
     /// The pointer to the `spvc_compiler_s` must have the same lifetime as the context root.
     pub(crate) unsafe fn new_from_raw(
         ptr: NonNull<spvc_compiler_s>,
-        ctx: ContextRoot,
+        ctx: CrossAllocationCell,
     ) -> Compiler<T> {
         Compiler {
             ptr,
             ctx,
             _pd: PhantomData,
         }
-    }
-}
-
-impl<T> ContextRooted for &Compiler<'_, T> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
-    }
-}
-
-impl<T> ContextRooted for &mut Compiler<'_, T> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
     }
 }
 
@@ -475,38 +235,28 @@ impl<T> ContextRooted for &mut Compiler<'_, T> {
 /// The only thing a [`PhantomCompiler`] is able to do is create handles or
 /// refer to the root context. It's lifetime should be the same as the lifetime
 /// of the **context**, or **shorter**, but at least the lifetime of the compiler.
+///
+/// Anything that holds a PhantomCompiler effectively has static lifetime,
+/// if and only if it points to an allocation that originates from the context.
+///
+/// Because it holds an `AllocationDropGuard`, the compiler instance will always be live.
 #[derive(Clone)]
-pub(crate) struct PhantomCompiler<'ctx> {
+pub(crate) struct PhantomCompiler {
     pub(crate) ptr: NonNull<spvc_compiler_s>,
-    ctx: ContextRoot<'ctx>,
+    ctx: AllocationDropGuard,
 }
 
-impl ContextRooted for PhantomCompiler<'_> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.ctx.ptr()
-    }
-}
-
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Create a type erased phantom for lifetime tracking purposes.
     ///
     /// This function is unsafe because a [`PhantomCompiler`] can be used to
     /// **safely** create handles originating from the compiler.
-    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler<'ctx> {
+    pub(crate) unsafe fn phantom(&self) -> PhantomCompiler {
         PhantomCompiler {
             ptr: self.ptr,
-            ctx: self.ctx.clone(),
+            ctx: self.ctx.drop_guard(),
         }
     }
 }
 
-// SAFETY: SpirvCrossContext is not clone.
-//
-// While allocations are interior mutability,
-// they should be safe one thread at a time.
-//
-// C++ new and delete operators are thread safe,
-// which is what this uses to allocate.s
-unsafe impl Send for SpirvCrossContext {}
-static_assertions::assert_not_impl_any!(SpirvCrossContext: Clone);
+unsafe impl<T: Send> Send for Compiler<T> { }

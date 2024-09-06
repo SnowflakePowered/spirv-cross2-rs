@@ -3,8 +3,8 @@ use glslang::{
     CompilerOptions, OpenGlVersion, ShaderInput, ShaderSource, ShaderStage, Target, VulkanVersion,
 };
 use spirv_cross2::reflect::TypeInner;
-use spirv_cross2::Module;
 use spirv_cross2::SpirvCrossError;
+use spirv_cross2::{Compiler, Module};
 
 #[test]
 pub fn spec_constant() -> Result<(), SpirvCrossError> {
@@ -52,9 +52,7 @@ void main()
     let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCrossContext::new()?;
-    let mut compiler =
-        cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+    let mut compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
 
     let spec_workgroup = compiler.work_group_size_specialization_constants();
     eprintln!("{:?}", spec_workgroup);
@@ -121,8 +119,7 @@ void main()
     let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCrossContext::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+    let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
 
     let spec_workgroup = compiler.work_group_size_specialization_constants();
     eprintln!("{:?}", spec_workgroup);
@@ -171,8 +168,8 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCrossContext::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+    let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
+
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.uniform_buffers[0];
@@ -212,8 +209,8 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCrossContext::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+    let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
+
     let res = compiler.shader_resources()?.all_resources()?;
 
     eprintln!("{:?}", res.builtin_inputs);
@@ -225,11 +222,6 @@ void main() {
     };
 
     eprintln!("{:?}", struct_ty);
-
-    eprintln!(
-        "{:?}",
-        compiler.declared_struct_size_with_runtime_array(struct_ty, 4)
-    );
 
     Ok(())
 }
@@ -276,8 +268,8 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCrossContext::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+    let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
+
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.uniform_buffers[0];
@@ -319,8 +311,8 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCrossContext::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+    let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
+
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.stage_outputs[0];
@@ -356,8 +348,8 @@ void main() {
     let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
-    let cross = spirv_cross2::SpirvCrossContext::new()?;
-    let compiler = cross.into_compiler::<spirv_cross2::targets::None>(Module::from_words(&spv))?;
+    let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
+
     let res = compiler.shader_resources()?.all_resources()?;
 
     let counter = &res.atomic_counters[0];

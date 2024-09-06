@@ -2,17 +2,17 @@ use crate::error;
 use crate::handle::{Handle, Id};
 use crate::Compiler;
 
-use crate::string::ContextStr;
+use crate::string::CompilerStr;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{SpvId, TypeId, VariableId};
 
-impl<T> Compiler<'_, T> {
+impl<T> Compiler<T> {
     /// Gets the identifier (`OpName`) of an ID.
-    pub fn name<I: Id>(&self, handle: Handle<I>) -> error::Result<Option<ContextStr>> {
+    pub fn name<I: Id>(&self, handle: Handle<I>) -> error::Result<Option<CompilerStr>> {
         let id = self.yield_id(handle)?;
         unsafe {
             let name = sys::spvc_compiler_get_name(self.ptr.as_ptr(), SpvId(id.id()));
-            let name = ContextStr::from_ptr(name, self.ctx.clone());
+            let name = CompilerStr::from_ptr(name, self.ctx.drop_guard());
             if name.is_empty() {
                 Ok(None)
             } else {
@@ -28,7 +28,7 @@ impl<T> Compiler<'_, T> {
     pub fn set_name<'str, I: Id>(
         &mut self,
         handle: Handle<I>,
-        string: impl Into<ContextStr<'str>>,
+        string: impl Into<CompilerStr<'str>>,
     ) -> error::Result<()> {
         let id = self.yield_id(handle)?;
         let string = string.into();
@@ -51,13 +51,13 @@ impl<T> Compiler<'_, T> {
         &self,
         struct_type: Handle<TypeId>,
         index: u32,
-    ) -> error::Result<Option<ContextStr>> {
+    ) -> error::Result<Option<CompilerStr>> {
         let struct_type_id = self.yield_id(struct_type)?;
         let index = index;
 
         unsafe {
             let name = sys::spvc_compiler_get_member_name(self.ptr.as_ptr(), struct_type_id, index);
-            let name = ContextStr::from_ptr(name, self.ctx.clone());
+            let name = CompilerStr::from_ptr(name, self.ctx.drop_guard());
             if name.is_empty() {
                 Ok(None)
             } else {
@@ -71,7 +71,7 @@ impl<T> Compiler<'_, T> {
         &mut self,
         struct_type: Handle<TypeId>,
         index: u32,
-        string: impl Into<ContextStr<'str>>,
+        string: impl Into<CompilerStr<'str>>,
     ) -> error::Result<()> {
         let struct_type_id = self.yield_id(struct_type)?;
         let index = index;
@@ -96,7 +96,7 @@ impl<T> Compiler<'_, T> {
     }
 }
 
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// When declaring buffer blocks in GLSL, the name declared in the GLSL source
     /// might not be the same as the name declared in the SPIR-V module due to naming conflicts.
     /// In this case, SPIRV-Cross needs to find a fallback-name, and it might only
@@ -115,7 +115,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     pub fn remapped_declared_block_name(
         &self,
         handle: impl Into<Handle<VariableId>>,
-    ) -> error::Result<Option<ContextStr<'ctx>>> {
+    ) -> error::Result<Option<CompilerStr<'static>>> {
         let handle = handle.into();
         let handle = self.yield_id(handle)?;
         unsafe {
@@ -124,7 +124,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             // SAFETY: 'ctx is sound here
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2773
-            let name = ContextStr::from_ptr(name, self.ctx.clone());
+            let name = CompilerStr::from_ptr(name, self.ctx.drop_guard());
             if name.is_empty() {
                 Ok(None)
             } else {

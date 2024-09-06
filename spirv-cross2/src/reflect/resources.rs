@@ -1,14 +1,12 @@
-use crate::error::{ContextRooted, SpirvCrossError, ToContextError};
+use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{Handle, TypeId, VariableId};
 use crate::sealed::Sealed;
-use crate::string::ContextStr;
+use crate::string::CompilerStr;
 use crate::{error, Compiler, PhantomCompiler, ToStatic};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{
-    spvc_context_s, spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s,
-    spvc_set,
+    spvc_reflected_builtin_resource, spvc_reflected_resource, spvc_resources_s, spvc_set,
 };
-use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
 
@@ -19,18 +17,11 @@ pub use spirv_cross_sys::BuiltinResourceType;
 pub use spirv_cross_sys::ResourceType;
 
 /// A handle to shader resources.
-pub struct ShaderResources<'ctx>(NonNull<spvc_resources_s>, PhantomCompiler<'ctx>);
+pub struct ShaderResources(NonNull<spvc_resources_s>, PhantomCompiler);
 
-impl ContextRooted for &ShaderResources<'_> {
-    #[inline(always)]
-    fn context(&self) -> NonNull<spvc_context_s> {
-        self.1.context()
-    }
-}
-
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Query shader resources, use ids with reflection interface to modify or query binding points, etc.
-    pub fn shader_resources(&self) -> crate::error::Result<ShaderResources<'ctx>> {
+    pub fn shader_resources(&self) -> crate::error::Result<ShaderResources> {
         // SAFETY: 'ctx is Ok
         // since this gets allocated forever
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1925
@@ -53,7 +44,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     pub fn shader_resources_for_active_variables(
         &self,
         set: InterfaceVariableSet,
-    ) -> error::Result<ShaderResources<'ctx>> {
+    ) -> error::Result<ShaderResources> {
         // SAFETY: 'ctx is Ok
         // since this gets allocated forever
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1925
@@ -76,9 +67,9 @@ impl<'ctx, T> Compiler<'ctx, T> {
 }
 
 /// A handle to a set of interface variables.
-pub struct InterfaceVariableSet<'a>(spvc_set, Handle<PhantomData<&'a ()>>, PhantomCompiler<'a>);
+pub struct InterfaceVariableSet(spvc_set, Handle<()>, PhantomCompiler);
 
-impl<'a> InterfaceVariableSet<'a> {
+impl InterfaceVariableSet {
     /// Get the SPIR-V IDs for the active interface variables.
     ///
     /// This is only meant to be used for reflection. It is not possible
@@ -106,7 +97,7 @@ impl<'a> InterfaceVariableSet<'a> {
 }
 
 // reflection
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Returns a set of all global variables which are statically accessed
     /// by the control flow graph from the current entry point.
     /// Only variables which change the interface for a shader are returned, that is,
@@ -118,7 +109,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     ///
     /// The return object is opaque to Rust, but its contents inspected by using [`InterfaceVariableSet::to_handles`].
     /// There is no way to modify the contents or use your own `InterfaceVariableSet`.
-    pub fn active_interface_variables(&self) -> error::Result<InterfaceVariableSet<'ctx>> {
+    pub fn active_interface_variables(&self) -> error::Result<InterfaceVariableSet> {
         unsafe {
             let mut set = std::ptr::null();
 
@@ -130,7 +121,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
 
             Ok(InterfaceVariableSet(
                 set,
-                self.create_handle(PhantomData),
+                self.create_handle(()),
                 self.phantom(),
             ))
         }
@@ -150,17 +141,14 @@ impl<'ctx, T> Compiler<'ctx, T> {
         }
         unsafe {
             sys::spvc_compiler_set_enabled_interface_variables(self.ptr.as_ptr(), set.0)
-                .ok(self)?;
+                .ok(&*self)?;
             Ok(())
         }
     }
 }
 
 /// Iterator over reflected resources, created by [`ShaderResources::resources_for_type`].
-pub struct ResourceIter<'a>(
-    PhantomCompiler<'a>,
-    slice::Iter<'a, spvc_reflected_resource>,
-);
+pub struct ResourceIter<'a>(PhantomCompiler, slice::Iter<'a, spvc_reflected_resource>);
 
 impl ExactSizeIterator for ResourceIter<'_> {
     fn len(&self) -> usize {
@@ -178,7 +166,7 @@ impl<'a> Iterator for ResourceIter<'a> {
 
 /// Iterator over reflected builtin resources, created by [`ShaderResources::builtin_resources_for_type`].
 pub struct BuiltinResourceIter<'a>(
-    PhantomCompiler<'a>,
+    PhantomCompiler,
     slice::Iter<'a, spvc_reflected_builtin_resource>,
 );
 
@@ -203,11 +191,11 @@ pub struct Resource<'a> {
     /// or array.
     pub type_id: Handle<TypeId>,
     /// The name of this resource.
-    pub name: ContextStr<'a>,
+    pub name: CompilerStr<'a>,
 }
 
 impl<'a> Resource<'a> {
-    fn from_raw(comp: PhantomCompiler<'a>, value: &'a spvc_reflected_resource) -> Self {
+    fn from_raw(comp: PhantomCompiler, value: &'a spvc_reflected_resource) -> Self {
         Self {
             id: comp.create_handle(value.id),
             base_type_id: comp.create_handle(value.base_type_id),
@@ -215,7 +203,7 @@ impl<'a> Resource<'a> {
             // There should never be invalid UTF-8 in a shader.
             // as per SPIR-V spec: The character set is Unicode in the UTF-8 encoding scheme.
             // so this will be free 100% of the time.
-            name: unsafe { ContextStr::from_ptr(value.name, comp.ctx.clone()) },
+            name: unsafe { CompilerStr::from_ptr(value.name, comp.ctx.clone()) },
         }
     }
 }
@@ -245,13 +233,12 @@ impl ToStatic for Resource<'_> {
             id: self.id,
             base_type_id: self.base_type_id,
             type_id: self.type_id,
-            name: ContextStr::from_string(self.name.to_string()),
+            name: CompilerStr::from_string(self.name.to_string()),
         }
     }
 }
 
-/// Cloning a [`Resource`] will detach its lifetime from the [`crate::SpirvCrossContext`] context
-/// from which it originated.
+
 impl Clone for Resource<'_> {
     fn clone(&self) -> Resource<'static> {
         self.to_static()
@@ -282,10 +269,7 @@ impl From<BuiltinResource<'_>> for Handle<VariableId> {
 }
 
 impl<'a> BuiltinResource<'a> {
-    fn from_raw(
-        comp: PhantomCompiler<'a>,
-        value: &'a spvc_reflected_builtin_resource,
-    ) -> Option<Self> {
+    fn from_raw(comp: PhantomCompiler, value: &'a spvc_reflected_builtin_resource) -> Option<Self> {
         // builtin is potentially uninit, we need to check.
         let Some(builtin) = spirv::BuiltIn::from_u32(value.builtin.0 as u32) else {
             if cfg!(debug_assertions) {
@@ -321,8 +305,6 @@ impl ToStatic for BuiltinResource<'_> {
     }
 }
 
-/// Cloning a [`BuiltinResource`] will detach its lifetime from the [`crate::SpirvCrossContext`] context
-/// from which it originated.
 impl Clone for BuiltinResource<'_> {
     fn clone(&self) -> BuiltinResource<'static> {
         self.to_static()
@@ -465,17 +447,15 @@ impl ToStatic for AllResources<'_> {
     }
 }
 
-/// Cloning a [`AllResources`] will detach its lifetime from the [`crate::SpirvCrossContext`] context
-/// from which it originated.
 impl Clone for AllResources<'_> {
     fn clone(&self) -> AllResources<'static> {
         self.to_static()
     }
 }
 
-impl<'ctx> ShaderResources<'ctx> {
+impl ShaderResources {
     /// Get an iterator for all resources of the given type.
-    pub fn resources_for_type(&self, ty: ResourceType) -> error::Result<ResourceIter<'ctx>> {
+    pub fn resources_for_type(&self, ty: ResourceType) -> error::Result<ResourceIter<'static>> {
         // SAFETY: 'ctx is sound here,
         // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1802
         // Furthermore, once allocated, the lifetime of spvc_resources_s is tied to that of the context.
@@ -489,7 +469,7 @@ impl<'ctx> ShaderResources<'ctx> {
                 &mut out,
                 &mut count,
             )
-            .ok(self)?;
+            .ok(&self.1)?;
         }
 
         let slice = unsafe { slice::from_raw_parts(out, count) };
@@ -501,7 +481,7 @@ impl<'ctx> ShaderResources<'ctx> {
     pub fn builtin_resources_for_type(
         &self,
         ty: BuiltinResourceType,
-    ) -> error::Result<BuiltinResourceIter<'ctx>> {
+    ) -> error::Result<BuiltinResourceIter<'static>> {
         let mut count = 0;
         let mut out = std::ptr::null();
 
@@ -516,7 +496,7 @@ impl<'ctx> ShaderResources<'ctx> {
                 &mut out,
                 &mut count,
             )
-            .ok(self)?;
+            .ok(&self.1)?;
         }
 
         let slice = unsafe { slice::from_raw_parts(out.cast(), count) };
@@ -528,7 +508,7 @@ impl<'ctx> ShaderResources<'ctx> {
     ///
     /// This will allocate a `Vec` for every resource type.
     #[rustfmt::skip]
-    pub fn all_resources(&self) -> error::Result<AllResources<'ctx>> {
+    pub fn all_resources(&self) -> error::Result<AllResources<'static>> {
           // SAFETY: 'ctx is sound by transitive property of resources_for_type
         Ok(AllResources {
                 uniform_buffers: self.resources_for_type(ResourceType::UniformBuffer)?.collect(),

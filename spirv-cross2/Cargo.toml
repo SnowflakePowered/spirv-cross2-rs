@@ -28,13 +28,21 @@ memchr = "2.7.4"
 spirv = "0.3.0"
 
 [features]
-default = ["gfx-math-types", "f16"]
+default = ["glsl", "hlsl", "msl"]
+full = ["gfx-math-types", "f16", "glsl", "hlsl", "msl", "json", "cpp"]
+
 f16 = ["dep:half"]
 gfx-math-types = ["dep:gfx-maths"]
+
+glsl = ["spirv-cross-sys/glsl"]
+hlsl = ["spirv-cross-sys/hlsl"]
+msl = ["spirv-cross-sys/msl"]
+json = ["spirv-cross-sys/json"]
+cpp = ["spirv-cross-sys/cpp"]
 
 [dev-dependencies]
 glslang = "0.4.0"
 
 [package.metadata.docs.rs]
-features = ["default"]
+features = ["full"]
 rustdoc-args = ["--cfg", "docsrs"]

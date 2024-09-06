@@ -7,12 +7,18 @@ use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 
 /// GLSL compile options.
+#[cfg(feature = "glsl")]
+#[cfg_attr(docsrs, doc(cfg(feature = "glsl")))]
 pub mod glsl;
 
 /// HLSL compile options.
+#[cfg(feature = "hlsl")]
+#[cfg_attr(docsrs, doc(cfg(feature = "hlsl")))]
 pub mod hlsl;
 
 /// MSL compile options.
+#[cfg(feature = "msl")]
+#[cfg_attr(docsrs, doc(cfg(feature = "msl")))]
 pub mod msl;
 
 impl Sealed for CommonOptions {}

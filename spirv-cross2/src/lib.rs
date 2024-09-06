@@ -61,6 +61,39 @@
 //! Some allocations are made directly in the SPIRV-Cross compiler object. Such allocations
 //! can only live for as long as the borrow to [`Compiler`].
 //!
+//! ## Features
+//! By default, the `glsl`, `hlsl`, and `msl` features are enabled by default. The `cpp` and `json` targets can be enabled
+//! in Cargo.toml
+//!
+//! ```toml
+//! [dependencies]
+//! spirv-cross2 = { features = ["cpp", "json"] }
+//! ```
+//!
+//! SPIRV-Cross will only be built with support for enabled targets. If you want to only perform reflection and shrink the binary size,
+//! you can disable all but the `None` target.
+//!
+//! ```toml
+//! [dependencies]
+//! spirv-cross2 = { default-features = false }
+//! ```
+//!
+//! To enable all features, including `f16` and vector constant support, use the `full` feature.
+//!
+//! ```toml
+//! [dependencies]
+//! spirv-cross2 = { features = ["full"] }
+//! ```
+//!
+//! ### `f16` and vector specialization constants support
+//! When querying specialization constants, spirv-cross2 includes optional support for `f16` via [half](https://crates.io/crates/half) and `Vec2`, `Vec3`, `Vec4`, and `Mat4` types
+//! via [gfx-maths](https://crates.io/crates/gfx-maths).
+//!
+//! ```toml
+//! [dependencies]
+//! spirv-cross2 = { features = ["f16", "half"] }
+//! ```
+//!
 //! ## Usage
 //! Here is an example of using the API to do some reflection and compile to GLSL.
 //!
@@ -106,6 +139,7 @@
 //!     compiler.compile(&options)
 //! }
 //! ```
+//!
 use spirv_cross_sys::{spvc_compiler_s, SpvId};
 
 use crate::cell::{AllocationDropGuard, CrossAllocationCell};

@@ -127,11 +127,16 @@ pub mod reflect;
 pub mod targets;
 
 /// Error handling traits and support.
-pub(crate) mod error;
+mod error;
 
+/// Cell helpers
 mod cell;
+
 /// String helpers
-pub(crate) mod string;
+mod string;
+
+/// Iteratator
+mod iter;
 
 /// SPIR-V types and definitions.
 pub mod spirv {
@@ -259,4 +264,4 @@ impl<T> Compiler<T> {
     }
 }
 
-unsafe impl<T: Send> Send for Compiler<T> { }
+unsafe impl<T: Send> Send for Compiler<T> {}

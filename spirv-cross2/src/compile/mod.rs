@@ -1,7 +1,7 @@
 use crate::error::{Result, ToContextError};
 use crate::sealed::Sealed;
 use crate::targets::Target;
-use crate::{error, Compiler, ContextRooted, CompilerStr};
+use crate::{error, Compiler, CompilerStr, ContextRooted};
 use spirv_cross_sys as sys;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;

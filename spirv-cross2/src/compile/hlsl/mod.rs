@@ -118,7 +118,7 @@ pub struct CompilerOptions {
 }
 
 /// HLSL Shader model.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 #[non_exhaustive]
 #[derive(Default)]
 pub enum HlslShaderModel {

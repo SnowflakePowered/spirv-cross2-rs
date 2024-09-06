@@ -11,11 +11,6 @@ pub fn main() {
         .cpp(true)
         .std("c++14")
         .define("SPIRV_CROSS_CLI", "OFF")
-        .define("SPIRV_CROSS_C_API_GLSL", "1")
-        .define("SPIRV_CROSS_C_API_HLSL", "1")
-        .define("SPIRV_CROSS_C_API_MSL", "1")
-        .define("SPIRV_CROSS_C_API_CPP", "1")
-        .define("SPIRV_CROSS_C_API_REFLECT", "1")
         .includes(&["native/SPIRV-Cross", "native/SPIRV-CROSS/include"])
         .file("native/SPIRV-Cross/spirv_cfg.cpp")
         .file("native/SPIRV-Cross/spirv_cpp.cpp")
@@ -28,6 +23,26 @@ pub fn main() {
         .file("native/SPIRV-Cross/spirv_parser.cpp")
         .file("native/SPIRV-Cross/spirv_reflect.cpp")
         .file("native/spirv_cross_c_ext_rs.cpp");
+
+    if cfg!(feature = "glsl") {
+        spvc_build.define("SPIRV_CROSS_C_API_GLSL", "1");
+    }
+
+    if cfg!(feature = "hlsl") {
+        spvc_build.define("SPIRV_CROSS_C_API_HLSL", "1");
+    }
+
+    if cfg!(feature = "msl") {
+        spvc_build.define("SPIRV_CROSS_C_API_MSL", "1");
+    }
+
+    if cfg!(feature = "cpp") {
+        spvc_build.define("SPIRV_CROSS_C_API_CPP", "1");
+    }
+
+    if cfg!(feature = "json") {
+        spvc_build.define("SPIRV_CROSS_C_API_JSON", "1");
+    }
 
     spvc_build.compile("spirv-cross");
     println!("cargo:rustc-link-lib=static=spirv-cross");

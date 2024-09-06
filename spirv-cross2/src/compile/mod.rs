@@ -1,7 +1,7 @@
 use crate::error::{Result, ToContextError};
 use crate::sealed::Sealed;
 use crate::targets::Target;
-use crate::{error, Compiler, ContextRooted, ContextStr};
+use crate::{error, Compiler, ContextRooted, CompilerStr};
 use spirv_cross_sys as sys;
 use std::fmt::{Display, Formatter};
 use std::ops::Deref;
@@ -74,33 +74,29 @@ pub struct CommonOptions {
 /// The output of a SPIRV-Cross compilation.
 ///
 /// [`CompiledArtifact`] implements [`Display`] with the
-/// value of the compiled source code, which can be copied
-/// to detach it from the lifetime '`a`.
-///
-/// If the [`Compiler`] instance is static, the source
-/// will also be static.
+/// value of the compiled source code.
 ///
 /// Reflection is still available, but the [`Compiler`]
 /// instance can no longer be mutated once compiled.
-pub struct CompiledArtifact<'a, T> {
-    compiler: Compiler<'a, T>,
-    source: ContextStr<'a>,
+pub struct CompiledArtifact<T> {
+    compiler: Compiler<T>,
+    source: CompilerStr<'static>,
 }
 
-impl<T> AsRef<str> for CompiledArtifact<'_, T> {
+impl<T> AsRef<str> for CompiledArtifact<T> {
     fn as_ref(&self) -> &str {
         self.source.as_ref()
     }
 }
 
-impl<T> Display for CompiledArtifact<'_, T> {
+impl<T> Display for CompiledArtifact<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.source, f)
     }
 }
 
-impl<'a, T> Deref for CompiledArtifact<'a, T> {
-    type Target = Compiler<'a, T>;
+impl<'a, T> Deref for CompiledArtifact<T> {
+    type Target = Compiler<T>;
 
     fn deref(&self) -> &Self::Target {
         &self.compiler
@@ -108,7 +104,7 @@ impl<'a, T> Deref for CompiledArtifact<'a, T> {
 }
 
 /// Cross-compilation related methods.
-impl<'a, T: CompilableTarget> Compiler<'a, T> {
+impl<T: CompilableTarget> Compiler<T> {
     /// Adds a line in valid header position.
     ///
     /// For example, in the GLSL backend this would be right after #version.
@@ -121,21 +117,23 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
     /// While this function is a more generic way of adding arbitrary text to the header
     /// of an output file, [`Compiler::require_extension`] should be used when adding extensions since it will
     /// avoid creating collisions with SPIRV-Cross generated extensions.
-    pub fn add_header_line<'str>(&mut self, line: impl Into<ContextStr<'str>>) -> Result<()> {
+    pub fn add_header_line<'str>(&mut self, line: impl Into<CompilerStr<'str>>) -> Result<()> {
         let line = line.into();
         let cstring = line.into_cstring_ptr()?;
-        unsafe { sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), cstring.as_ptr()).ok(self) }
+        unsafe {
+            sys::spvc_compiler_add_header_line(self.ptr.as_ptr(), cstring.as_ptr()).ok(&*self)
+        }
     }
 
     /// Adds an extension which is required to run this shader, e.g.
     /// `require_extension("GL_KHR_my_extension");`
-    pub fn require_extension<'str>(&mut self, ext: impl Into<ContextStr<'str>>) -> Result<()> {
+    pub fn require_extension<'str>(&mut self, ext: impl Into<CompilerStr<'str>>) -> Result<()> {
         let ext = ext.into();
         let cstring = ext.into_cstring_ptr()?;
 
         unsafe {
             sys::spvc_compiler_require_extension(self.ptr.as_ptr(), cstring.as_ptr().cast())
-                .ok(self)
+                .ok(&*self)
         }
     }
 
@@ -158,16 +156,16 @@ impl<'a, T: CompilableTarget> Compiler<'a, T> {
 
     /// Consume the compilation instance, and compile source code to the
     /// output target.
-    pub fn compile(mut self, options: &T::Options) -> error::Result<CompiledArtifact<'a, T>> {
+    pub fn compile(mut self, options: &T::Options) -> error::Result<CompiledArtifact<T>> {
         self.set_compiler_options(options)?;
 
         unsafe {
             let mut src = std::ptr::null();
             sys::spvc_compiler_compile(self.ptr.as_ptr(), &mut src).ok(&self)?;
 
-            // SAFETY: 'a is OK to return here
+            // SAFETY: 'static is OK to return here
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L1782
-            let src = ContextStr::from_ptr(src, self.ctx.clone());
+            let src = CompilerStr::from_ptr(src, self.ctx.drop_guard());
             Ok(CompiledArtifact {
                 compiler: self,
                 source: src,
@@ -200,17 +198,16 @@ mod test {
     use crate::error::SpirvCrossError;
     use crate::targets;
     use crate::Compiler;
-    use crate::{Module, SpirvCrossContext};
+    use crate::Module;
 
     const BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn create_compiler() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None> = Compiler::new(words)?;
         Ok(())
     }
 }

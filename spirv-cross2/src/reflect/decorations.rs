@@ -2,7 +2,7 @@ use crate::error::{SpirvCrossError, ToContextError};
 use crate::handle::{ConstantId, Handle, Id, TypeId, VariableId};
 use crate::reflect::StructMember;
 use crate::sealed::Sealed;
-use crate::string::ContextStr;
+use crate::string::CompilerStr;
 use crate::Compiler;
 use crate::{error, ToStatic};
 use spirv::Decoration;
@@ -34,7 +34,7 @@ pub enum DecorationValue<'a> {
     /// Only for decoration [`SpecId`](Decoration::SpecId).
     Constant(Handle<ConstantId>),
     /// Only for decoration [`HlslSemanticGOOGLE`](Decoration::HlslSemanticGOOGLE) and [`UserTypeGOOGLE`](Decoration::HlslSemanticGOOGLE).
-    String(ContextStr<'a>),
+    String(CompilerStr<'a>),
     /// All other decorations to indicate the presence of a decoration.
     Present,
 }
@@ -75,18 +75,18 @@ impl From<Handle<ConstantId>> for DecorationValue<'_> {
 
 impl<'a> From<&'a str> for DecorationValue<'a> {
     fn from(value: &'a str) -> Self {
-        DecorationValue::String(ContextStr::from_str(value))
+        DecorationValue::String(CompilerStr::from_str(value))
     }
 }
 
 impl From<String> for DecorationValue<'_> {
     fn from(value: String) -> Self {
-        DecorationValue::String(ContextStr::from_string(value))
+        DecorationValue::String(CompilerStr::from_string(value))
     }
 }
 
-impl<'a> From<ContextStr<'a>> for DecorationValue<'a> {
-    fn from(value: ContextStr<'a>) -> Self {
+impl<'a> From<CompilerStr<'a>> for DecorationValue<'a> {
+    fn from(value: CompilerStr<'a>) -> Self {
         DecorationValue::String(value)
     }
 }
@@ -106,7 +106,7 @@ impl ToStatic for DecorationValue<'_> {
             DecorationValue::Constant(a) => DecorationValue::Constant(*a),
             DecorationValue::String(c) => {
                 let owned = c.to_string();
-                DecorationValue::String(ContextStr::from_string(owned))
+                DecorationValue::String(CompilerStr::from_string(owned))
             }
             DecorationValue::Present => DecorationValue::Present,
         }
@@ -163,7 +163,7 @@ fn decoration_is_string(decoration: Decoration) -> bool {
     }
 }
 
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Gets the value for decorations which take arguments.
     pub fn decoration<I: Id>(
         &self,
@@ -191,9 +191,9 @@ impl<'ctx, T> Compiler<'ctx, T> {
                     id,
                     SpvDecoration(decoration as u32 as i32),
                 );
-                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(
+                return Ok(Some(DecorationValue::String(CompilerStr::from_ptr(
                     str,
-                    self.ctx.clone(),
+                    self.ctx.drop_guard(),
                 ))));
             }
 
@@ -235,9 +235,9 @@ impl<'ctx, T> Compiler<'ctx, T> {
                     index,
                     SpvDecoration(decoration as u32 as i32),
                 );
-                return Ok(Some(DecorationValue::String(ContextStr::from_ptr(
+                return Ok(Some(DecorationValue::String(CompilerStr::from_ptr(
                     str,
-                    self.ctx.clone(),
+                    self.ctx.drop_guard(),
                 ))));
             }
 
@@ -254,7 +254,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     /// Gets the value for member decorations which take arguments.
     pub fn member_decoration<I: Id>(
         &self,
-        member: &StructMember<'ctx>,
+        member: &StructMember,
         decoration: Decoration,
     ) -> error::Result<Option<DecorationValue>> {
         self.member_decoration_by_handle(member.struct_type, member.index as u32, decoration)
@@ -361,7 +361,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     /// Set the value of a decoration for a struct member.
     pub fn set_member_decoration<'value>(
         &mut self,
-        member: &StructMember<'ctx>,
+        member: &StructMember,
         decoration: Decoration,
         value: Option<impl Into<DecorationValue<'value>>>,
     ) -> error::Result<()> {
@@ -561,7 +561,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     pub fn buffer_block_decorations(
         &self,
         variable: impl Into<Handle<VariableId>>,
-    ) -> error::Result<Option<&'ctx [Decoration]>> {
+    ) -> error::Result<Option<&[Decoration]>> {
         let variable = variable.into();
         let id = self.yield_id(variable)?;
 
@@ -593,17 +593,16 @@ mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
 
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn set_decoration_test() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         // compiler.set_decoration(Decoration::HlslSemanticGOOGLE, DecorationValue::String(Cow::Borrowed("hello")));

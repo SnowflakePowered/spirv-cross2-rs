@@ -4,9 +4,10 @@ use crate::error::ToContextError;
 use crate::handle::Handle;
 use crate::sealed::Sealed;
 use crate::targets::Glsl;
-use crate::{error, Compiler, ContextRooted, ContextStr, PhantomCompiler};
+use crate::{error, Compiler, ContextRooted, CompilerStr, PhantomCompiler};
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{spvc_compiler_option, spvc_compiler_options, VariableId};
+use std::marker::PhantomData;
 use std::ops::Range;
 
 impl Sealed for CompilerOptions {}
@@ -182,7 +183,7 @@ impl ApplyCompilerOptions for GlslVersion {
     }
 }
 
-impl Compiler<'_, Glsl> {
+impl Compiler<Glsl> {
     /// Legacy GLSL compatibility method.
     ///
     /// Takes a uniform or push constant variable and flattens it into a `(i|u)vec4 array[N];` array instead.
@@ -197,7 +198,7 @@ impl Compiler<'_, Glsl> {
         let block = block.into();
         let block = self.yield_id(block)?;
 
-        unsafe { sys::spvc_compiler_flatten_buffer_block(self.ptr.as_ptr(), block).ok(self) }
+        unsafe { sys::spvc_compiler_flatten_buffer_block(self.ptr.as_ptr(), block).ok(&*self) }
     }
 
     /// Returns the list of required extensions in a GLSL shader.
@@ -212,7 +213,7 @@ impl Compiler<'_, Glsl> {
         unsafe {
             let extension_nums = sys::spvc_compiler_get_num_required_extensions(self.ptr.as_ptr());
             let range = 0..extension_nums;
-            GlslExtensionsIter(range, self.phantom())
+            GlslExtensionsIter(range, self.phantom(), PhantomData)
         }
     }
 }
@@ -224,7 +225,8 @@ pub struct GlslExtensionsIter<'a>(
     // this is strictly speaking an abuse of PhantomCompiler,
     // which should be invariant in 'ctx, but as long as its properly returned in
     // required_extensions we should be safe.
-    PhantomCompiler<'a>,
+    PhantomCompiler,
+    PhantomData<&'a Glsl>,
 );
 
 impl ExactSizeIterator for GlslExtensionsIter<'_> {
@@ -234,7 +236,7 @@ impl ExactSizeIterator for GlslExtensionsIter<'_> {
 }
 
 impl<'comp> Iterator for GlslExtensionsIter<'comp> {
-    type Item = ContextStr<'comp>;
+    type Item = CompilerStr<'comp>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
@@ -246,7 +248,7 @@ impl<'comp> Iterator for GlslExtensionsIter<'comp> {
                     };
                     None
                 } else {
-                    Some(ContextStr::from_ptr(extension, self.1.ctx.clone()))
+                    Some(CompilerStr::from_ptr(extension, self.1.ctx.clone()))
                 }
             })
     }
@@ -261,7 +263,7 @@ mod test {
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::targets::Glsl;
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");
 
@@ -269,11 +271,10 @@ mod test {
     pub fn glsl_opts() -> Result<(), SpirvCrossError> {
         use crate::compile::sealed::ApplyCompilerOptions;
 
-        let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
 
-        let compiler: Compiler<targets::Glsl> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::Glsl> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         let mut opts_ptr = std::ptr::null_mut();
@@ -294,11 +295,10 @@ mod test {
 
     #[test]
     pub fn required_extensions() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
 
-        let mut compiler: Compiler<targets::Glsl> = spv.create_compiler(words)?;
+        let mut compiler: Compiler<targets::Glsl> = Compiler::new(words)?;
 
         compiler.require_extension("GL_KHR_my_Extension")?;
         let extensions = compiler.required_extensions();

@@ -46,7 +46,7 @@ impl ExecutionModeArguments {
     }
 }
 
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Set or unset execution modes and arguments.
     ///
     /// If arguments is `None`, unsets the execution mode. To set an execution mode that does not
@@ -77,7 +77,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     }
 
     /// Query `OpExecutionMode`.
-    pub fn execution_modes(&self) -> error::Result<&'ctx [spirv::ExecutionMode]> {
+    pub fn execution_modes(&self) -> error::Result<&[spirv::ExecutionMode]> {
         unsafe {
             let mut size = 0;
             let mut modes = std::ptr::null();
@@ -185,17 +185,16 @@ impl<'ctx, T> Compiler<'ctx, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn execution_modes() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         let ty = compiler.execution_modes()?;

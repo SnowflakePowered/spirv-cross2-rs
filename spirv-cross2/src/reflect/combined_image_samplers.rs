@@ -14,7 +14,7 @@ pub struct BuiltDummySamplerProof {
 
 /// Iterator for [`CombinedImageSampler`].
 pub struct CombinedImageSamplerIter<'a>(
-    PhantomCompiler<'a>,
+    PhantomCompiler,
     slice::Iter<'a, sys::spvc_combined_image_sampler>,
 );
 
@@ -52,7 +52,7 @@ pub struct CombinedImageSampler {
     pub sampler_id: Handle<VariableId>,
 }
 
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Analyzes all OpImageFetch (texelFetch) opcodes and checks if there are instances where
     /// said instruction is used without a combined image sampler.
     /// GLSL targets do not support the use of texelFetch without a sampler.
@@ -116,14 +116,14 @@ impl<'ctx, T> Compiler<'ctx, T> {
         }
 
         unsafe {
-            sys::spvc_compiler_build_combined_image_samplers(self.ptr.as_ptr()).ok(self)?;
+            sys::spvc_compiler_build_combined_image_samplers(self.ptr.as_ptr()).ok(&*self)?;
 
             Ok(())
         }
     }
 
     /// Gets a remapping for the combined image samplers.
-    pub fn combined_image_samplers(&self) -> error::Result<CombinedImageSamplerIter<'ctx>> {
+    pub fn combined_image_samplers(&self) -> error::Result<CombinedImageSamplerIter<'static>> {
         unsafe {
             let mut samplers = std::ptr::null();
             let mut size = 0;
@@ -146,17 +146,16 @@ impl<'ctx, T> Compiler<'ctx, T> {
 mod test {
     use crate::error::SpirvCrossError;
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn test_combined_image_sampler_build() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let mut compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let mut compiler: Compiler<targets::None> = Compiler::new(words)?;
 
         let proof = compiler.create_dummy_sampler_for_combined_images()?;
         compiler.build_combined_image_samplers(proof)?;

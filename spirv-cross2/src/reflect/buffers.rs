@@ -9,14 +9,14 @@ use spirv_cross_sys::{SpvId, VariableId};
 pub use spirv_cross_sys::BufferRange;
 
 /// Reflection of buffers (UBO, SSBOs, and PushConstant blocks).
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     /// Returns a list of which members of a struct are potentially in use by a
     /// SPIR-V shader. The granularity of this analysis is per-member of a struct.
     /// This can be used for Buffer (UBO), BufferBlock/StorageBuffer (SSBO) and PushConstant blocks.
     pub fn active_buffer_ranges(
         &self,
         handle: impl Into<Handle<VariableId>>,
-    ) -> error::Result<&'ctx [BufferRange]> {
+    ) -> error::Result<&[BufferRange]> {
         let handle = handle.into();
         let handle = self.yield_id(handle)?;
 
@@ -31,8 +31,6 @@ impl<'ctx, T> Compiler<'ctx, T> {
             )
             .ok(self)?;
 
-            // SAFETY: 'ctx is sound here
-            // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2575
             Ok(std::slice::from_raw_parts(ranges, size))
         }
     }
@@ -70,18 +68,17 @@ mod test {
     use crate::error::SpirvCrossError;
     use crate::targets;
     use crate::Compiler;
-    use crate::{Module, SpirvCrossContext};
+    use crate::Module;
     use spirv_cross_sys::ResourceType;
 
     static BASIC_SPV: &[u8] = include_bytes!("../../basic.spv");
 
     #[test]
     pub fn get_active_buffer_ranges() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let vec = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&vec));
 
-        let compiler: Compiler<targets::None> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::None> = Compiler::new(words)?;
         let ubo: Vec<_> = compiler
             .shader_resources()?
             .resources_for_type(ResourceType::UniformBuffer)?

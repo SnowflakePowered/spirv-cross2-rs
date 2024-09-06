@@ -12,7 +12,7 @@ pub use spirv_cross_sys::HlslRootConstants as RootConstants;
 use crate::error::ToContextError;
 use crate::handle::{Handle, VariableId};
 use crate::sealed::Sealed;
-use crate::string::ContextStr;
+use crate::string::CompilerStr;
 use crate::ContextRooted;
 use spirv_cross_sys as sys;
 use spirv_cross_sys::{HlslBindingFlagBits, HlslBindingFlags, HlslVertexAttributeRemap};
@@ -261,7 +261,7 @@ impl From<RegisterBinding> for HlslResourceBindingMapping {
 }
 
 /// HLSL specific APIs.
-impl Compiler<'_, Hlsl> {
+impl Compiler<Hlsl> {
     /// Add a resource binding to the HLSL compilation.
     ///
     /// Register bindings are set based on whether the HLSL resource is a
@@ -311,7 +311,7 @@ impl Compiler<'_, Hlsl> {
     pub fn remap_vertex_attribute<'str>(
         &mut self,
         location: u32,
-        semantic: impl Into<ContextStr<'str>>,
+        semantic: impl Into<CompilerStr<'str>>,
     ) -> error::Result<()> {
         let str = semantic.into();
         let semantic = str.into_cstring_ptr()?;
@@ -434,7 +434,7 @@ impl Compiler<'_, Hlsl> {
     }
 }
 
-impl CompiledArtifact<'_, Hlsl> {
+impl CompiledArtifact<Hlsl> {
     /// Returns whether the set/binding combination provided in [`Compiler<Hlsl>::add_resource_binding`]
     /// was used.
     pub fn is_resource_used(&self, model: spirv::ExecutionModel, binding: ResourceBinding) -> bool {
@@ -457,17 +457,16 @@ mod test {
     use crate::compile::sealed::ApplyCompilerOptions;
     use crate::error::{SpirvCrossError, ToContextError};
     use crate::Compiler;
-    use crate::{targets, Module, SpirvCrossContext};
+    use crate::{targets, Module};
 
     static BASIC_SPV: &[u8] = include_bytes!("../../../basic.spv");
 
     #[test]
     pub fn hlsl_opts() -> Result<(), SpirvCrossError> {
-        let spv = SpirvCrossContext::new()?;
         let words = Vec::from(BASIC_SPV);
         let words = Module::from_words(bytemuck::cast_slice(&words));
 
-        let compiler: Compiler<targets::Hlsl> = spv.create_compiler(words)?;
+        let compiler: Compiler<targets::Hlsl> = Compiler::new(words)?;
         let resources = compiler.shader_resources()?.all_resources()?;
 
         let mut opts_ptr = std::ptr::null_mut();

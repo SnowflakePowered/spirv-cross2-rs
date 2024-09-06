@@ -109,7 +109,7 @@ impl<T: Id> Handle<T> {
 }
 
 /// APIs for comparing handles
-impl<T> Compiler<'_, T> {
+impl<T> Compiler<T> {
     #[inline(always)]
     /// Create a handle for the given ID tagged with this compiler instance.
     ///
@@ -155,7 +155,7 @@ impl<T> Compiler<'_, T> {
     }
 }
 
-impl PhantomCompiler<'_> {
+impl PhantomCompiler {
     /// Internal method for creating a handle
     ///
     /// This is not marked unsafe, because it is only ever used internally

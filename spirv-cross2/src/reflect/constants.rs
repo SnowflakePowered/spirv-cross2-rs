@@ -86,7 +86,7 @@ pub struct WorkgroupSizeSpecializationConstants {
 
 /// An iterator over specialization constants, created by [`Compiler::specialization_constants`].
 pub struct SpecializationConstantIter<'a>(
-    PhantomCompiler<'a>,
+    PhantomCompiler,
     slice::Iter<'a, spvc_specialization_constant>,
 );
 
@@ -109,7 +109,7 @@ impl Iterator for SpecializationConstantIter<'_> {
 
 /// Iterator for specialization subconstants created by
 /// [`Compiler::specialization_sub_constants`].
-pub struct SpecializationSubConstantIter<'a>(PhantomCompiler<'a>, slice::Iter<'a, ConstantId>);
+pub struct SpecializationSubConstantIter<'a>(PhantomCompiler, slice::Iter<'a, ConstantId>);
 
 impl ExactSizeIterator for SpecializationSubConstantIter<'_> {
     fn len(&self) -> usize {
@@ -126,7 +126,7 @@ impl Iterator for SpecializationSubConstantIter<'_> {
 }
 
 /// Reflection of specialization constants.
-impl<'ctx, T> Compiler<'ctx, T> {
+impl<T> Compiler<T> {
     // check bounds of the constant, otherwise you can write to arbitrary memory.
     unsafe fn bounds_check_constant(
         handle: spvc_constant,
@@ -205,7 +205,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
     }
 
     /// Query declared specialization constants.
-    pub fn specialization_constants(&self) -> error::Result<SpecializationConstantIter<'ctx>> {
+    pub fn specialization_constants(&self) -> error::Result<SpecializationConstantIter<'static>> {
         unsafe {
             let mut constants = std::ptr::null();
             let mut size = 0;
@@ -216,7 +216,7 @@ impl<'ctx, T> Compiler<'ctx, T> {
             )
             .ok(self)?;
 
-            // SAFETY: 'ctx is sound here.
+            // SAFETY: 'static is sound here.
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2522
             let slice = slice::from_raw_parts(constants, size);
             Ok(SpecializationConstantIter(self.phantom(), slice.iter()))
@@ -468,7 +468,7 @@ mod gfx_maths_types {
     }
 }
 
-impl<'a, T> Compiler<'a, T> {
+impl<T> Compiler<T> {
     /// Get the value of the specialization value.
     ///
     /// The type is inferred from the return value, and is not type-checked

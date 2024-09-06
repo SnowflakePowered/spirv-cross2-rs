@@ -16,4 +16,4 @@ quote = "1.0"
 proc-macro2 = "1.0.86"
 
 [dev-dependencies]
-spirv-cross-sys = { version = "0.3.0", path = "../spirv-cross-sys"}
+spirv-cross-sys = { version = "0.4.0", path = "../spirv-cross-sys"}

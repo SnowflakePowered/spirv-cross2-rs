@@ -335,7 +335,7 @@ dependencies = [
 
 [[package]]
 name = "spirv-cross-sys"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "bytemuck",
  "cc",
@@ -347,7 +347,7 @@ dependencies = [
 
 [[package]]
 name = "spirv-cross2"
-version = "0.3.6"
+version = "0.4.0"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -358,7 +358,6 @@ dependencies = [
  "spirv",
  "spirv-cross-sys",
  "spirv-cross2-derive",
- "static_assertions",
  "thiserror",
 ]
 
@@ -371,12 +370,6 @@ dependencies = [
  "spirv-cross-sys",
  "syn",
 ]
-
-[[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "syn"

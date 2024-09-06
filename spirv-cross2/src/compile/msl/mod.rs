@@ -465,11 +465,14 @@ pub struct CompilerOptions {
 /// The version of Metal Shading Language to compile to.
 ///
 /// Defaults to MSL 1.2.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct MslVersion {
-    major: u32,
-    minor: u32,
-    patch: u32,
+    /// The major version of MSL.
+    pub major: u32,
+    /// The minor version of MSL.
+    pub minor: u32,
+    /// The patch version of MSL.
+    pub patch: u32,
 }
 
 impl MslVersion {

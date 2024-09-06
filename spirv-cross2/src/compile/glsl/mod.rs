@@ -90,9 +90,8 @@ pub struct CompilerOptions {
 impl Sealed for GlslVersion {}
 
 /// GLSL language version.
-#[derive(Debug)]
 #[non_exhaustive]
-#[derive(Default)]
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum GlslVersion {
     /// #version 110
     Glsl110,

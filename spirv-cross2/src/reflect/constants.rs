@@ -227,8 +227,9 @@ impl<T> Compiler<T> {
     /// the LocalSize execution mode is ignored.
     ///
     /// This constant vector can be a constant vector, specialization constant vector, or partly specialized constant vector.
-    /// To modify and query work group dimensions which are specialization constants, SPIRConstant values must be modified
-    /// directly via get_constant() rather than using LocalSize directly. This function will return which constants should be modified.
+    /// To modify and query work group dimensions which are specialization constants, constant values must be modified
+    /// directly via [`Compiler::set_specialization_constant_value`] rather than using LocalSize directly.
+    /// This function will return which constants should be modified.
     ///
     /// To modify dimensions which are *not* specialization constants, set_execution_mode should be used directly.
     /// Arguments to set_execution_mode which are specialization constants are effectively ignored during compilation.

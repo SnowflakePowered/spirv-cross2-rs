@@ -10,7 +10,7 @@ use std::ops::Deref;
 ///
 /// In most cases, users of this library do not need to worry about
 /// constructing a [`CompilerStr`]. All functions that take strings
-/// take `impl Into<ContextStr<'_>>`, which converts automatically from
+/// take `impl Into<CompilerStr<'_>>`, which converts automatically from
 /// [`&str`](str) and [`String`](String).
 ///
 /// [`CompilerStr`] also implements [`Deref`](Deref) for [`&str`](str),

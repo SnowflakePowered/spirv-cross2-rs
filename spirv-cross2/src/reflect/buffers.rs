@@ -38,8 +38,8 @@ impl<T> Compiler<T> {
     /// Queries if a buffer object has a neighbor "counter" buffer.
     /// If so, the ID of that counter buffer will be returned.
     ///
-    /// If SPV_GOOGLE_hlsl_functionality1 is used, this can be used even with a stripped SPIR-V module.
-    /// Otherwise, this query is purely based on OpName identifiers as found in the SPIR-V module, and will
+    /// If `SPV_GOOGLE_hlsl_functionality` is used, this can be used even with a stripped SPIR-V module.
+    /// Otherwise, this query is purely based on `OpName` identifiers as found in the SPIR-V module, and will
     /// only return true if OpSource was reported HLSL.
     /// To rely on this functionality, ensure that the SPIR-V module is not stripped.
     pub fn hlsl_counter_buffer(

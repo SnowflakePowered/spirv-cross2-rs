@@ -144,7 +144,7 @@ impl<T> Compiler<T> {
         handle.tag == PointerOnlyForComparison(self.ptr)
     }
 
-    /// Yield the value of the handle, if it originated from the same context,
+    /// Yield the value of the handle, if it originated from the same compiler instance,
     /// otherwise return [`SpirvCrossError::InvalidHandle`].
     pub fn yield_id<I: Id>(&self, handle: Handle<I>) -> error::Result<I> {
         if self.handle_is_valid(&handle) {

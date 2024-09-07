@@ -23,12 +23,10 @@
 //! can be coerced automatically to [`CompilerStr`] as an input, and [`CompilerStr`] can easily be copied
 //! to a Rust string type.
 //!
-//! If a returned [`CompilerStr`] is owned by the context and is immutable,
-//! it will share the lifetime of the context. Some functions return _short lived_ strings which
-//! are owned by the compiler instance, rather than the context.
+//! If a returned [`CompilerStr`] is backed by immutable memory, it will have a `'static` lifetime.
 //!
-//! The underlying string data could possibly be modified by `set_` functions,
-//! thus they only have a lifetime corresponding to the lifetime of the immutable borrow of the [`Compiler`]
+//! If instead the underlying string data could possibly be modified by `set_` functions,
+//! they will only have a lifetime corresponding to the lifetime of the immutable borrow of the [`Compiler`]
 //! that produced them. References to these short-lived strings can not be alive before calling a
 //! mutating function.
 //!
@@ -37,7 +35,7 @@
 //! and the pointer will be passed directly back. Rust [`&CStr`](std::ffi::CStr) will not reallocate.
 //!
 //! If you are just passing in a string constant using a [C-string literal](https://doc.rust-lang.org/edition-guide/rust-2021/c-string-literals.html)
-//! will be the most efficient. Otherwise it is always better to work with Rust [`String`] and [`&str`](str),
+//! will be the most efficient. Otherwise, it is always better to work with Rust [`String`] and [`&str`](str),
 //! if you are dynamically building up a string. In particular, [`String`] will not reallocate if
 //! there is enough capacity to append a nul byte before being passed to FFI.
 //!
@@ -52,14 +50,6 @@
 //!
 //! Handles can be unsafely forged with [`Compiler::create_handle`], but there are very few if any
 //! situations where this would be needed.
-//!
-//! ## Context
-//! The SPIRV-Cross API puts all allocations behind a context object, which is encapsulated
-//! within [`Compiler`]. All allocations originating from this context are refcounted, and
-//! will have `'static` lifetime, and are immutable once created.
-//!
-//! Some allocations are made directly in the SPIRV-Cross compiler object. Such allocations
-//! can only live for as long as the borrow to [`Compiler`].
 //!
 //! ## Features
 //! By default, the `glsl`, `hlsl`, and `msl` features are enabled by default. The `cpp` and `json` targets can be enabled

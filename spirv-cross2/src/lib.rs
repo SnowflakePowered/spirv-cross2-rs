@@ -227,12 +227,6 @@ pub struct Compiler<T> {
 
 impl<T: Target> Compiler<T> {
     /// Create a compiler instance from a SPIR-V module.
-    ///
-    /// This consumes the instance so the resulting compiler instance is static,
-    /// and allocations will be dropped with the compiler.
-    ///
-    /// This allows for instances to be stored without keeping a reference to the
-    /// context separately.
     pub fn new(spirv: Module) -> error::Result<Compiler<T>> {
         let allocs = CrossAllocationCell::new()?;
         allocs.into_compiler(spirv)

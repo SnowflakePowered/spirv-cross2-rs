@@ -23,16 +23,19 @@ bitflags = "2.6.0"
 
 half = { version = "2.4.1", optional = true }
 gfx-maths = { version = "0.2.9", optional = true }
+glam = { version = "0.29.0", optional = true }
+
 memchr = "2.7.4"
 
 spirv = "0.3.0"
 
 [features]
 default = ["glsl", "hlsl", "msl"]
-full = ["gfx-math-types", "f16", "glsl", "hlsl", "msl", "json", "cpp"]
+full = ["gfx-math-types", "glam-types", "f16", "glsl", "hlsl", "msl", "json", "cpp"]
 
 f16 = ["dep:half"]
 gfx-math-types = ["dep:gfx-maths"]
+glam-types = ["dep:glam"]
 
 glsl = ["spirv-cross-sys/glsl"]
 hlsl = ["spirv-cross-sys/hlsl"]

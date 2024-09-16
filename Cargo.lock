@@ -26,7 +26,7 @@ checksum = "0c4b4d0bd25bd0b74681c0ad21497610ce1b7c91b1022cd21c80c6fbdd9476b0"
 [[package]]
 name = "bindgen"
 version = "0.70.1"
-source = "git+https://github.com/rust-lang/rust-bindgen#fd37d68572b765b0aa6daa21ceb55f7a659a13eb"
+source = "git+https://github.com/rust-lang/rust-bindgen#f518815cc14a7f8c292964bb37179a1070d7e18a"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -65,9 +65,9 @@ checksum = "94bbb0ad554ad961ddc5da507a12a29b14e4ae5bda06b19f575a3e6079d2e2ae"
 
 [[package]]
 name = "cc"
-version = "1.1.17"
+version = "1.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a93fe60e2fc87b6ba2c117f67ae14f66e3fc7d6a1e612a25adb238cc980eadb3"
+checksum = "2d74707dde2ba56f86ae90effb3b43ddd369504387e718014de010cec7959800"
 dependencies = [
  "shlex",
 ]
@@ -137,6 +137,12 @@ checksum = "757bba517b41d90e60e23f8b810a50a73e705ac3f1be56712ebe403af850189c"
 dependencies = [
  "auto_ops",
 ]
+
+[[package]]
+name = "glam"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c28091a37a5d09b555cb6628fd954da299b536433834f5b8e59eba78e0cbbf8a"
 
 [[package]]
 name = "glob"
@@ -251,9 +257,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.19.0"
+version = "1.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
+checksum = "33ea5043e58958ee56f3e15a90aee535795cd7dfd319846288d93c5b57d85cbe"
 
 [[package]]
 name = "prettyplease"
@@ -352,6 +358,7 @@ dependencies = [
  "bitflags",
  "bytemuck",
  "gfx-maths",
+ "glam",
  "glslang",
  "half",
  "memchr",
@@ -404,9 +411,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.12"
+version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+checksum = "e91b56cd4cadaeb79bbf1a5645f6b4f8dc5bde8834ad5894a8db35fda9efa1fe"
 
 [[package]]
 name = "windows-targets"

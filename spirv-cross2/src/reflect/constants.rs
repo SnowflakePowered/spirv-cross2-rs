@@ -12,7 +12,7 @@ use spirv_cross_sys as sys;
 
 mod gfx_maths;
 mod half;
-
+mod glam;
 
 /// A marker trait for types that can be represented as a scalar SPIR-V constant.
 pub trait ConstantScalar: Default + Sealed + Copy {
@@ -38,6 +38,27 @@ macro_rules! impl_spvc_constant {
     };
 }
 
+macro_rules! impl_vec_constant {
+    ($vec_ty:ty [$base_ty:ty; $len:literal] for [$($component:ident),*]) => {
+        impl $crate::sealed::Sealed for $vec_ty {}
+        impl $crate::reflect::constants::ConstantValue for $vec_ty {
+             const COLUMNS: usize = 1;
+             const VECSIZE: usize = $len;
+             type BaseArrayType = [$base_ty; $len];
+             type ArrayType = [[$base_ty; $len]; 1];
+             type BaseType = $base_ty;
+
+             fn from_array(value: Self::ArrayType) -> Self {
+                 value[0].into()
+             }
+
+             fn to_array(value: Self) -> Self::ArrayType {
+                [[$(value.$component),*]]
+             }
+        }
+    };
+}
+
 impl_spvc_constant!(spvc_constant_get_scalar_i8 spvc_constant_set_scalar_i8 i8);
 impl_spvc_constant!(spvc_constant_get_scalar_i16 spvc_constant_set_scalar_i16 i16);
 impl_spvc_constant!(spvc_constant_get_scalar_i32 spvc_constant_set_scalar_i32 i32);
@@ -50,6 +71,20 @@ impl_spvc_constant!(spvc_constant_get_scalar_u64 spvc_constant_set_scalar_u64 u6
 
 impl_spvc_constant!(spvc_constant_get_scalar_fp32 spvc_constant_set_scalar_fp32 f32);
 impl_spvc_constant!(spvc_constant_get_scalar_fp64 spvc_constant_set_scalar_fp64 f64);
+
+// implement manually for bool
+impl Sealed for bool {}
+impl ConstantScalar for bool {
+    unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self {
+        unsafe {
+            sys::spvc_constant_get_scalar_u8(constant, column, row) != 0
+        }
+    }
+
+    unsafe fn set(constant: spvc_constant, column: u32, row: u32, value: Self) {
+        sys::spvc_constant_set_scalar_u8(constant, column, row, if value { 1 } else { 0 });
+    }
+}
 
 /// A SPIR-V specialization constant
 #[derive(Debug, Clone)]
@@ -402,3 +437,5 @@ impl<T> Compiler<T> {
         Ok(())
     }
 }
+
+pub(self) use impl_vec_constant;

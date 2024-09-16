@@ -91,12 +91,12 @@ To enable all features, including `f16` and vector constant support, use the `fu
 ```
 
 ### `f16` and vector specialization constants support
-When querying specialization constants, spirv-cross2 includes optional support for `f16` via [half](https://crates.io/crates/half) and `Vec2`, `Vec3`, `Vec4`, and `Mat4` types
-via [gfx-maths](https://crates.io/crates/gfx-maths).
+When querying specialization constants, spirv-cross2 includes optional support for `f16` via [half](https://crates.io/crates/half) and vector and matrix types
+via [glam](https://crates.io/crates/glam) and [gfx-maths](https://crates.io/crates/gfx-maths).
 
 ```toml
  [dependencies]
- spirv-cross2 = { features = ["f16", "half"] }
+ spirv-cross2 = { features = ["f16", "gfx-maths-types", "glam-types"] }
 ```
 
 ## License

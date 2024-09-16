@@ -3,57 +3,11 @@
 use crate::reflect::ConstantValue;
 use crate::sealed::Sealed;
 use gfx_maths::{Mat4, Vec2, Vec3, Vec4};
+use crate::reflect::constants::impl_vec_constant;
 
-impl Sealed for Vec2 {}
-impl ConstantValue for Vec2 {
-    const COLUMNS: usize = 1;
-    const VECSIZE: usize = 2;
-    type BaseArrayType = [f32; 2];
-    type ArrayType = [[f32; 2]; 1];
-    type BaseType = f32;
-
-    fn from_array(value: Self::ArrayType) -> Self {
-        value[0].into()
-    }
-
-    fn to_array(value: Self) -> Self::ArrayType {
-        [[value.x, value.y]]
-    }
-}
-
-impl Sealed for Vec3 {}
-impl ConstantValue for Vec3 {
-    const COLUMNS: usize = 1;
-    const VECSIZE: usize = 3;
-    type BaseArrayType = [f32; 3];
-    type ArrayType = [[f32; 3]; 1];
-    type BaseType = f32;
-
-    fn from_array(value: Self::ArrayType) -> Self {
-        value[0].into()
-    }
-
-    fn to_array(value: Self) -> Self::ArrayType {
-        [[value.x, value.y, value.z]]
-    }
-}
-
-impl Sealed for Vec4 {}
-impl ConstantValue for Vec4 {
-    const COLUMNS: usize = 1;
-    const VECSIZE: usize = 4;
-    type BaseArrayType = [f32; 4];
-    type ArrayType = [[f32; 4]; 1];
-    type BaseType = f32;
-
-    fn from_array(value: Self::ArrayType) -> Self {
-        value[0].into()
-    }
-
-    fn to_array(value: Self) -> Self::ArrayType {
-        [[value.x, value.y, value.z, value.w]]
-    }
-}
+impl_vec_constant!(Vec2 [f32; 2] for [x, y]);
+impl_vec_constant!(Vec3 [f32; 3] for [x, y, z]);
+impl_vec_constant!(Vec4 [f32; 4] for [x, y, z, w]);
 
 impl Sealed for Mat4 {}
 impl ConstantValue for Mat4 {
@@ -96,5 +50,19 @@ impl ConstantValue for Mat4 {
         array[3][3] = value[(3, 3)];
 
         array
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::reflect::ConstantValue;
+
+    #[test]
+    pub fn round_trip_mat4() {
+        let mat4 = gfx_maths::Mat4::inverse_orthographic_opengl(1.0, 2.0, 3.0, 4.0,5.0, 6.0);
+        let arr = ConstantValue::to_array(mat4.clone());
+        let returned = ConstantValue::from_array(arr);
+
+        assert_eq!(mat4, returned);
     }
 }

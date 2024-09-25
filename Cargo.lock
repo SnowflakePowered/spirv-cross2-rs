@@ -69,6 +69,8 @@ version = "1.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2d74707dde2ba56f86ae90effb3b43ddd369504387e718014de010cec7959800"
 dependencies = [
+ "jobserver",
+ "libc",
  "shlex",
 ]
 
@@ -189,6 +191,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
 dependencies = [
  "either",
+]
+
+[[package]]
+name = "jobserver"
+version = "0.1.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48d1dbcbbeb6a7fec7e059840aa538bd62aaccf972c7346c4d9d2059312853d0"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -341,11 +352,10 @@ dependencies = [
 
 [[package]]
 name = "spirv-cross-sys"
-version = "0.4.1+f84c1fb"
+version = "0.4.2+b28b355"
 dependencies = [
  "bytemuck",
  "cc",
- "glob",
  "glslang",
  "num-derive",
  "num-traits",

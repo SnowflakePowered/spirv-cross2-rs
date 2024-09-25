@@ -26,9 +26,7 @@ cpp = ["glsl"]
 
 
 [build-dependencies]
-cc = "1.0"
-glob = "0.3"
-
+cc = {  version = "1.0", features = ["parallel"] }
 
 [dev-dependencies]
 glslang = "0.4.0"

@@ -6,6 +6,20 @@ pub fn main() {
         return;
     }
 
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_cross_c.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_cross_c.h");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_cfg.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_cpp.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_cross.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_cross_parsed_ir.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_cross_util.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_glsl.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_hlsl.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_msl.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_parser.cpp");
+    println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_reflect.cpp");
+    println!("cargo:rerun-if-changed=native/spirv_cross_c_ext_rs.cpp");
+
     let mut spvc_build = cc::Build::new();
     spvc_build
         .cpp(true)
@@ -22,6 +36,7 @@ pub fn main() {
         .file("native/SPIRV-Cross/spirv_msl.cpp")
         .file("native/SPIRV-Cross/spirv_parser.cpp")
         .file("native/SPIRV-Cross/spirv_reflect.cpp")
+        // spirv_cross_c_ext_rs.cpp #includes spirv_cross_c.cpp
         .file("native/spirv_cross_c_ext_rs.cpp");
 
     if cfg!(feature = "glsl") {

@@ -252,7 +252,7 @@ impl<T> Compiler<T> {
     }
 
     /// Gets the value for member decorations which take arguments.
-    pub fn member_decoration<I: Id>(
+    pub fn member_decoration(
         &self,
         member: &StructMember,
         decoration: Decoration,

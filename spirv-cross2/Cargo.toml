@@ -1,6 +1,6 @@
 [package]
 name = "spirv-cross2"
-version = "0.4.4"
+version = "0.4.5"
 edition = "2021"
 
 license = "MIT OR Apache-2.0"
@@ -10,7 +10,7 @@ categories = ["compilers", "rendering", "external-ffi-bindings"]
 repository = "https://github.com/SnowflakePowered/spirv-cross2"
 keywords = ["spir-v", "glsl", "msl", "shaders", "spirv-cross"]
 
-rust-version = "1.70.0"
+rust-version = "1.65.0"
 readme = "../README.md"
 
 [dependencies]

@@ -357,12 +357,13 @@ pub struct ArraySizeHole {
     declared: usize,
 }
 
-/// A size hole requiring the number of elements in a runtime array.
+/// A size hole representing a missing or unknown array stride.
 ///
-/// This hole must be resolved with the size of the array.
+/// This hole must be resolved with a function that calculates the stride,
+/// given the size hint of the base type of the array.
 ///
 /// The declared size of this hole is the number of elements
-/// times the declared size of the unknown hole.
+/// times the declared size of the base type.
 #[derive(Debug, Clone)]
 pub struct UnknownStrideHole {
     hint: Box<TypeSizeHint>,

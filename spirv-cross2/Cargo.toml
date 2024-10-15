@@ -44,7 +44,7 @@ json = ["spirv-cross-sys/json"]
 cpp = ["spirv-cross-sys/cpp"]
 
 [dev-dependencies]
-glslang = "0.4.0"
+glslang = "0.6.0"
 
 [package.metadata.docs.rs]
 features = ["full"]

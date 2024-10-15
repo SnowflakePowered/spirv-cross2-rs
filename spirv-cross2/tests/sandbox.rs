@@ -49,7 +49,7 @@ void main()
         spirv_version: SPIRV1_6,
     };
 
-    let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None).unwrap();
+    let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let mut compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
@@ -116,7 +116,7 @@ void main()
         spirv_version: SPIRV1_6,
     };
 
-    let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None).unwrap();
+    let shader = ShaderInput::new(&src, ShaderStage::Compute, &opts, None, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
@@ -165,7 +165,7 @@ void main() {
         spirv_version: SPIRV1_0,
     };
 
-    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
+    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
@@ -206,7 +206,7 @@ void main() {
         spirv_version: SPIRV1_0,
     };
 
-    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
+    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
@@ -265,7 +265,7 @@ void main() {
         spirv_version: SPIRV1_0,
     };
 
-    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
+    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
@@ -308,7 +308,7 @@ void main() {
         spirv_version: SPIRV1_0,
     };
 
-    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
+    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;
@@ -345,7 +345,7 @@ void main() {
         spirv_version: Some(SPIRV1_1),
     };
 
-    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None).unwrap();
+    let shader = ShaderInput::new(&src, ShaderStage::Vertex, &opts, None, None).unwrap();
     let spv = glslang.create_shader(shader).unwrap().compile().unwrap();
 
     let compiler = Compiler::<spirv_cross2::targets::None>::new(Module::from_words(&spv))?;

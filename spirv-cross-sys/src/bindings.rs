@@ -765,6 +765,9 @@ impl SpvDecoration {
     pub const BlockMatchTextureQCOM: SpvDecoration = SpvDecoration(4488);
 }
 impl SpvDecoration {
+    pub const BlockMatchSamplerQCOM: SpvDecoration = SpvDecoration(4499);
+}
+impl SpvDecoration {
     pub const ExplicitInterpAMD: SpvDecoration = SpvDecoration(4999);
 }
 impl SpvDecoration {
@@ -1658,6 +1661,9 @@ impl SpvCapability {
 }
 impl SpvCapability {
     pub const TextureBlockMatchQCOM: SpvCapability = SpvCapability(4486);
+}
+impl SpvCapability {
+    pub const TextureBlockMatch2QCOM: SpvCapability = SpvCapability(4498);
 }
 impl SpvCapability {
     pub const Float16ImageAMD: SpvCapability = SpvCapability(5008);

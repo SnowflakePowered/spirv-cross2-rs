@@ -24,7 +24,7 @@ fn enum_slice_is_not_max<T>(enum_slice: &[i32]) -> bool {
     #[cfg(target_endian = "big")]
     let memchr = memchr::memmem::find(
         bytemuck::must_cast_slice(enum_slice),
-        &*i32::MAX.to_be_bytes(),
+        i32::MAX.to_be_bytes().as_slice(),
     );
 
     #[cfg(target_endian = "little")]

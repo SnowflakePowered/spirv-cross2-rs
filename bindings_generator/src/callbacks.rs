@@ -1,6 +1,5 @@
 use bindgen::callbacks::{
-    AttributeInfo, DeriveInfo, EnumVariantCustomBehavior, EnumVariantValue, ParseCallbacks,
-    TypeKind,
+    AttributeInfo, DeriveInfo, EnumVariantCustomBehavior, EnumVariantValue, ItemInfo, ParseCallbacks, TypeKind
 };
 use cruet::Inflector;
 
@@ -47,7 +46,8 @@ const SPVC_MSL_TYPES: &[&str] = &[
 const NON_EXHAUSTIVE_TYPES: &[&str] = &["MslShaderVariableFormat"];
 
 impl ParseCallbacks for SpirvCrossCallbacks {
-    fn item_name(&self, original_item_name: &str) -> Option<String> {
+    fn item_name(&self, item_info: ItemInfo<'_>) -> Option<String> {
+        let original_item_name = item_info.name;
         // Keep the Spv prefix cause bindgen can't namespace.
         // in the Rust wrapper, we can make it nicer.
         if original_item_name.starts_with("Spv") {

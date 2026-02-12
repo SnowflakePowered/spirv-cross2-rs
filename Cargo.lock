@@ -25,8 +25,9 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
 name = "bindgen"
-version = "0.70.1"
-source = "git+https://github.com/rust-lang/rust-bindgen#af26991da8161f4d401d0d0532a05079449e7379"
+version = "0.72.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "993776b509cfb49c750f11b8f07a46fa23e0a1386ffc01fb1e7d343efc387895"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -37,7 +38,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "rustc-hash 1.1.0",
+ "rustc-hash",
  "shlex",
  "syn",
 ]
@@ -160,7 +161,7 @@ checksum = "b4cc03ec3cde52c8e698ed6c0ed415afca69d6f89bf62034753c08e8a3bfb18f"
 dependencies = [
  "bitflags",
  "glslang-sys",
- "rustc-hash 2.0.0",
+ "rustc-hash",
  "smartstring",
  "thiserror",
 ]
@@ -332,15 +333,9 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "rustc-hash"
-version = "1.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
-
-[[package]]
-name = "rustc-hash"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "583034fd73374156e66797ed8e5b0d5690409c9226b22d87cb7f19821c05d152"
+checksum = "357703d41365b4b27c590e3ed91eabb1b663f07c4c084095e60cbed4362dff0d"
 
 [[package]]
 name = "shlex"
@@ -370,7 +365,7 @@ dependencies = [
 
 [[package]]
 name = "spirv-cross-sys"
-version = "0.6.0+bf6bb5c"
+version = "0.6.1+bf6bb5c"
 dependencies = [
  "bytemuck",
  "cc",

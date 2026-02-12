@@ -2680,6 +2680,7 @@ pub enum CompilerBackend {
     Json = 5,
 }
 #[repr(i32)]
+#[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]

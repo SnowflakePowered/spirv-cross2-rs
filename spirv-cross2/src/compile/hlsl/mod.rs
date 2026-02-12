@@ -115,6 +115,10 @@ pub struct CompilerOptions {
     /// whereas the type can be extended with an optional subtype, e.g. `structuredbuffer:int`.
     #[option(SPVC_COMPILER_OPTION_HLSL_PRESERVE_STRUCTURED_BUFFERS, false)]
     pub preserve_structured_buffers: bool,
+
+    /// Use UserSemantic decoration info (if specified), otherwise use default mechanism (such as add_vertex_attribute_remap or TEXCOORD#).
+    #[option(SPVC_COMPILER_OPTION_HLSL_USER_SEMANTIC, false)]
+    pub user_semantic: bool,
 }
 
 /// HLSL Shader model.

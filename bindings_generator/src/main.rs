@@ -31,7 +31,7 @@ fn main() {
         .rustified_enum("spvc_backend")
         .rustified_enum("spvc_capture_mode")
         .rustified_enum("spvc_result")
-        .rustified_enum("spvc_resource_type")
+        .rustified_non_exhaustive_enum("spvc_resource_type")
         .rustified_enum("spvc_builtin_resource_type")
         .rustified_enum("spvc_basetype")
         .rustified_enum("spvc_msl_platform")

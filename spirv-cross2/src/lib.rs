@@ -1,4 +1,4 @@
-#![cfg_attr(docsrs, feature(doc_cfg, doc_cfg_hide))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(missing_docs)]
 
 //! Safe and sound Rust bindings to [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross).

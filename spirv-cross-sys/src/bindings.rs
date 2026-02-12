@@ -195,6 +195,15 @@ impl SpvExecutionMode {
     pub const LocalSizeHintId: SpvExecutionMode = SpvExecutionMode(39);
 }
 impl SpvExecutionMode {
+    pub const NonCoherentColorAttachmentReadEXT: SpvExecutionMode = SpvExecutionMode(4169);
+}
+impl SpvExecutionMode {
+    pub const NonCoherentDepthAttachmentReadEXT: SpvExecutionMode = SpvExecutionMode(4170);
+}
+impl SpvExecutionMode {
+    pub const NonCoherentStencilAttachmentReadEXT: SpvExecutionMode = SpvExecutionMode(4171);
+}
+impl SpvExecutionMode {
     pub const SubgroupUniformControlFlowKHR: SpvExecutionMode = SpvExecutionMode(4421);
 }
 impl SpvExecutionMode {
@@ -216,10 +225,34 @@ impl SpvExecutionMode {
     pub const RoundingModeRTZ: SpvExecutionMode = SpvExecutionMode(4463);
 }
 impl SpvExecutionMode {
+    pub const NonCoherentTileAttachmentReadQCOM: SpvExecutionMode = SpvExecutionMode(4489);
+}
+impl SpvExecutionMode {
+    pub const TileShadingRateQCOM: SpvExecutionMode = SpvExecutionMode(4490);
+}
+impl SpvExecutionMode {
     pub const EarlyAndLateFragmentTestsAMD: SpvExecutionMode = SpvExecutionMode(5017);
 }
 impl SpvExecutionMode {
     pub const StencilRefReplacingEXT: SpvExecutionMode = SpvExecutionMode(5027);
+}
+impl SpvExecutionMode {
+    pub const CoalescingAMDX: SpvExecutionMode = SpvExecutionMode(5069);
+}
+impl SpvExecutionMode {
+    pub const IsApiEntryAMDX: SpvExecutionMode = SpvExecutionMode(5070);
+}
+impl SpvExecutionMode {
+    pub const MaxNodeRecursionAMDX: SpvExecutionMode = SpvExecutionMode(5071);
+}
+impl SpvExecutionMode {
+    pub const StaticNumWorkgroupsAMDX: SpvExecutionMode = SpvExecutionMode(5072);
+}
+impl SpvExecutionMode {
+    pub const ShaderIndexAMDX: SpvExecutionMode = SpvExecutionMode(5073);
+}
+impl SpvExecutionMode {
+    pub const MaxNumWorkgroupsAMDX: SpvExecutionMode = SpvExecutionMode(5077);
 }
 impl SpvExecutionMode {
     pub const StencilRefUnchangedFrontAMD: SpvExecutionMode = SpvExecutionMode(5079);
@@ -240,6 +273,15 @@ impl SpvExecutionMode {
     pub const StencilRefLessBackAMD: SpvExecutionMode = SpvExecutionMode(5084);
 }
 impl SpvExecutionMode {
+    pub const QuadDerivativesKHR: SpvExecutionMode = SpvExecutionMode(5088);
+}
+impl SpvExecutionMode {
+    pub const RequireFullQuadsKHR: SpvExecutionMode = SpvExecutionMode(5089);
+}
+impl SpvExecutionMode {
+    pub const SharesInputWithAMDX: SpvExecutionMode = SpvExecutionMode(5102);
+}
+impl SpvExecutionMode {
     pub const OutputLinesEXT: SpvExecutionMode = SpvExecutionMode(5269);
 }
 impl SpvExecutionMode {
@@ -252,7 +294,13 @@ impl SpvExecutionMode {
     pub const OutputPrimitivesNV: SpvExecutionMode = SpvExecutionMode(5270);
 }
 impl SpvExecutionMode {
+    pub const DerivativeGroupQuadsKHR: SpvExecutionMode = SpvExecutionMode(5289);
+}
+impl SpvExecutionMode {
     pub const DerivativeGroupQuadsNV: SpvExecutionMode = SpvExecutionMode(5289);
+}
+impl SpvExecutionMode {
+    pub const DerivativeGroupLinearKHR: SpvExecutionMode = SpvExecutionMode(5290);
 }
 impl SpvExecutionMode {
     pub const DerivativeGroupLinearNV: SpvExecutionMode = SpvExecutionMode(5290);
@@ -312,7 +360,28 @@ impl SpvExecutionMode {
     pub const SchedulerTargetFmaxMhzINTEL: SpvExecutionMode = SpvExecutionMode(5903);
 }
 impl SpvExecutionMode {
+    pub const MaximallyReconvergesKHR: SpvExecutionMode = SpvExecutionMode(6023);
+}
+impl SpvExecutionMode {
+    pub const FPFastMathDefault: SpvExecutionMode = SpvExecutionMode(6028);
+}
+impl SpvExecutionMode {
+    pub const StreamingInterfaceINTEL: SpvExecutionMode = SpvExecutionMode(6154);
+}
+impl SpvExecutionMode {
+    pub const RegisterMapInterfaceINTEL: SpvExecutionMode = SpvExecutionMode(6160);
+}
+impl SpvExecutionMode {
     pub const NamedBarrierCountINTEL: SpvExecutionMode = SpvExecutionMode(6417);
+}
+impl SpvExecutionMode {
+    pub const MaximumRegistersINTEL: SpvExecutionMode = SpvExecutionMode(6461);
+}
+impl SpvExecutionMode {
+    pub const MaximumRegistersIdINTEL: SpvExecutionMode = SpvExecutionMode(6462);
+}
+impl SpvExecutionMode {
+    pub const NamedMaximumRegistersINTEL: SpvExecutionMode = SpvExecutionMode(6463);
 }
 impl SpvExecutionMode {
     pub const Max: SpvExecutionMode = SpvExecutionMode(2147483647);
@@ -362,6 +431,15 @@ impl SpvStorageClass {
     pub const StorageBuffer: SpvStorageClass = SpvStorageClass(12);
 }
 impl SpvStorageClass {
+    pub const TileImageEXT: SpvStorageClass = SpvStorageClass(4172);
+}
+impl SpvStorageClass {
+    pub const TileAttachmentQCOM: SpvStorageClass = SpvStorageClass(4491);
+}
+impl SpvStorageClass {
+    pub const NodePayloadAMDX: SpvStorageClass = SpvStorageClass(5068);
+}
+impl SpvStorageClass {
     pub const CallableDataKHR: SpvStorageClass = SpvStorageClass(5328);
 }
 impl SpvStorageClass {
@@ -404,6 +482,9 @@ impl SpvStorageClass {
     pub const PhysicalStorageBufferEXT: SpvStorageClass = SpvStorageClass(5349);
 }
 impl SpvStorageClass {
+    pub const HitObjectAttributeNV: SpvStorageClass = SpvStorageClass(5385);
+}
+impl SpvStorageClass {
     pub const TaskPayloadWorkgroupEXT: SpvStorageClass = SpvStorageClass(5402);
 }
 impl SpvStorageClass {
@@ -443,6 +524,9 @@ impl SpvDim {
 }
 impl SpvDim {
     pub const DimSubpassData: SpvDim = SpvDim(6);
+}
+impl SpvDim {
+    pub const DimTileImageDataEXT: SpvDim = SpvDim(4173);
 }
 impl SpvDim {
     pub const DimMax: SpvDim = SpvDim(2147483647);
@@ -753,6 +837,9 @@ impl SpvDecoration {
     pub const MaxByteOffsetId: SpvDecoration = SpvDecoration(47);
 }
 impl SpvDecoration {
+    pub const SaturatedToLargestFloat8NormalConversionEXT: SpvDecoration = SpvDecoration(4216);
+}
+impl SpvDecoration {
     pub const NoSignedWrap: SpvDecoration = SpvDecoration(4469);
 }
 impl SpvDecoration {
@@ -769,6 +856,30 @@ impl SpvDecoration {
 }
 impl SpvDecoration {
     pub const ExplicitInterpAMD: SpvDecoration = SpvDecoration(4999);
+}
+impl SpvDecoration {
+    pub const NodeSharesPayloadLimitsWithAMDX: SpvDecoration = SpvDecoration(5019);
+}
+impl SpvDecoration {
+    pub const NodeMaxPayloadsAMDX: SpvDecoration = SpvDecoration(5020);
+}
+impl SpvDecoration {
+    pub const TrackFinishWritingAMDX: SpvDecoration = SpvDecoration(5078);
+}
+impl SpvDecoration {
+    pub const PayloadNodeNameAMDX: SpvDecoration = SpvDecoration(5091);
+}
+impl SpvDecoration {
+    pub const PayloadNodeBaseIndexAMDX: SpvDecoration = SpvDecoration(5098);
+}
+impl SpvDecoration {
+    pub const PayloadNodeSparseArrayAMDX: SpvDecoration = SpvDecoration(5099);
+}
+impl SpvDecoration {
+    pub const PayloadNodeArraySizeAMDX: SpvDecoration = SpvDecoration(5100);
+}
+impl SpvDecoration {
+    pub const PayloadDispatchIndirectAMDX: SpvDecoration = SpvDecoration(5105);
 }
 impl SpvDecoration {
     pub const OverrideCoverageNV: SpvDecoration = SpvDecoration(5248);
@@ -817,6 +928,9 @@ impl SpvDecoration {
 }
 impl SpvDecoration {
     pub const AliasedPointerEXT: SpvDecoration = SpvDecoration(5356);
+}
+impl SpvDecoration {
+    pub const HitObjectShaderRecordBufferNV: SpvDecoration = SpvDecoration(5386);
 }
 impl SpvDecoration {
     pub const BindlessSamplerNV: SpvDecoration = SpvDecoration(5398);
@@ -915,6 +1029,15 @@ impl SpvDecoration {
     pub const ForcePow2DepthINTEL: SpvDecoration = SpvDecoration(5836);
 }
 impl SpvDecoration {
+    pub const StridesizeINTEL: SpvDecoration = SpvDecoration(5883);
+}
+impl SpvDecoration {
+    pub const WordsizeINTEL: SpvDecoration = SpvDecoration(5884);
+}
+impl SpvDecoration {
+    pub const TrueDualPortINTEL: SpvDecoration = SpvDecoration(5885);
+}
+impl SpvDecoration {
     pub const BurstCoalesceINTEL: SpvDecoration = SpvDecoration(5899);
 }
 impl SpvDecoration {
@@ -933,10 +1056,22 @@ impl SpvDecoration {
     pub const FuseLoopsInFunctionINTEL: SpvDecoration = SpvDecoration(5907);
 }
 impl SpvDecoration {
+    pub const MathOpDSPModeINTEL: SpvDecoration = SpvDecoration(5909);
+}
+impl SpvDecoration {
     pub const AliasScopeINTEL: SpvDecoration = SpvDecoration(5914);
 }
 impl SpvDecoration {
     pub const NoAliasINTEL: SpvDecoration = SpvDecoration(5915);
+}
+impl SpvDecoration {
+    pub const InitiationIntervalINTEL: SpvDecoration = SpvDecoration(5917);
+}
+impl SpvDecoration {
+    pub const MaxConcurrencyINTEL: SpvDecoration = SpvDecoration(5918);
+}
+impl SpvDecoration {
+    pub const PipelineEnableINTEL: SpvDecoration = SpvDecoration(5919);
 }
 impl SpvDecoration {
     pub const BufferLocationINTEL: SpvDecoration = SpvDecoration(5921);
@@ -955,6 +1090,63 @@ impl SpvDecoration {
 }
 impl SpvDecoration {
     pub const MediaBlockIOINTEL: SpvDecoration = SpvDecoration(6140);
+}
+impl SpvDecoration {
+    pub const StallFreeINTEL: SpvDecoration = SpvDecoration(6151);
+}
+impl SpvDecoration {
+    pub const FPMaxErrorDecorationINTEL: SpvDecoration = SpvDecoration(6170);
+}
+impl SpvDecoration {
+    pub const LatencyControlLabelINTEL: SpvDecoration = SpvDecoration(6172);
+}
+impl SpvDecoration {
+    pub const LatencyControlConstraintINTEL: SpvDecoration = SpvDecoration(6173);
+}
+impl SpvDecoration {
+    pub const ConduitKernelArgumentINTEL: SpvDecoration = SpvDecoration(6175);
+}
+impl SpvDecoration {
+    pub const RegisterMapKernelArgumentINTEL: SpvDecoration = SpvDecoration(6176);
+}
+impl SpvDecoration {
+    pub const MMHostInterfaceAddressWidthINTEL: SpvDecoration = SpvDecoration(6177);
+}
+impl SpvDecoration {
+    pub const MMHostInterfaceDataWidthINTEL: SpvDecoration = SpvDecoration(6178);
+}
+impl SpvDecoration {
+    pub const MMHostInterfaceLatencyINTEL: SpvDecoration = SpvDecoration(6179);
+}
+impl SpvDecoration {
+    pub const MMHostInterfaceReadWriteModeINTEL: SpvDecoration = SpvDecoration(6180);
+}
+impl SpvDecoration {
+    pub const MMHostInterfaceMaxBurstINTEL: SpvDecoration = SpvDecoration(6181);
+}
+impl SpvDecoration {
+    pub const MMHostInterfaceWaitRequestINTEL: SpvDecoration = SpvDecoration(6182);
+}
+impl SpvDecoration {
+    pub const StableKernelArgumentINTEL: SpvDecoration = SpvDecoration(6183);
+}
+impl SpvDecoration {
+    pub const HostAccessINTEL: SpvDecoration = SpvDecoration(6188);
+}
+impl SpvDecoration {
+    pub const InitModeINTEL: SpvDecoration = SpvDecoration(6190);
+}
+impl SpvDecoration {
+    pub const ImplementInRegisterMapINTEL: SpvDecoration = SpvDecoration(6191);
+}
+impl SpvDecoration {
+    pub const ConditionalINTEL: SpvDecoration = SpvDecoration(6247);
+}
+impl SpvDecoration {
+    pub const CacheControlLoadINTEL: SpvDecoration = SpvDecoration(6442);
+}
+impl SpvDecoration {
+    pub const CacheControlStoreINTEL: SpvDecoration = SpvDecoration(6443);
 }
 impl SpvDecoration {
     pub const Max: SpvDecoration = SpvDecoration(2147483647);
@@ -1088,6 +1280,21 @@ impl SpvBuiltIn {
     pub const InstanceIndex: SpvBuiltIn = SpvBuiltIn(43);
 }
 impl SpvBuiltIn {
+    pub const CoreIDARM: SpvBuiltIn = SpvBuiltIn(4160);
+}
+impl SpvBuiltIn {
+    pub const CoreCountARM: SpvBuiltIn = SpvBuiltIn(4161);
+}
+impl SpvBuiltIn {
+    pub const CoreMaxIDARM: SpvBuiltIn = SpvBuiltIn(4162);
+}
+impl SpvBuiltIn {
+    pub const WarpIDARM: SpvBuiltIn = SpvBuiltIn(4163);
+}
+impl SpvBuiltIn {
+    pub const WarpMaxIDARM: SpvBuiltIn = SpvBuiltIn(4164);
+}
+impl SpvBuiltIn {
     pub const SubgroupEqMask: SpvBuiltIn = SpvBuiltIn(4416);
 }
 impl SpvBuiltIn {
@@ -1139,6 +1346,15 @@ impl SpvBuiltIn {
     pub const ShadingRateKHR: SpvBuiltIn = SpvBuiltIn(4444);
 }
 impl SpvBuiltIn {
+    pub const TileOffsetQCOM: SpvBuiltIn = SpvBuiltIn(4492);
+}
+impl SpvBuiltIn {
+    pub const TileDimensionQCOM: SpvBuiltIn = SpvBuiltIn(4493);
+}
+impl SpvBuiltIn {
+    pub const TileApronSizeQCOM: SpvBuiltIn = SpvBuiltIn(4494);
+}
+impl SpvBuiltIn {
     pub const BaryCoordNoPerspAMD: SpvBuiltIn = SpvBuiltIn(4992);
 }
 impl SpvBuiltIn {
@@ -1161,6 +1377,12 @@ impl SpvBuiltIn {
 }
 impl SpvBuiltIn {
     pub const FragStencilRefEXT: SpvBuiltIn = SpvBuiltIn(5014);
+}
+impl SpvBuiltIn {
+    pub const RemainingRecursionLevelsAMDX: SpvBuiltIn = SpvBuiltIn(5021);
+}
+impl SpvBuiltIn {
+    pub const ShaderIndexAMDX: SpvBuiltIn = SpvBuiltIn(5073);
 }
 impl SpvBuiltIn {
     pub const ViewportMaskNV: SpvBuiltIn = SpvBuiltIn(5253);
@@ -1319,6 +1541,15 @@ impl SpvBuiltIn {
     pub const CurrentRayTimeNV: SpvBuiltIn = SpvBuiltIn(5334);
 }
 impl SpvBuiltIn {
+    pub const HitTriangleVertexPositionsKHR: SpvBuiltIn = SpvBuiltIn(5335);
+}
+impl SpvBuiltIn {
+    pub const HitMicroTriangleVertexPositionsNV: SpvBuiltIn = SpvBuiltIn(5337);
+}
+impl SpvBuiltIn {
+    pub const HitMicroTriangleVertexBarycentricsNV: SpvBuiltIn = SpvBuiltIn(5344);
+}
+impl SpvBuiltIn {
     pub const IncomingRayFlagsKHR: SpvBuiltIn = SpvBuiltIn(5351);
 }
 impl SpvBuiltIn {
@@ -1326,6 +1557,15 @@ impl SpvBuiltIn {
 }
 impl SpvBuiltIn {
     pub const RayGeometryIndexKHR: SpvBuiltIn = SpvBuiltIn(5352);
+}
+impl SpvBuiltIn {
+    pub const HitIsSphereNV: SpvBuiltIn = SpvBuiltIn(5359);
+}
+impl SpvBuiltIn {
+    pub const HitIsLSSNV: SpvBuiltIn = SpvBuiltIn(5360);
+}
+impl SpvBuiltIn {
+    pub const HitSpherePositionNV: SpvBuiltIn = SpvBuiltIn(5361);
 }
 impl SpvBuiltIn {
     pub const WarpsPerSMNV: SpvBuiltIn = SpvBuiltIn(5374);
@@ -1338,6 +1578,24 @@ impl SpvBuiltIn {
 }
 impl SpvBuiltIn {
     pub const SMIDNV: SpvBuiltIn = SpvBuiltIn(5377);
+}
+impl SpvBuiltIn {
+    pub const HitLSSPositionsNV: SpvBuiltIn = SpvBuiltIn(5396);
+}
+impl SpvBuiltIn {
+    pub const HitKindFrontFacingMicroTriangleNV: SpvBuiltIn = SpvBuiltIn(5405);
+}
+impl SpvBuiltIn {
+    pub const HitKindBackFacingMicroTriangleNV: SpvBuiltIn = SpvBuiltIn(5406);
+}
+impl SpvBuiltIn {
+    pub const HitSphereRadiusNV: SpvBuiltIn = SpvBuiltIn(5420);
+}
+impl SpvBuiltIn {
+    pub const HitLSSRadiiNV: SpvBuiltIn = SpvBuiltIn(5421);
+}
+impl SpvBuiltIn {
+    pub const ClusterIDNV: SpvBuiltIn = SpvBuiltIn(5436);
 }
 impl SpvBuiltIn {
     pub const CullMaskKHR: SpvBuiltIn = SpvBuiltIn(6021);
@@ -1561,6 +1819,39 @@ impl SpvCapability {
     pub const UniformDecoration: SpvCapability = SpvCapability(71);
 }
 impl SpvCapability {
+    pub const CoreBuiltinsARM: SpvCapability = SpvCapability(4165);
+}
+impl SpvCapability {
+    pub const TileImageColorReadAccessEXT: SpvCapability = SpvCapability(4166);
+}
+impl SpvCapability {
+    pub const TileImageDepthReadAccessEXT: SpvCapability = SpvCapability(4167);
+}
+impl SpvCapability {
+    pub const TileImageStencilReadAccessEXT: SpvCapability = SpvCapability(4168);
+}
+impl SpvCapability {
+    pub const TensorsARM: SpvCapability = SpvCapability(4174);
+}
+impl SpvCapability {
+    pub const StorageTensorArrayDynamicIndexingARM: SpvCapability = SpvCapability(4175);
+}
+impl SpvCapability {
+    pub const StorageTensorArrayNonUniformIndexingARM: SpvCapability = SpvCapability(4176);
+}
+impl SpvCapability {
+    pub const GraphARM: SpvCapability = SpvCapability(4191);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixLayoutsARM: SpvCapability = SpvCapability(4201);
+}
+impl SpvCapability {
+    pub const Float8EXT: SpvCapability = SpvCapability(4212);
+}
+impl SpvCapability {
+    pub const Float8CooperativeMatrixEXT: SpvCapability = SpvCapability(4213);
+}
+impl SpvCapability {
     pub const FragmentShadingRateKHR: SpvCapability = SpvCapability(4422);
 }
 impl SpvCapability {
@@ -1648,6 +1939,9 @@ impl SpvCapability {
     pub const RayQueryKHR: SpvCapability = SpvCapability(4472);
 }
 impl SpvCapability {
+    pub const UntypedPointersKHR: SpvCapability = SpvCapability(4473);
+}
+impl SpvCapability {
     pub const RayTraversalPrimitiveCullingKHR: SpvCapability = SpvCapability(4478);
 }
 impl SpvCapability {
@@ -1661,6 +1955,12 @@ impl SpvCapability {
 }
 impl SpvCapability {
     pub const TextureBlockMatchQCOM: SpvCapability = SpvCapability(4486);
+}
+impl SpvCapability {
+    pub const TileShadingQCOM: SpvCapability = SpvCapability(4495);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixConversionQCOM: SpvCapability = SpvCapability(4496);
 }
 impl SpvCapability {
     pub const TextureBlockMatch2QCOM: SpvCapability = SpvCapability(4498);
@@ -1685,6 +1985,27 @@ impl SpvCapability {
 }
 impl SpvCapability {
     pub const ShaderClockKHR: SpvCapability = SpvCapability(5055);
+}
+impl SpvCapability {
+    pub const ShaderEnqueueAMDX: SpvCapability = SpvCapability(5067);
+}
+impl SpvCapability {
+    pub const QuadControlKHR: SpvCapability = SpvCapability(5087);
+}
+impl SpvCapability {
+    pub const Int4TypeINTEL: SpvCapability = SpvCapability(5112);
+}
+impl SpvCapability {
+    pub const Int4CooperativeMatrixINTEL: SpvCapability = SpvCapability(5114);
+}
+impl SpvCapability {
+    pub const BFloat16TypeKHR: SpvCapability = SpvCapability(5116);
+}
+impl SpvCapability {
+    pub const BFloat16DotProductKHR: SpvCapability = SpvCapability(5117);
+}
+impl SpvCapability {
+    pub const BFloat16CooperativeMatrixKHR: SpvCapability = SpvCapability(5118);
 }
 impl SpvCapability {
     pub const SampleMaskOverrideCoverageNV: SpvCapability = SpvCapability(5249);
@@ -1724,6 +2045,9 @@ impl SpvCapability {
 }
 impl SpvCapability {
     pub const FragmentBarycentricNV: SpvCapability = SpvCapability(5284);
+}
+impl SpvCapability {
+    pub const ComputeDerivativeGroupQuadsKHR: SpvCapability = SpvCapability(5288);
 }
 impl SpvCapability {
     pub const ComputeDerivativeGroupQuadsNV: SpvCapability = SpvCapability(5288);
@@ -1810,6 +2134,9 @@ impl SpvCapability {
     pub const StorageTexelBufferArrayNonUniformIndexingEXT: SpvCapability = SpvCapability(5312);
 }
 impl SpvCapability {
+    pub const RayTracingPositionFetchKHR: SpvCapability = SpvCapability(5336);
+}
+impl SpvCapability {
     pub const RayTracingNV: SpvCapability = SpvCapability(5340);
 }
 impl SpvCapability {
@@ -1832,6 +2159,9 @@ impl SpvCapability {
 }
 impl SpvCapability {
     pub const PhysicalStorageBufferAddressesEXT: SpvCapability = SpvCapability(5347);
+}
+impl SpvCapability {
+    pub const ComputeDerivativeGroupLinearKHR: SpvCapability = SpvCapability(5350);
 }
 impl SpvCapability {
     pub const ComputeDerivativeGroupLinearNV: SpvCapability = SpvCapability(5350);
@@ -1861,7 +2191,61 @@ impl SpvCapability {
     pub const DemoteToHelperInvocationEXT: SpvCapability = SpvCapability(5379);
 }
 impl SpvCapability {
+    pub const DisplacementMicromapNV: SpvCapability = SpvCapability(5380);
+}
+impl SpvCapability {
+    pub const RayTracingOpacityMicromapEXT: SpvCapability = SpvCapability(5381);
+}
+impl SpvCapability {
+    pub const ShaderInvocationReorderNV: SpvCapability = SpvCapability(5383);
+}
+impl SpvCapability {
     pub const BindlessTextureNV: SpvCapability = SpvCapability(5390);
+}
+impl SpvCapability {
+    pub const RayQueryPositionFetchKHR: SpvCapability = SpvCapability(5391);
+}
+impl SpvCapability {
+    pub const CooperativeVectorNV: SpvCapability = SpvCapability(5394);
+}
+impl SpvCapability {
+    pub const AtomicFloat16VectorNV: SpvCapability = SpvCapability(5404);
+}
+impl SpvCapability {
+    pub const RayTracingDisplacementMicromapNV: SpvCapability = SpvCapability(5409);
+}
+impl SpvCapability {
+    pub const RawAccessChainsNV: SpvCapability = SpvCapability(5414);
+}
+impl SpvCapability {
+    pub const RayTracingSpheresGeometryNV: SpvCapability = SpvCapability(5418);
+}
+impl SpvCapability {
+    pub const RayTracingLinearSweptSpheresGeometryNV: SpvCapability = SpvCapability(5419);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixReductionsNV: SpvCapability = SpvCapability(5430);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixConversionsNV: SpvCapability = SpvCapability(5431);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixPerElementOperationsNV: SpvCapability = SpvCapability(5432);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixTensorAddressingNV: SpvCapability = SpvCapability(5433);
+}
+impl SpvCapability {
+    pub const CooperativeMatrixBlockLoadsNV: SpvCapability = SpvCapability(5434);
+}
+impl SpvCapability {
+    pub const CooperativeVectorTrainingNV: SpvCapability = SpvCapability(5435);
+}
+impl SpvCapability {
+    pub const RayTracingClusterAccelerationStructureNV: SpvCapability = SpvCapability(5437);
+}
+impl SpvCapability {
+    pub const TensorAddressingNV: SpvCapability = SpvCapability(5439);
 }
 impl SpvCapability {
     pub const SubgroupShuffleINTEL: SpvCapability = SpvCapability(5568);
@@ -1960,7 +2344,13 @@ impl SpvCapability {
     pub const LoopFuseINTEL: SpvCapability = SpvCapability(5906);
 }
 impl SpvCapability {
+    pub const FPGADSPControlINTEL: SpvCapability = SpvCapability(5908);
+}
+impl SpvCapability {
     pub const MemoryAccessAliasingINTEL: SpvCapability = SpvCapability(5910);
+}
+impl SpvCapability {
+    pub const FPGAInvocationPipeliningAttributesINTEL: SpvCapability = SpvCapability(5916);
 }
 impl SpvCapability {
     pub const FPGABufferLocationINTEL: SpvCapability = SpvCapability(5920);
@@ -1970,6 +2360,9 @@ impl SpvCapability {
 }
 impl SpvCapability {
     pub const USMStorageClassesINTEL: SpvCapability = SpvCapability(5935);
+}
+impl SpvCapability {
+    pub const RuntimeAlignedAttributeINTEL: SpvCapability = SpvCapability(5939);
 }
 impl SpvCapability {
     pub const IOPipesINTEL: SpvCapability = SpvCapability(5943);
@@ -2008,10 +2401,22 @@ impl SpvCapability {
     pub const RayCullMaskKHR: SpvCapability = SpvCapability(6020);
 }
 impl SpvCapability {
+    pub const CooperativeMatrixKHR: SpvCapability = SpvCapability(6022);
+}
+impl SpvCapability {
+    pub const ReplicatedCompositesEXT: SpvCapability = SpvCapability(6024);
+}
+impl SpvCapability {
     pub const BitInstructions: SpvCapability = SpvCapability(6025);
 }
 impl SpvCapability {
     pub const GroupNonUniformRotateKHR: SpvCapability = SpvCapability(6026);
+}
+impl SpvCapability {
+    pub const FloatControls2: SpvCapability = SpvCapability(6029);
+}
+impl SpvCapability {
+    pub const FMAKHR: SpvCapability = SpvCapability(6030);
 }
 impl SpvCapability {
     pub const AtomicFloat32AddEXT: SpvCapability = SpvCapability(6033);
@@ -2020,7 +2425,10 @@ impl SpvCapability {
     pub const AtomicFloat64AddEXT: SpvCapability = SpvCapability(6034);
 }
 impl SpvCapability {
-    pub const LongConstantCompositeINTEL: SpvCapability = SpvCapability(6089);
+    pub const LongCompositesINTEL: SpvCapability = SpvCapability(6089);
+}
+impl SpvCapability {
+    pub const OptNoneEXT: SpvCapability = SpvCapability(6094);
 }
 impl SpvCapability {
     pub const OptNoneINTEL: SpvCapability = SpvCapability(6094);
@@ -2032,10 +2440,82 @@ impl SpvCapability {
     pub const DebugInfoModuleINTEL: SpvCapability = SpvCapability(6114);
 }
 impl SpvCapability {
+    pub const BFloat16ConversionINTEL: SpvCapability = SpvCapability(6115);
+}
+impl SpvCapability {
     pub const SplitBarrierINTEL: SpvCapability = SpvCapability(6141);
 }
 impl SpvCapability {
+    pub const ArithmeticFenceEXT: SpvCapability = SpvCapability(6144);
+}
+impl SpvCapability {
+    pub const FPGAClusterAttributesV2INTEL: SpvCapability = SpvCapability(6150);
+}
+impl SpvCapability {
+    pub const FPGAKernelAttributesv2INTEL: SpvCapability = SpvCapability(6161);
+}
+impl SpvCapability {
+    pub const TaskSequenceINTEL: SpvCapability = SpvCapability(6162);
+}
+impl SpvCapability {
+    pub const FPMaxErrorINTEL: SpvCapability = SpvCapability(6169);
+}
+impl SpvCapability {
+    pub const FPGALatencyControlINTEL: SpvCapability = SpvCapability(6171);
+}
+impl SpvCapability {
+    pub const FPGAArgumentInterfacesINTEL: SpvCapability = SpvCapability(6174);
+}
+impl SpvCapability {
+    pub const GlobalVariableHostAccessINTEL: SpvCapability = SpvCapability(6187);
+}
+impl SpvCapability {
+    pub const GlobalVariableFPGADecorationsINTEL: SpvCapability = SpvCapability(6189);
+}
+impl SpvCapability {
+    pub const SubgroupBufferPrefetchINTEL: SpvCapability = SpvCapability(6220);
+}
+impl SpvCapability {
+    pub const Subgroup2DBlockIOINTEL: SpvCapability = SpvCapability(6228);
+}
+impl SpvCapability {
+    pub const Subgroup2DBlockTransformINTEL: SpvCapability = SpvCapability(6229);
+}
+impl SpvCapability {
+    pub const Subgroup2DBlockTransposeINTEL: SpvCapability = SpvCapability(6230);
+}
+impl SpvCapability {
+    pub const SubgroupMatrixMultiplyAccumulateINTEL: SpvCapability = SpvCapability(6236);
+}
+impl SpvCapability {
+    pub const TernaryBitwiseFunctionINTEL: SpvCapability = SpvCapability(6241);
+}
+impl SpvCapability {
+    pub const UntypedVariableLengthArrayINTEL: SpvCapability = SpvCapability(6243);
+}
+impl SpvCapability {
+    pub const SpecConditionalINTEL: SpvCapability = SpvCapability(6245);
+}
+impl SpvCapability {
+    pub const FunctionVariantsINTEL: SpvCapability = SpvCapability(6246);
+}
+impl SpvCapability {
     pub const GroupUniformArithmeticKHR: SpvCapability = SpvCapability(6400);
+}
+impl SpvCapability {
+    pub const TensorFloat32RoundingINTEL: SpvCapability = SpvCapability(6425);
+}
+impl SpvCapability {
+    pub const MaskedGatherScatterINTEL: SpvCapability = SpvCapability(6427);
+}
+impl SpvCapability {
+    pub const CacheControlsINTEL: SpvCapability = SpvCapability(6441);
+}
+impl SpvCapability {
+    pub const RegisterLimitsINTEL: SpvCapability = SpvCapability(6460);
+}
+impl SpvCapability {
+    pub const BindlessImagesINTEL: SpvCapability = SpvCapability(6528);
 }
 impl SpvCapability {
     pub const Max: SpvCapability = SpvCapability(2147483647);
@@ -2220,6 +2700,7 @@ pub enum ResourceType {
     RayQuery = 13,
     ShaderRecordBuffer = 14,
     GlPlainUniform = 15,
+    Tensor = 16,
 }
 #[repr(i32)]
 #[derive(
@@ -2992,6 +3473,18 @@ impl spvc_compiler_option {
 impl spvc_compiler_option {
     pub const SPVC_COMPILER_OPTION_HLSL_PRESERVE_STRUCTURED_BUFFERS: spvc_compiler_option =
         spvc_compiler_option(67108955);
+}
+impl spvc_compiler_option {
+    pub const SPVC_COMPILER_OPTION_MSL_AUTO_DISABLE_RASTERIZATION: spvc_compiler_option =
+        spvc_compiler_option(134217820);
+}
+impl spvc_compiler_option {
+    pub const SPVC_COMPILER_OPTION_MSL_ENABLE_POINT_SIZE_DEFAULT: spvc_compiler_option =
+        spvc_compiler_option(134217821);
+}
+impl spvc_compiler_option {
+    pub const SPVC_COMPILER_OPTION_HLSL_USER_SEMANTIC: spvc_compiler_option =
+        spvc_compiler_option(67108958);
 }
 impl ::std::ops::BitOr<spvc_compiler_option> for spvc_compiler_option {
     type Output = Self;

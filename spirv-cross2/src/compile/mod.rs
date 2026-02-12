@@ -101,7 +101,7 @@ impl<T> Display for CompiledArtifact<T> {
     }
 }
 
-impl<'a, T> Deref for CompiledArtifact<T> {
+impl<T> Deref for CompiledArtifact<T> {
     type Target = Compiler<T>;
 
     fn deref(&self) -> &Self::Target {

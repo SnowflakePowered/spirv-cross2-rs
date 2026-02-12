@@ -127,7 +127,7 @@ impl ParseCallbacks for SpirvCrossCallbacks {
                         return Some(format!("FormatResolution{name}"));
                     }
 
-                    return Some(format!("{}", name.to_pascal_case()));
+                    return Some(name.to_pascal_case().to_string());
                 }
             }
         };

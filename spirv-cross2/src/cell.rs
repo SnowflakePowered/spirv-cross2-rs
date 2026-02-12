@@ -51,6 +51,7 @@ impl CrossAllocationCell {
                 return Err(SpirvCrossError::OutOfMemory(String::from("Out of memory")));
             };
 
+            #[allow(clippy::arc_with_non_send_sync)]
             Ok(Self(Arc::new(CrossAllocationCellInner(context))))
         }
     }

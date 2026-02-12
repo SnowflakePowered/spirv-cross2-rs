@@ -19,6 +19,7 @@ pub use resources::*;
 pub use types::*;
 
 /// Check if an enum slice contains u32 max.
+#[allow(clippy::extra_unused_type_parameters)]
 #[inline(always)]
 fn enum_slice_is_not_max<T>(enum_slice: &[i32]) -> bool {
     #[cfg(target_endian = "big")]

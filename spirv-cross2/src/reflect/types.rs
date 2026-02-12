@@ -464,7 +464,7 @@ impl<T> Compiler<T> {
     // None of the names here belong to the context, they belong to the compiler.
     // so 'ctx is unsound to return.
 
-    fn process_struct(&self, struct_ty_id: TypeId) -> error::Result<StructType> {
+    fn process_struct(&self, struct_ty_id: TypeId) -> error::Result<StructType<'_>> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), struct_ty_id);
             let base_ty = sys::spvc_type_get_basetype(ty);
@@ -544,7 +544,7 @@ impl<T> Compiler<T> {
         }
     }
 
-    fn process_vector(&self, id: TypeId, vec_width: u32) -> error::Result<TypeInner> {
+    fn process_vector(&self, id: TypeId, vec_width: u32) -> error::Result<TypeInner<'_>> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_ty = sys::spvc_type_get_basetype(ty);
@@ -555,7 +555,7 @@ impl<T> Compiler<T> {
         }
     }
 
-    fn process_matrix(&self, id: TypeId, rows: u32, columns: u32) -> error::Result<TypeInner> {
+    fn process_matrix(&self, id: TypeId, rows: u32, columns: u32) -> error::Result<TypeInner<'_>> {
         unsafe {
             let ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
             let base_ty = sys::spvc_type_get_basetype(ty);
@@ -689,7 +689,7 @@ impl<T> Compiler<T> {
     ///
     /// Atomics are represented as `TypeInner::Pointer { storage: StorageClass::AtomicCounter, ... }`,
     /// usually with a scalar base type.
-    pub fn type_description(&self, id: Handle<TypeId>) -> error::Result<Type> {
+    pub fn type_description(&self, id: Handle<TypeId>) -> error::Result<Type<'_>> {
         let id = self.yield_id(id)?;
 
         unsafe {
@@ -848,7 +848,7 @@ impl<T> Compiler<T> {
                 scalar,
             } => {
                 // Matrices have alignment 4, so we get the next power of 4.
-                let rows_aligned = (rows + 3 & !0x3) as usize;
+                let rows_aligned = ((rows + 3) & !0x3) as usize;
 
                 let scalar_width = scalar.size.byte_size();
                 let columns = *columns as usize;
@@ -868,10 +868,10 @@ impl<T> Compiler<T> {
                 let mut count = 1usize;
                 for dim in dimensions.iter() {
                     match dim {
-                        ArrayDimension::Literal(a) => count = count * (*a as usize),
+                        ArrayDimension::Literal(a) => count *= *a as usize,
                         ArrayDimension::Constant(c) => {
                             let value = self.specialization_constant_value::<u32>(*c)?;
-                            count = count * value as usize;
+                            count *= value as usize;
                         } // prod = prod * 1
                     }
                 }

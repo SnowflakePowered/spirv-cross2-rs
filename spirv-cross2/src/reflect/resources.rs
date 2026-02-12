@@ -208,8 +208,7 @@ impl From<Resource<'_>> for Handle<VariableId> {
 impl Sealed for Resource<'_> {}
 impl ToStatic for Resource<'_> {
     type Static<'a>
-
-    = Resource<'static>
+        = Resource<'static>
     where
         'a: 'static;
 
@@ -274,8 +273,7 @@ impl<'a> BuiltinResource<'a> {
 impl Sealed for BuiltinResource<'_> {}
 impl ToStatic for BuiltinResource<'_> {
     type Static<'a>
-
-    = BuiltinResource<'static>
+        = BuiltinResource<'static>
     where
         'a: 'static;
 
@@ -342,8 +340,7 @@ pub struct AllResources<'a> {
 impl Sealed for AllResources<'_> {}
 impl ToStatic for AllResources<'_> {
     type Static<'a>
-
-    = AllResources<'static>
+        = AllResources<'static>
     where
         'a: 'static;
 

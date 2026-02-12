@@ -157,12 +157,12 @@ pub struct CompilerOptions {
 
     /// Enable the `FragStencilRef` output.
     ///
-    /// Disablle if pipeline does not enable  stencil  output,
+    /// Disable if pipeline does not enable stencil output,
     /// as pipeline creation might otherwise fail.
     #[option(SPVC_COMPILER_OPTION_MSL_ENABLE_FRAG_STENCIL_REF_BUILTIN, true)]
     pub enable_frag_stencil_ref_builtin: bool,
 
-    ///
+    /// Disables rasterization and returns void from vertex-like entry points.
     #[option(SPVC_COMPILER_OPTION_MSL_DISABLE_RASTERIZATION, false)]
     pub disable_rasterization: bool,
 
@@ -1015,7 +1015,7 @@ impl Compiler<Msl> {
     }
 
     /// Get the suffix for combined image samplers.
-    pub fn combined_sampler_suffix(&self) -> CompilerStr {
+    pub fn combined_sampler_suffix(&self) -> CompilerStr<'_> {
         unsafe {
             let suffix = sys::spvc_compiler_msl_get_combined_sampler_suffix(self.ptr.as_ptr());
             CompilerStr::from_ptr(suffix, self.ctx.drop_guard())

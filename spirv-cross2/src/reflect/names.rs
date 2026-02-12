@@ -8,7 +8,7 @@ use spirv_cross_sys::{SpvId, TypeId, VariableId};
 
 impl<T> Compiler<T> {
     /// Gets the identifier (`OpName`) of an ID.
-    pub fn name<I: Id>(&self, handle: Handle<I>) -> error::Result<Option<CompilerStr>> {
+    pub fn name<I: Id>(&self, handle: Handle<I>) -> error::Result<Option<CompilerStr<'_>>> {
         let id = self.yield_id(handle)?;
         unsafe {
             let name = sys::spvc_compiler_get_name(self.ptr.as_ptr(), SpvId(id.id()));
@@ -51,9 +51,8 @@ impl<T> Compiler<T> {
         &self,
         struct_type: Handle<TypeId>,
         index: u32,
-    ) -> error::Result<Option<CompilerStr>> {
+    ) -> error::Result<Option<CompilerStr<'_>>> {
         let struct_type_id = self.yield_id(struct_type)?;
-        let index = index;
 
         unsafe {
             let name = sys::spvc_compiler_get_member_name(self.ptr.as_ptr(), struct_type_id, index);
@@ -74,7 +73,6 @@ impl<T> Compiler<T> {
         string: impl Into<CompilerStr<'str>>,
     ) -> error::Result<()> {
         let struct_type_id = self.yield_id(struct_type)?;
-        let index = index;
         let string = string.into();
 
         unsafe {

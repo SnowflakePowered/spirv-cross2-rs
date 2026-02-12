@@ -205,7 +205,7 @@ impl Compiler<Glsl> {
     ///
     /// If called after compilation this will contain any other extensions that the compiler
     /// used automatically, in addition to the user specified ones.
-    pub fn required_extensions(&self) -> GlslExtensionsIter {
+    pub fn required_extensions(&self) -> GlslExtensionsIter<'_> {
         // SAFETY:
         // It is **not sound** to return 'ctx here, the returned strings
         // are from the compiler instance and can be mutated with require_extension

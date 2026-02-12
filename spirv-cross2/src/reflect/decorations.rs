@@ -94,7 +94,7 @@ impl<'a> From<CompilerStr<'a>> for DecorationValue<'a> {
 impl Sealed for DecorationValue<'_> {}
 impl ToStatic for DecorationValue<'_> {
     type Static<'a>
-    = DecorationValue<'static>
+        = DecorationValue<'static>
     where
         'a: 'static;
 
@@ -139,28 +139,28 @@ impl DecorationValue<'_> {
     }
 }
 fn decoration_is_literal(decoration: spirv::Decoration) -> bool {
-    match decoration {
+    matches!(
+        decoration,
         Decoration::Location
-        | Decoration::Component
-        | Decoration::Offset
-        | Decoration::XfbBuffer
-        | Decoration::XfbStride
-        | Decoration::Stream
-        | Decoration::Binding
-        | Decoration::DescriptorSet
-        | Decoration::InputAttachmentIndex
-        | Decoration::ArrayStride
-        | Decoration::MatrixStride
-        | Decoration::Index => true,
-        _ => false,
-    }
+            | Decoration::Component
+            | Decoration::Offset
+            | Decoration::XfbBuffer
+            | Decoration::XfbStride
+            | Decoration::Stream
+            | Decoration::Binding
+            | Decoration::DescriptorSet
+            | Decoration::InputAttachmentIndex
+            | Decoration::ArrayStride
+            | Decoration::MatrixStride
+            | Decoration::Index
+    )
 }
 
 fn decoration_is_string(decoration: Decoration) -> bool {
-    match decoration {
-        Decoration::HlslSemanticGOOGLE | Decoration::UserTypeGOOGLE => true,
-        _ => false,
-    }
+    matches!(
+        decoration,
+        Decoration::HlslSemanticGOOGLE | Decoration::UserTypeGOOGLE
+    )
 }
 
 impl<T> Compiler<T> {
@@ -169,7 +169,7 @@ impl<T> Compiler<T> {
         &self,
         id: Handle<I>,
         decoration: Decoration,
-    ) -> error::Result<Option<DecorationValue>> {
+    ) -> error::Result<Option<DecorationValue<'_>>> {
         // SAFETY: 'ctx is not sound to return here!
         //  https://github.com/KhronosGroup/SPIRV-Cross/blob/6a1fb66eef1bdca14acf7d0a51a3f883499d79f0/spirv_cross_c.cpp#L2154
 
@@ -212,10 +212,9 @@ impl<T> Compiler<T> {
         struct_type_id: Handle<TypeId>,
         index: u32,
         decoration: Decoration,
-    ) -> error::Result<Option<DecorationValue>> {
+    ) -> error::Result<Option<DecorationValue<'_>>> {
         // SAFETY: id is yielded by the instance so it's safe to use.
         let struct_type = self.yield_id(struct_type_id)?;
-        let index = index;
 
         unsafe {
             let has_decoration = sys::spvc_compiler_has_member_decoration(
@@ -256,7 +255,7 @@ impl<T> Compiler<T> {
         &self,
         member: &StructMember,
         decoration: Decoration,
-    ) -> error::Result<Option<DecorationValue>> {
+    ) -> error::Result<Option<DecorationValue<'_>>> {
         self.member_decoration_by_handle(member.struct_type, member.index as u32, decoration)
     }
 
@@ -515,7 +514,7 @@ impl<T> Compiler<T> {
         &self,
         decoration: Decoration,
         value: u32,
-    ) -> error::Result<Option<DecorationValue>> {
+    ) -> error::Result<Option<DecorationValue<'_>>> {
         if decoration_is_literal(decoration) {
             return Ok(Some(DecorationValue::Literal(value)));
         }

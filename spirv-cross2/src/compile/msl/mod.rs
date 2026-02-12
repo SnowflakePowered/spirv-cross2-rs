@@ -460,6 +460,14 @@ pub struct CompilerOptions {
         false
     )]
     pub force_fragment_with_side_effects_execution: bool,
+
+    /// Disables rasterization if BuiltInPosition is not written.
+    #[option(SPVC_COMPILER_OPTION_MSL_AUTO_DISABLE_RASTERIZATION, false)]
+    pub auto_disable_rasterization: bool,
+
+    /// Applies a default value if BuiltInPointSize is not written.
+    #[option(SPVC_COMPILER_OPTION_MSL_ENABLE_POINT_SIZE_DEFAULT, false)]
+    pub enable_point_size_default: bool,
 }
 
 /// The version of Metal Shading Language to compile to.

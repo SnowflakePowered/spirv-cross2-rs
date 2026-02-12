@@ -52,18 +52,14 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
         .iter()
         .filter_map(|field| {
             let ident = field.ident.clone().unwrap();
-            let Some(attr) = field.attrs.iter().find(|a| a.path().is_ident("option")) else {
-                return None;
-            };
+            let attr = field.attrs.iter().find(|a| a.path().is_ident("option"))?;
 
             let Ok(list) = attr.meta.require_list() else {
                 return None;
             };
 
-            let is_bool = match &field.ty {
-                Type::Path(type_path) if type_path.path.is_ident("bool") => true,
-                _ => false,
-            };
+            let is_bool =
+                matches!(&field.ty, Type::Path(type_path) if type_path.path.is_ident("bool"));
 
             let punctuated = list
                 .parse_args_with(Punctuated::<Expr, Token![,]>::parse_terminated)
@@ -87,9 +83,7 @@ pub(crate) fn do_derive(input: DeriveInput) -> syn::Result<TokenStream> {
         .iter()
         .filter_map(|field| {
             let ident = field.ident.clone().unwrap();
-            let Some(_attr) = field.attrs.iter().find(|a| a.path().is_ident("expand")) else {
-                return None;
-            };
+            field.attrs.iter().find(|a| a.path().is_ident("expand"))?;
 
             Some(Expansions { field_name: ident })
         })

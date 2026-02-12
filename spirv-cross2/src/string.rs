@@ -79,10 +79,10 @@ impl Clone for ContextPointer<'_> {
     fn clone(&self) -> Self {
         match self {
             ContextPointer::FromContext { pointer, context } => ContextPointer::FromContext {
-                pointer: pointer.clone(),
+                pointer: *pointer,
                 context: context.clone(),
             },
-            ContextPointer::BorrowedCStr(cstr) => ContextPointer::BorrowedCStr(*cstr),
+            ContextPointer::BorrowedCStr(cstr) => ContextPointer::BorrowedCStr(cstr),
         }
     }
 }
@@ -130,20 +130,20 @@ impl Deref for CompilerStr<'_> {
     }
 }
 
-impl PartialEq for CompilerStr<'_> {
-    fn eq(&self, other: &CompilerStr<'_>) -> bool {
+impl<'a, 'b> PartialEq<CompilerStr<'a>> for CompilerStr<'b> {
+    fn eq(&self, other: &CompilerStr<'a>) -> bool {
         self.cow.eq(&other.cow)
     }
 }
 
-impl<'a> PartialEq<&'a str> for CompilerStr<'_> {
+impl<'a, 'b> PartialEq<&'a str> for CompilerStr<'b> {
     fn eq(&self, other: &&'a str) -> bool {
         self.cow.eq(other)
     }
 }
 
-impl<'a> PartialEq<CompilerStr<'_>> for &'a str {
-    fn eq(&self, other: &CompilerStr<'_>) -> bool {
+impl<'b> PartialEq<CompilerStr<'b>> for &str {
+    fn eq(&self, other: &CompilerStr<'b>) -> bool {
         self.eq(&other.cow)
     }
 }

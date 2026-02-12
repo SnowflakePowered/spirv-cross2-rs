@@ -1,7 +1,7 @@
 #![cfg(feature = "glam-types")]
 #![cfg_attr(docsrs, doc(cfg(feature = "glam-types")))]
-use glam::*;
 use crate::reflect::constants::impl_vec_constant;
+use glam::*;
 
 impl_vec_constant!(Vec2 [f32; 2] for [x, y]);
 impl_vec_constant!(Vec3 [f32; 3] for [x, y, z]);
@@ -79,7 +79,7 @@ mod test {
 
     #[test]
     pub fn round_trip_mat4() {
-        let mat4 = glam::Mat4::orthographic_lh(1.0, 2.0, 3.0, 4.0,5.0, 6.0);
+        let mat4 = glam::Mat4::orthographic_lh(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
         let arr = ConstantValue::to_array(mat4.clone());
         let returned = ConstantValue::from_array(arr);
 
@@ -88,7 +88,7 @@ mod test {
 
     #[test]
     pub fn round_trip_mat3() {
-        let mat4 = glam::Mat4::orthographic_lh(1.0, 2.0, 3.0, 4.0,5.0, 6.0);
+        let mat4 = glam::Mat4::orthographic_lh(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
         let mat3 = glam::Mat3::from_mat4_minor(mat4, 1, 2);
         let arr = ConstantValue::to_array(mat3.clone());
         let returned = ConstantValue::from_array(arr);
@@ -98,7 +98,7 @@ mod test {
 
     #[test]
     pub fn round_trip_mat2() {
-        let mat4 = glam::Mat4::orthographic_lh(1.0, 2.0, 3.0, 4.0,5.0, 6.0);
+        let mat4 = glam::Mat4::orthographic_lh(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
         let mat3 = glam::Mat3::from_mat4_minor(mat4, 1, 2);
         let mat2 = glam::Mat2::from_mat3_minor(mat3, 1, 2);
         let arr = ConstantValue::to_array(mat2.clone());

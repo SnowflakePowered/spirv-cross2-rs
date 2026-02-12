@@ -1,9 +1,9 @@
 #![cfg(feature = "gfx-math-types")]
 #![cfg_attr(docsrs, doc(cfg(feature = "gfx-math-types")))]
+use crate::reflect::constants::impl_vec_constant;
 use crate::reflect::ConstantValue;
 use crate::sealed::Sealed;
 use gfx_maths::{Mat4, Vec2, Vec3, Vec4};
-use crate::reflect::constants::impl_vec_constant;
 
 impl_vec_constant!(Vec2 [f32; 2] for [x, y]);
 impl_vec_constant!(Vec3 [f32; 3] for [x, y, z]);
@@ -59,7 +59,7 @@ mod test {
 
     #[test]
     pub fn round_trip_mat4() {
-        let mat4 = gfx_maths::Mat4::inverse_orthographic_opengl(1.0, 2.0, 3.0, 4.0,5.0, 6.0);
+        let mat4 = gfx_maths::Mat4::inverse_orthographic_opengl(1.0, 2.0, 3.0, 4.0, 5.0, 6.0);
         let arr = ConstantValue::to_array(mat4.clone());
         let returned = ConstantValue::from_array(arr);
 

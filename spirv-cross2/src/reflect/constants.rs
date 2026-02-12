@@ -11,8 +11,8 @@ use crate::{error, Compiler, PhantomCompiler};
 use spirv_cross_sys as sys;
 
 mod gfx_maths;
-mod half;
 mod glam;
+mod half;
 
 /// A marker trait for types that can be represented as a scalar SPIR-V constant.
 pub trait ConstantScalar: Default + Sealed + Copy {
@@ -38,6 +38,7 @@ macro_rules! impl_spvc_constant {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! impl_vec_constant {
     ($vec_ty:ty [$base_ty:ty; $len:literal] for [$($component:ident),*]) => {
         impl $crate::sealed::Sealed for $vec_ty {}
@@ -76,9 +77,7 @@ impl_spvc_constant!(spvc_constant_get_scalar_fp64 spvc_constant_set_scalar_fp64 
 impl Sealed for bool {}
 impl ConstantScalar for bool {
     unsafe fn get(constant: spvc_constant, column: u32, row: u32) -> Self {
-        unsafe {
-            sys::spvc_constant_get_scalar_u8(constant, column, row) != 0
-        }
+        unsafe { sys::spvc_constant_get_scalar_u8(constant, column, row) != 0 }
     }
 
     unsafe fn set(constant: spvc_constant, column: u32, row: u32, value: Self) {
@@ -231,7 +230,7 @@ impl<T> Compiler<T> {
     pub fn specialization_sub_constants(
         &self,
         constant: Handle<ConstantId>,
-    ) -> error::Result<SpecializationSubConstantIter> {
+    ) -> error::Result<SpecializationSubConstantIter<'_>> {
         let id = self.yield_id(constant)?;
         unsafe {
             let constant = sys::spvc_compiler_get_constant_handle(self.ptr.as_ptr(), id);
@@ -438,4 +437,6 @@ impl<T> Compiler<T> {
     }
 }
 
+#[allow(unused_imports)]
+#[allow(clippy::needless_pub_self)]
 pub(self) use impl_vec_constant;

@@ -743,7 +743,7 @@ impl ShaderInterfaceVariable {
             // happy path, we can just set the builtin.
             base.builtin = SpvBuiltIn(builtin as u32);
         } else {
-            base.builtin = SpvBuiltIn(i32::MAX);
+            base.builtin = SpvBuiltIn(u32::MAX);
         }
 
         base

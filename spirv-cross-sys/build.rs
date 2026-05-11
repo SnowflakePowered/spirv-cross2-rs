@@ -57,6 +57,7 @@ pub fn main() {
 
     if cfg!(feature = "json") {
         spvc_build.define("SPIRV_CROSS_C_API_JSON", "1");
+        spvc_build.define("SPIRV_CROSS_C_API_REFLECT", "1");
     }
 
     spvc_build.compile("spirv-cross");

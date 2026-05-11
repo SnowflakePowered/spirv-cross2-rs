@@ -741,7 +741,7 @@ impl ShaderInterfaceVariable {
 
         if let Some(builtin) = self.builtin {
             // happy path, we can just set the builtin.
-            base.builtin = SpvBuiltIn(builtin as u32 as i32);
+            base.builtin = SpvBuiltIn(builtin as u32);
         } else {
             base.builtin = SpvBuiltIn(i32::MAX);
         }
@@ -829,7 +829,7 @@ impl Compiler<Msl> {
         bind_target: &BindTarget,
     ) -> error::Result<()> {
         let binding = MslResourceBinding2 {
-            stage: SpvExecutionModel(stage as u32 as i32),
+            stage: SpvExecutionModel(stage as u32),
             desc_set: binding.descriptor_set(),
             binding: binding.binding(),
             count: bind_target.count.map_or(0, NonZeroU32::get),
@@ -1062,7 +1062,7 @@ impl Compiler<Msl> {
         unsafe {
             sys::spvc_compiler_mask_stage_output_by_builtin(
                 self.ptr.as_ptr(),
-                SpvBuiltIn(builtin as u32 as i32),
+                SpvBuiltIn(builtin as u32),
             )
             .ok(&*self)
         }
@@ -1094,7 +1094,7 @@ impl CompiledArtifact<Msl> {
         unsafe {
             sys::spvc_compiler_msl_is_resource_used(
                 self.compiler.ptr.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
                 binding.descriptor_set(),
                 binding.binding(),
             )

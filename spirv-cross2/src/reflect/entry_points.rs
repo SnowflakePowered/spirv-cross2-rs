@@ -101,8 +101,8 @@ impl<T> Compiler<T> {
         unsafe {
             Ok(sys::spvc_compiler_has_active_builtin(
                 self.ptr.as_ptr(),
-                SpvBuiltIn(builtin as i32),
-                SpvStorageClass(storage_class as i32),
+                SpvBuiltIn(builtin as u32),
+                SpvStorageClass(storage_class as u32),
             ))
         }
     }
@@ -193,7 +193,7 @@ impl<T> Compiler<T> {
             let name = sys::spvc_compiler_get_cleansed_entry_point_name(
                 self.ptr.as_ptr(),
                 name.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
             );
 
             if name.is_null() {
@@ -233,7 +233,7 @@ impl<T> Compiler<T> {
             sys::spvc_compiler_set_entry_point(
                 self.ptr.as_ptr(),
                 name.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
             )
             .ok(&*self)
         }
@@ -262,7 +262,7 @@ impl<T> Compiler<T> {
                 self.ptr.as_ptr(),
                 from.as_ptr(),
                 to.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
             )
             .ok(&*self)
         }

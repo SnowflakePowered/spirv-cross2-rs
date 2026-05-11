@@ -179,7 +179,7 @@ impl<T> Compiler<T> {
             let has_decoration = sys::spvc_compiler_has_decoration(
                 self.ptr.as_ptr(),
                 id,
-                SpvDecoration(decoration as u32 as i32),
+                SpvDecoration(decoration as u32),
             );
             if !has_decoration {
                 return Ok(None);
@@ -189,7 +189,7 @@ impl<T> Compiler<T> {
                 let str = sys::spvc_compiler_get_decoration_string(
                     self.ptr.as_ptr(),
                     id,
-                    SpvDecoration(decoration as u32 as i32),
+                    SpvDecoration(decoration as u32),
                 );
                 return Ok(Some(DecorationValue::String(CompilerStr::from_ptr(
                     str,
@@ -200,7 +200,7 @@ impl<T> Compiler<T> {
             let value = sys::spvc_compiler_get_decoration(
                 self.ptr.as_ptr(),
                 id,
-                SpvDecoration(decoration as u32 as i32),
+                SpvDecoration(decoration as u32),
             );
             self.parse_decoration_value(decoration, value)
         }
@@ -221,7 +221,7 @@ impl<T> Compiler<T> {
                 self.ptr.as_ptr(),
                 struct_type,
                 index,
-                SpvDecoration(decoration as u32 as i32),
+                SpvDecoration(decoration as u32),
             );
             if !has_decoration {
                 return Ok(None);
@@ -232,7 +232,7 @@ impl<T> Compiler<T> {
                     self.ptr.as_ptr(),
                     struct_type,
                     index,
-                    SpvDecoration(decoration as u32 as i32),
+                    SpvDecoration(decoration as u32),
                 );
                 return Ok(Some(DecorationValue::String(CompilerStr::from_ptr(
                     str,
@@ -244,7 +244,7 @@ impl<T> Compiler<T> {
                 self.ptr.as_ptr(),
                 struct_type,
                 index,
-                SpvDecoration(decoration as u32 as i32),
+                SpvDecoration(decoration as u32),
             );
             self.parse_decoration_value(decoration, value)
         }
@@ -273,7 +273,7 @@ impl<T> Compiler<T> {
                 sys::spvc_compiler_unset_decoration(
                     self.ptr.as_ptr(),
                     id,
-                    SpvDecoration(decoration as u32 as i32),
+                    SpvDecoration(decoration as u32),
                 );
                 return Ok(());
             };
@@ -292,7 +292,7 @@ impl<T> Compiler<T> {
                     sys::spvc_compiler_set_decoration(
                         self.ptr.as_ptr(),
                         id,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         literal,
                     );
                 }
@@ -300,7 +300,7 @@ impl<T> Compiler<T> {
                     sys::spvc_compiler_set_decoration(
                         self.ptr.as_ptr(),
                         id,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         builtin as u32,
                     );
                 }
@@ -308,7 +308,7 @@ impl<T> Compiler<T> {
                     sys::spvc_compiler_set_decoration(
                         self.ptr.as_ptr(),
                         id,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         rounding_mode as u32,
                     );
                 }
@@ -317,7 +317,7 @@ impl<T> Compiler<T> {
                     sys::spvc_compiler_set_decoration(
                         self.ptr.as_ptr(),
                         id,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         constant.id(),
                     );
                 }
@@ -325,7 +325,7 @@ impl<T> Compiler<T> {
                     sys::spvc_compiler_set_decoration(
                         self.ptr.as_ptr(),
                         id,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         1,
                     );
                 }
@@ -343,7 +343,7 @@ impl<T> Compiler<T> {
                     sys::spvc_compiler_set_decoration_string(
                         self.ptr.as_ptr(),
                         id,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         cstring.as_ptr(),
                     );
 
@@ -390,7 +390,7 @@ impl<T> Compiler<T> {
                     self.ptr.as_ptr(),
                     struct_type,
                     index,
-                    SpvDecoration(decoration as u32 as i32),
+                    SpvDecoration(decoration as u32),
                 );
                 return Ok(());
             };
@@ -410,7 +410,7 @@ impl<T> Compiler<T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         literal,
                     );
                 }
@@ -419,7 +419,7 @@ impl<T> Compiler<T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         builtin as u32,
                     );
                 }
@@ -428,7 +428,7 @@ impl<T> Compiler<T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         rounding_mode as u32,
                     );
                 }
@@ -438,7 +438,7 @@ impl<T> Compiler<T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         constant.id(),
                     );
                 }
@@ -447,7 +447,7 @@ impl<T> Compiler<T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         1,
                     );
                 }
@@ -466,7 +466,7 @@ impl<T> Compiler<T> {
                         self.ptr.as_ptr(),
                         struct_type,
                         index,
-                        SpvDecoration(decoration as u32 as i32),
+                        SpvDecoration(decoration as u32),
                         cstring.as_ptr(),
                     );
 
@@ -500,7 +500,7 @@ impl<T> Compiler<T> {
             if !sys::spvc_compiler_get_binary_offset_for_decoration(
                 self.ptr.as_ptr(),
                 id,
-                SpvDecoration(decoration as u32 as i32),
+                SpvDecoration(decoration as u32),
                 &mut offset,
             ) {
                 Ok(None)

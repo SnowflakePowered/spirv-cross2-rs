@@ -33,7 +33,7 @@ impl SpvExecutionModel {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvExecutionModel(pub i32);
+pub struct SpvExecutionModel(pub u32);
 impl SpvExecutionMode {
     pub const Invocations: SpvExecutionMode = SpvExecutionMode(0);
     pub const SpacingEqual: SpvExecutionMode = SpvExecutionMode(1);
@@ -102,6 +102,7 @@ impl SpvExecutionMode {
     pub const QuadDerivativesKHR: SpvExecutionMode = SpvExecutionMode(5088);
     pub const RequireFullQuadsKHR: SpvExecutionMode = SpvExecutionMode(5089);
     pub const SharesInputWithAMDX: SpvExecutionMode = SpvExecutionMode(5102);
+    pub const ArithmeticPoisonKHR: SpvExecutionMode = SpvExecutionMode(5157);
     pub const OutputLinesEXT: SpvExecutionMode = SpvExecutionMode(5269);
     pub const OutputLinesNV: SpvExecutionMode = SpvExecutionMode(5269);
     pub const OutputPrimitivesEXT: SpvExecutionMode = SpvExecutionMode(5270);
@@ -118,6 +119,7 @@ impl SpvExecutionMode {
     pub const SampleInterlockUnorderedEXT: SpvExecutionMode = SpvExecutionMode(5369);
     pub const ShadingRateInterlockOrderedEXT: SpvExecutionMode = SpvExecutionMode(5370);
     pub const ShadingRateInterlockUnorderedEXT: SpvExecutionMode = SpvExecutionMode(5371);
+    pub const Shader64BitIndexingEXT: SpvExecutionMode = SpvExecutionMode(5427);
     pub const SharedLocalMemorySizeINTEL: SpvExecutionMode = SpvExecutionMode(5618);
     pub const RoundingModeRTPINTEL: SpvExecutionMode = SpvExecutionMode(5620);
     pub const RoundingModeRTNINTEL: SpvExecutionMode = SpvExecutionMode(5621);
@@ -142,7 +144,7 @@ impl SpvExecutionMode {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvExecutionMode(pub i32);
+pub struct SpvExecutionMode(pub u32);
 impl SpvStorageClass {
     pub const UniformConstant: SpvStorageClass = SpvStorageClass(0);
     pub const Input: SpvStorageClass = SpvStorageClass(1);
@@ -176,8 +178,11 @@ impl SpvStorageClass {
     pub const PhysicalStorageBufferEXT: SpvStorageClass = SpvStorageClass(5349);
     pub const HitObjectAttributeNV: SpvStorageClass = SpvStorageClass(5385);
     pub const TaskPayloadWorkgroupEXT: SpvStorageClass = SpvStorageClass(5402);
+    pub const HitObjectAttributeEXT: SpvStorageClass = SpvStorageClass(5411);
     pub const CodeSectionINTEL: SpvStorageClass = SpvStorageClass(5605);
+    pub const DeviceOnlyALTERA: SpvStorageClass = SpvStorageClass(5936);
     pub const DeviceOnlyINTEL: SpvStorageClass = SpvStorageClass(5936);
+    pub const HostOnlyALTERA: SpvStorageClass = SpvStorageClass(5937);
     pub const HostOnlyINTEL: SpvStorageClass = SpvStorageClass(5937);
     pub const Max: SpvStorageClass = SpvStorageClass(2147483647);
 }
@@ -185,7 +190,7 @@ impl SpvStorageClass {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvStorageClass(pub i32);
+pub struct SpvStorageClass(pub u32);
 impl SpvDim {
     pub const Dim1D: SpvDim = SpvDim(0);
     pub const Dim2D: SpvDim = SpvDim(1);
@@ -201,7 +206,7 @@ impl SpvDim {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvDim(pub i32);
+pub struct SpvDim(pub u32);
 impl SpvImageFormat {
     pub const Unknown: SpvImageFormat = SpvImageFormat(0);
     pub const Rgba32f: SpvImageFormat = SpvImageFormat(1);
@@ -251,7 +256,7 @@ impl SpvImageFormat {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvImageFormat(pub i32);
+pub struct SpvImageFormat(pub u32);
 impl SpvFPRoundingMode {
     pub const RTE: SpvFPRoundingMode = SpvFPRoundingMode(0);
     pub const RTZ: SpvFPRoundingMode = SpvFPRoundingMode(1);
@@ -263,12 +268,12 @@ impl SpvFPRoundingMode {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvFPRoundingMode(pub i32);
+pub struct SpvFPRoundingMode(pub u32);
 pub const SpvAccessQualifier_ReadOnly: SpvAccessQualifier = 0;
 pub const SpvAccessQualifier_WriteOnly: SpvAccessQualifier = 1;
 pub const SpvAccessQualifier_ReadWrite: SpvAccessQualifier = 2;
 pub const SpvAccessQualifier_Max: SpvAccessQualifier = 2147483647;
-pub type SpvAccessQualifier = i32;
+pub type SpvAccessQualifier = u32;
 impl SpvDecoration {
     pub const RelaxedPrecision: SpvDecoration = SpvDecoration(0);
     pub const SpecId: SpvDecoration = SpvDecoration(1);
@@ -332,6 +337,9 @@ impl SpvDecoration {
     pub const PayloadNodeSparseArrayAMDX: SpvDecoration = SpvDecoration(5099);
     pub const PayloadNodeArraySizeAMDX: SpvDecoration = SpvDecoration(5100);
     pub const PayloadDispatchIndirectAMDX: SpvDecoration = SpvDecoration(5105);
+    pub const ArrayStrideIdEXT: SpvDecoration = SpvDecoration(5124);
+    pub const OffsetIdEXT: SpvDecoration = SpvDecoration(5125);
+    pub const UTFEncodedKHR: SpvDecoration = SpvDecoration(5145);
     pub const OverrideCoverageNV: SpvDecoration = SpvDecoration(5248);
     pub const PassthroughNV: SpvDecoration = SpvDecoration(5250);
     pub const ViewportRelativeNV: SpvDecoration = SpvDecoration(5252);
@@ -348,7 +356,10 @@ impl SpvDecoration {
     pub const RestrictPointerEXT: SpvDecoration = SpvDecoration(5355);
     pub const AliasedPointer: SpvDecoration = SpvDecoration(5356);
     pub const AliasedPointerEXT: SpvDecoration = SpvDecoration(5356);
+    pub const MemberOffsetNV: SpvDecoration = SpvDecoration(5358);
     pub const HitObjectShaderRecordBufferNV: SpvDecoration = SpvDecoration(5386);
+    pub const HitObjectShaderRecordBufferEXT: SpvDecoration = SpvDecoration(5389);
+    pub const BankNV: SpvDecoration = SpvDecoration(5397);
     pub const BindlessSamplerNV: SpvDecoration = SpvDecoration(5398);
     pub const BindlessImageNV: SpvDecoration = SpvDecoration(5399);
     pub const BoundSamplerNV: SpvDecoration = SpvDecoration(5400);
@@ -369,54 +380,95 @@ impl SpvDecoration {
     pub const UserTypeGOOGLE: SpvDecoration = SpvDecoration(5636);
     pub const FunctionRoundingModeINTEL: SpvDecoration = SpvDecoration(5822);
     pub const FunctionDenormModeINTEL: SpvDecoration = SpvDecoration(5823);
+    pub const RegisterALTERA: SpvDecoration = SpvDecoration(5825);
     pub const RegisterINTEL: SpvDecoration = SpvDecoration(5825);
+    pub const MemoryALTERA: SpvDecoration = SpvDecoration(5826);
     pub const MemoryINTEL: SpvDecoration = SpvDecoration(5826);
+    pub const NumbanksALTERA: SpvDecoration = SpvDecoration(5827);
     pub const NumbanksINTEL: SpvDecoration = SpvDecoration(5827);
+    pub const BankwidthALTERA: SpvDecoration = SpvDecoration(5828);
     pub const BankwidthINTEL: SpvDecoration = SpvDecoration(5828);
+    pub const MaxPrivateCopiesALTERA: SpvDecoration = SpvDecoration(5829);
     pub const MaxPrivateCopiesINTEL: SpvDecoration = SpvDecoration(5829);
+    pub const SinglepumpALTERA: SpvDecoration = SpvDecoration(5830);
     pub const SinglepumpINTEL: SpvDecoration = SpvDecoration(5830);
+    pub const DoublepumpALTERA: SpvDecoration = SpvDecoration(5831);
     pub const DoublepumpINTEL: SpvDecoration = SpvDecoration(5831);
+    pub const MaxReplicatesALTERA: SpvDecoration = SpvDecoration(5832);
     pub const MaxReplicatesINTEL: SpvDecoration = SpvDecoration(5832);
+    pub const SimpleDualPortALTERA: SpvDecoration = SpvDecoration(5833);
     pub const SimpleDualPortINTEL: SpvDecoration = SpvDecoration(5833);
+    pub const MergeALTERA: SpvDecoration = SpvDecoration(5834);
     pub const MergeINTEL: SpvDecoration = SpvDecoration(5834);
+    pub const BankBitsALTERA: SpvDecoration = SpvDecoration(5835);
     pub const BankBitsINTEL: SpvDecoration = SpvDecoration(5835);
+    pub const ForcePow2DepthALTERA: SpvDecoration = SpvDecoration(5836);
     pub const ForcePow2DepthINTEL: SpvDecoration = SpvDecoration(5836);
+    pub const StridesizeALTERA: SpvDecoration = SpvDecoration(5883);
     pub const StridesizeINTEL: SpvDecoration = SpvDecoration(5883);
+    pub const WordsizeALTERA: SpvDecoration = SpvDecoration(5884);
     pub const WordsizeINTEL: SpvDecoration = SpvDecoration(5884);
+    pub const TrueDualPortALTERA: SpvDecoration = SpvDecoration(5885);
     pub const TrueDualPortINTEL: SpvDecoration = SpvDecoration(5885);
+    pub const BurstCoalesceALTERA: SpvDecoration = SpvDecoration(5899);
     pub const BurstCoalesceINTEL: SpvDecoration = SpvDecoration(5899);
+    pub const CacheSizeALTERA: SpvDecoration = SpvDecoration(5900);
     pub const CacheSizeINTEL: SpvDecoration = SpvDecoration(5900);
+    pub const DontStaticallyCoalesceALTERA: SpvDecoration = SpvDecoration(5901);
     pub const DontStaticallyCoalesceINTEL: SpvDecoration = SpvDecoration(5901);
+    pub const PrefetchALTERA: SpvDecoration = SpvDecoration(5902);
     pub const PrefetchINTEL: SpvDecoration = SpvDecoration(5902);
+    pub const StallEnableALTERA: SpvDecoration = SpvDecoration(5905);
     pub const StallEnableINTEL: SpvDecoration = SpvDecoration(5905);
+    pub const FuseLoopsInFunctionALTERA: SpvDecoration = SpvDecoration(5907);
     pub const FuseLoopsInFunctionINTEL: SpvDecoration = SpvDecoration(5907);
+    pub const MathOpDSPModeALTERA: SpvDecoration = SpvDecoration(5909);
     pub const MathOpDSPModeINTEL: SpvDecoration = SpvDecoration(5909);
     pub const AliasScopeINTEL: SpvDecoration = SpvDecoration(5914);
     pub const NoAliasINTEL: SpvDecoration = SpvDecoration(5915);
+    pub const InitiationIntervalALTERA: SpvDecoration = SpvDecoration(5917);
     pub const InitiationIntervalINTEL: SpvDecoration = SpvDecoration(5917);
+    pub const MaxConcurrencyALTERA: SpvDecoration = SpvDecoration(5918);
     pub const MaxConcurrencyINTEL: SpvDecoration = SpvDecoration(5918);
+    pub const PipelineEnableALTERA: SpvDecoration = SpvDecoration(5919);
     pub const PipelineEnableINTEL: SpvDecoration = SpvDecoration(5919);
+    pub const BufferLocationALTERA: SpvDecoration = SpvDecoration(5921);
     pub const BufferLocationINTEL: SpvDecoration = SpvDecoration(5921);
+    pub const IOPipeStorageALTERA: SpvDecoration = SpvDecoration(5944);
     pub const IOPipeStorageINTEL: SpvDecoration = SpvDecoration(5944);
     pub const FunctionFloatingPointModeINTEL: SpvDecoration = SpvDecoration(6080);
     pub const SingleElementVectorINTEL: SpvDecoration = SpvDecoration(6085);
     pub const VectorComputeCallableFunctionINTEL: SpvDecoration = SpvDecoration(6087);
     pub const MediaBlockIOINTEL: SpvDecoration = SpvDecoration(6140);
+    pub const StallFreeALTERA: SpvDecoration = SpvDecoration(6151);
     pub const StallFreeINTEL: SpvDecoration = SpvDecoration(6151);
     pub const FPMaxErrorDecorationINTEL: SpvDecoration = SpvDecoration(6170);
+    pub const LatencyControlLabelALTERA: SpvDecoration = SpvDecoration(6172);
     pub const LatencyControlLabelINTEL: SpvDecoration = SpvDecoration(6172);
+    pub const LatencyControlConstraintALTERA: SpvDecoration = SpvDecoration(6173);
     pub const LatencyControlConstraintINTEL: SpvDecoration = SpvDecoration(6173);
+    pub const ConduitKernelArgumentALTERA: SpvDecoration = SpvDecoration(6175);
     pub const ConduitKernelArgumentINTEL: SpvDecoration = SpvDecoration(6175);
+    pub const RegisterMapKernelArgumentALTERA: SpvDecoration = SpvDecoration(6176);
     pub const RegisterMapKernelArgumentINTEL: SpvDecoration = SpvDecoration(6176);
+    pub const MMHostInterfaceAddressWidthALTERA: SpvDecoration = SpvDecoration(6177);
     pub const MMHostInterfaceAddressWidthINTEL: SpvDecoration = SpvDecoration(6177);
+    pub const MMHostInterfaceDataWidthALTERA: SpvDecoration = SpvDecoration(6178);
     pub const MMHostInterfaceDataWidthINTEL: SpvDecoration = SpvDecoration(6178);
+    pub const MMHostInterfaceLatencyALTERA: SpvDecoration = SpvDecoration(6179);
     pub const MMHostInterfaceLatencyINTEL: SpvDecoration = SpvDecoration(6179);
+    pub const MMHostInterfaceReadWriteModeALTERA: SpvDecoration = SpvDecoration(6180);
     pub const MMHostInterfaceReadWriteModeINTEL: SpvDecoration = SpvDecoration(6180);
+    pub const MMHostInterfaceMaxBurstALTERA: SpvDecoration = SpvDecoration(6181);
     pub const MMHostInterfaceMaxBurstINTEL: SpvDecoration = SpvDecoration(6181);
+    pub const MMHostInterfaceWaitRequestALTERA: SpvDecoration = SpvDecoration(6182);
     pub const MMHostInterfaceWaitRequestINTEL: SpvDecoration = SpvDecoration(6182);
+    pub const StableKernelArgumentALTERA: SpvDecoration = SpvDecoration(6183);
     pub const StableKernelArgumentINTEL: SpvDecoration = SpvDecoration(6183);
     pub const HostAccessINTEL: SpvDecoration = SpvDecoration(6188);
+    pub const InitModeALTERA: SpvDecoration = SpvDecoration(6190);
     pub const InitModeINTEL: SpvDecoration = SpvDecoration(6190);
+    pub const ImplementInRegisterMapALTERA: SpvDecoration = SpvDecoration(6191);
     pub const ImplementInRegisterMapINTEL: SpvDecoration = SpvDecoration(6191);
     pub const ConditionalINTEL: SpvDecoration = SpvDecoration(6247);
     pub const CacheControlLoadINTEL: SpvDecoration = SpvDecoration(6442);
@@ -427,7 +479,7 @@ impl SpvDecoration {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvDecoration(pub i32);
+pub struct SpvDecoration(pub u32);
 impl SpvBuiltIn {
     pub const Position: SpvBuiltIn = SpvBuiltIn(0);
     pub const PointSize: SpvBuiltIn = SpvBuiltIn(1);
@@ -505,6 +557,8 @@ impl SpvBuiltIn {
     pub const FragStencilRefEXT: SpvBuiltIn = SpvBuiltIn(5014);
     pub const RemainingRecursionLevelsAMDX: SpvBuiltIn = SpvBuiltIn(5021);
     pub const ShaderIndexAMDX: SpvBuiltIn = SpvBuiltIn(5073);
+    pub const SamplerHeapEXT: SpvBuiltIn = SpvBuiltIn(5122);
+    pub const ResourceHeapEXT: SpvBuiltIn = SpvBuiltIn(5123);
     pub const ViewportMaskNV: SpvBuiltIn = SpvBuiltIn(5253);
     pub const SecondaryPositionNV: SpvBuiltIn = SpvBuiltIn(5257);
     pub const SecondaryViewportMaskNV: SpvBuiltIn = SpvBuiltIn(5258);
@@ -583,7 +637,7 @@ impl SpvBuiltIn {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvBuiltIn(pub i32);
+pub struct SpvBuiltIn(pub u32);
 impl SpvCapability {
     pub const Matrix: SpvCapability = SpvCapability(0);
     pub const Shader: SpvCapability = SpvCapability(1);
@@ -718,6 +772,10 @@ impl SpvCapability {
     pub const BFloat16TypeKHR: SpvCapability = SpvCapability(5116);
     pub const BFloat16DotProductKHR: SpvCapability = SpvCapability(5117);
     pub const BFloat16CooperativeMatrixKHR: SpvCapability = SpvCapability(5118);
+    pub const AbortKHR: SpvCapability = SpvCapability(5120);
+    pub const DescriptorHeapEXT: SpvCapability = SpvCapability(5128);
+    pub const ConstantDataKHR: SpvCapability = SpvCapability(5146);
+    pub const PoisonFreezeKHR: SpvCapability = SpvCapability(5156);
     pub const SampleMaskOverrideCoverageNV: SpvCapability = SpvCapability(5249);
     pub const GeometryShaderPassthroughNV: SpvCapability = SpvCapability(5251);
     pub const ShaderViewportIndexLayerEXT: SpvCapability = SpvCapability(5254);
@@ -735,6 +793,7 @@ impl SpvCapability {
     pub const ComputeDerivativeGroupQuadsNV: SpvCapability = SpvCapability(5288);
     pub const FragmentDensityEXT: SpvCapability = SpvCapability(5291);
     pub const ShadingRateNV: SpvCapability = SpvCapability(5291);
+    pub const GroupNonUniformPartitionedEXT: SpvCapability = SpvCapability(5297);
     pub const GroupNonUniformPartitionedNV: SpvCapability = SpvCapability(5297);
     pub const ShaderNonUniform: SpvCapability = SpvCapability(5301);
     pub const ShaderNonUniformEXT: SpvCapability = SpvCapability(5301);
@@ -782,6 +841,7 @@ impl SpvCapability {
     pub const DisplacementMicromapNV: SpvCapability = SpvCapability(5380);
     pub const RayTracingOpacityMicromapEXT: SpvCapability = SpvCapability(5381);
     pub const ShaderInvocationReorderNV: SpvCapability = SpvCapability(5383);
+    pub const ShaderInvocationReorderEXT: SpvCapability = SpvCapability(5388);
     pub const BindlessTextureNV: SpvCapability = SpvCapability(5390);
     pub const RayQueryPositionFetchKHR: SpvCapability = SpvCapability(5391);
     pub const CooperativeVectorNV: SpvCapability = SpvCapability(5394);
@@ -790,6 +850,9 @@ impl SpvCapability {
     pub const RawAccessChainsNV: SpvCapability = SpvCapability(5414);
     pub const RayTracingSpheresGeometryNV: SpvCapability = SpvCapability(5418);
     pub const RayTracingLinearSweptSpheresGeometryNV: SpvCapability = SpvCapability(5419);
+    pub const PushConstantBanksNV: SpvCapability = SpvCapability(5423);
+    pub const LongVectorEXT: SpvCapability = SpvCapability(5425);
+    pub const Shader64BitIndexingEXT: SpvCapability = SpvCapability(5426);
     pub const CooperativeMatrixReductionsNV: SpvCapability = SpvCapability(5430);
     pub const CooperativeMatrixConversionsNV: SpvCapability = SpvCapability(5431);
     pub const CooperativeMatrixPerElementOperationsNV: SpvCapability = SpvCapability(5432);
@@ -819,26 +882,42 @@ impl SpvCapability {
     pub const SubgroupAvcMotionEstimationChromaINTEL: SpvCapability = SpvCapability(5698);
     pub const VariableLengthArrayINTEL: SpvCapability = SpvCapability(5817);
     pub const FunctionFloatControlINTEL: SpvCapability = SpvCapability(5821);
+    pub const FPGAMemoryAttributesALTERA: SpvCapability = SpvCapability(5824);
     pub const FPGAMemoryAttributesINTEL: SpvCapability = SpvCapability(5824);
     pub const FPFastMathModeINTEL: SpvCapability = SpvCapability(5837);
+    pub const ArbitraryPrecisionIntegersALTERA: SpvCapability = SpvCapability(5844);
     pub const ArbitraryPrecisionIntegersINTEL: SpvCapability = SpvCapability(5844);
+    pub const ArbitraryPrecisionFloatingPointALTERA: SpvCapability = SpvCapability(5845);
     pub const ArbitraryPrecisionFloatingPointINTEL: SpvCapability = SpvCapability(5845);
     pub const UnstructuredLoopControlsINTEL: SpvCapability = SpvCapability(5886);
+    pub const FPGALoopControlsALTERA: SpvCapability = SpvCapability(5888);
     pub const FPGALoopControlsINTEL: SpvCapability = SpvCapability(5888);
     pub const KernelAttributesINTEL: SpvCapability = SpvCapability(5892);
     pub const FPGAKernelAttributesINTEL: SpvCapability = SpvCapability(5897);
+    pub const FPGAMemoryAccessesALTERA: SpvCapability = SpvCapability(5898);
     pub const FPGAMemoryAccessesINTEL: SpvCapability = SpvCapability(5898);
+    pub const FPGAClusterAttributesALTERA: SpvCapability = SpvCapability(5904);
     pub const FPGAClusterAttributesINTEL: SpvCapability = SpvCapability(5904);
+    pub const LoopFuseALTERA: SpvCapability = SpvCapability(5906);
     pub const LoopFuseINTEL: SpvCapability = SpvCapability(5906);
+    pub const FPGADSPControlALTERA: SpvCapability = SpvCapability(5908);
     pub const FPGADSPControlINTEL: SpvCapability = SpvCapability(5908);
     pub const MemoryAccessAliasingINTEL: SpvCapability = SpvCapability(5910);
+    pub const FPGAInvocationPipeliningAttributesALTERA: SpvCapability = SpvCapability(5916);
     pub const FPGAInvocationPipeliningAttributesINTEL: SpvCapability = SpvCapability(5916);
+    pub const FPGABufferLocationALTERA: SpvCapability = SpvCapability(5920);
     pub const FPGABufferLocationINTEL: SpvCapability = SpvCapability(5920);
+    pub const ArbitraryPrecisionFixedPointALTERA: SpvCapability = SpvCapability(5922);
     pub const ArbitraryPrecisionFixedPointINTEL: SpvCapability = SpvCapability(5922);
+    pub const USMStorageClassesALTERA: SpvCapability = SpvCapability(5935);
     pub const USMStorageClassesINTEL: SpvCapability = SpvCapability(5935);
+    pub const RuntimeAlignedAttributeALTERA: SpvCapability = SpvCapability(5939);
     pub const RuntimeAlignedAttributeINTEL: SpvCapability = SpvCapability(5939);
+    pub const IOPipesALTERA: SpvCapability = SpvCapability(5943);
     pub const IOPipesINTEL: SpvCapability = SpvCapability(5943);
+    pub const BlockingPipesALTERA: SpvCapability = SpvCapability(5945);
     pub const BlockingPipesINTEL: SpvCapability = SpvCapability(5945);
+    pub const FPGARegALTERA: SpvCapability = SpvCapability(5948);
     pub const FPGARegINTEL: SpvCapability = SpvCapability(5948);
     pub const DotProductInputAll: SpvCapability = SpvCapability(6016);
     pub const DotProductInputAllKHR: SpvCapability = SpvCapability(6016);
@@ -865,13 +944,18 @@ impl SpvCapability {
     pub const BFloat16ConversionINTEL: SpvCapability = SpvCapability(6115);
     pub const SplitBarrierINTEL: SpvCapability = SpvCapability(6141);
     pub const ArithmeticFenceEXT: SpvCapability = SpvCapability(6144);
+    pub const FPGAClusterAttributesV2ALTERA: SpvCapability = SpvCapability(6150);
     pub const FPGAClusterAttributesV2INTEL: SpvCapability = SpvCapability(6150);
     pub const FPGAKernelAttributesv2INTEL: SpvCapability = SpvCapability(6161);
+    pub const TaskSequenceALTERA: SpvCapability = SpvCapability(6162);
     pub const TaskSequenceINTEL: SpvCapability = SpvCapability(6162);
     pub const FPMaxErrorINTEL: SpvCapability = SpvCapability(6169);
+    pub const FPGALatencyControlALTERA: SpvCapability = SpvCapability(6171);
     pub const FPGALatencyControlINTEL: SpvCapability = SpvCapability(6171);
+    pub const FPGAArgumentInterfacesALTERA: SpvCapability = SpvCapability(6174);
     pub const FPGAArgumentInterfacesINTEL: SpvCapability = SpvCapability(6174);
     pub const GlobalVariableHostAccessINTEL: SpvCapability = SpvCapability(6187);
+    pub const GlobalVariableFPGADecorationsALTERA: SpvCapability = SpvCapability(6189);
     pub const GlobalVariableFPGADecorationsINTEL: SpvCapability = SpvCapability(6189);
     pub const SubgroupBufferPrefetchINTEL: SpvCapability = SpvCapability(6220);
     pub const Subgroup2DBlockIOINTEL: SpvCapability = SpvCapability(6228);
@@ -888,13 +972,17 @@ impl SpvCapability {
     pub const CacheControlsINTEL: SpvCapability = SpvCapability(6441);
     pub const RegisterLimitsINTEL: SpvCapability = SpvCapability(6460);
     pub const BindlessImagesINTEL: SpvCapability = SpvCapability(6528);
+    pub const DotProductFloat16AccFloat32VALVE: SpvCapability = SpvCapability(6912);
+    pub const DotProductFloat16AccFloat16VALVE: SpvCapability = SpvCapability(6913);
+    pub const DotProductBFloat16AccVALVE: SpvCapability = SpvCapability(6914);
+    pub const DotProductFloat8AccFloat32VALVE: SpvCapability = SpvCapability(6915);
     pub const Max: SpvCapability = SpvCapability(2147483647);
 }
 #[repr(transparent)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct SpvCapability(pub i32);
+pub struct SpvCapability(pub u32);
 unsafe extern "C" {
     pub fn spvc_get_version(
         major: *mut crate::ctypes::c_uint,
@@ -1029,7 +1117,7 @@ pub enum spvc_result {
     SPVC_ERROR_OUT_OF_MEMORY = -3,
     SPVC_ERROR_INVALID_ARGUMENT = -4,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1037,7 +1125,7 @@ pub enum spvc_capture_mode {
     Copy = 0,
     TakeOwnership = 1,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1049,7 +1137,7 @@ pub enum CompilerBackend {
     Cpp = 4,
     Json = 5,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
@@ -1073,7 +1161,7 @@ pub enum ResourceType {
     GlPlainUniform = 15,
     Tensor = 16,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1082,7 +1170,7 @@ pub enum BuiltinResourceType {
     StageInput = 1,
     StageOutput = 2,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1108,7 +1196,7 @@ pub enum BaseType {
     Sampler = 18,
     AccelerationStructure = 19,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1116,7 +1204,7 @@ pub enum MslPlatform {
     Ios = 0,
     Macos = 1,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1157,7 +1245,7 @@ impl MslShaderVariableFormat {
     pub const SPVC_MSL_SHADER_INPUT_FORMAT_ANY32: MslShaderVariableFormat =
         MslShaderVariableFormat::Any32;
 }
-#[repr(i32)]
+#[repr(u32)]
 #[non_exhaustive]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
@@ -1199,7 +1287,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn spvc_msl_shader_input_init(input: *mut MslShaderInput);
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1250,7 +1338,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn spvc_msl_get_aux_buffer_struct_version() -> crate::ctypes::c_uint;
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1258,7 +1346,7 @@ pub enum MslSamplerCoord {
     Normalized = 0,
     Pixel = 1,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1266,7 +1354,7 @@ pub enum MslSamplerFilter {
     Nearest = 0,
     Linear = 1,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1275,7 +1363,7 @@ pub enum MslSamplerMipFilter {
     Nearest = 1,
     Linear = 2,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1286,7 +1374,7 @@ pub enum MslSamplerAddress {
     Repeat = 3,
     MirroredRepeat = 4,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1300,7 +1388,7 @@ pub enum MslSamplerCompareFunc {
     NotEqual = 6,
     Always = 7,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1309,7 +1397,7 @@ pub enum MslSamplerBorderColor {
     OpaqueBlack = 1,
     OpaqueWhite = 2,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1318,7 +1406,7 @@ pub enum MslFormatResolution {
     FormatResolution422 = 1,
     FormatResolution420 = 2,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1326,7 +1414,7 @@ pub enum MslChromaLocation {
     CositedEven = 0,
     Midpoint = 1,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1339,7 +1427,7 @@ pub enum MslComponentSwizzle {
     B = 5,
     A = 6,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1350,7 +1438,7 @@ pub enum MslSamplerYcbcrModelConversion {
     YcbcrBt601 = 3,
     YcbcrBt2020 = 4,
 }
-#[repr(i32)]
+#[repr(u32)]
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
@@ -1435,7 +1523,7 @@ impl ::std::ops::BitAndAssign for HlslBindingFlagBits {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct HlslBindingFlagBits(pub i32);
+pub struct HlslBindingFlagBits(pub u32);
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct HlslBindingFlags(pub crate::ctypes::c_uint);
@@ -1683,7 +1771,7 @@ impl ::std::ops::BitAndAssign for spvc_compiler_option {
 #[derive(
     Debug, Copy, Clone, Hash, PartialEq, Eq, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
 )]
-pub struct spvc_compiler_option(pub i32);
+pub struct spvc_compiler_option(pub u32);
 unsafe extern "C" {
     #[must_use]
     pub fn spvc_context_create(context: *mut spvc_context) -> spvc_result;

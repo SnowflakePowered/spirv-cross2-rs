@@ -15,6 +15,8 @@ use std::ffi::c_char;
 pub struct ExtensionsIter<'a>(slice::Iter<'a, *const c_char>, AllocationDropGuard);
 
 impl_iterator!(ExtensionsIter<'c>: CompilerStr<'c> as map |s, ptr: &*const c_char| {
+    // SAFETY: `declared_extensions` validates that every pointer in the slice
+    // is non-null before constructing the iterator.
     unsafe {
         CompilerStr::from_ptr(*ptr, s.1.clone())
     }
@@ -49,6 +51,15 @@ impl<T> Compiler<T> {
                 .ok(self)?;
 
             let ptr_slice = slice::from_raw_parts(caps, size);
+
+            // The C wrapper populates this buffer via `allocate_name`, which
+            // returns nullptr on OOM without propagating an error code.
+            // `CompilerStr::from_ptr` requires non-null pointers, so guard up front.
+            if ptr_slice.iter().any(|p| p.is_null()) {
+                return Err(SpirvCrossError::OutOfMemory(String::from(
+                    "Out of memory allocating declared extension names",
+                )));
+            }
 
             Ok(ExtensionsIter(ptr_slice.iter(), self.ctx.drop_guard()))
         }
@@ -101,8 +112,8 @@ impl<T> Compiler<T> {
         unsafe {
             Ok(sys::spvc_compiler_has_active_builtin(
                 self.ptr.as_ptr(),
-                SpvBuiltIn(builtin as i32),
-                SpvStorageClass(storage_class as i32),
+                SpvBuiltIn(builtin as u32),
+                SpvStorageClass(storage_class as u32),
             ))
         }
     }
@@ -193,7 +204,7 @@ impl<T> Compiler<T> {
             let name = sys::spvc_compiler_get_cleansed_entry_point_name(
                 self.ptr.as_ptr(),
                 name.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
             );
 
             if name.is_null() {
@@ -233,7 +244,7 @@ impl<T> Compiler<T> {
             sys::spvc_compiler_set_entry_point(
                 self.ptr.as_ptr(),
                 name.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
             )
             .ok(&*self)
         }
@@ -262,7 +273,7 @@ impl<T> Compiler<T> {
                 self.ptr.as_ptr(),
                 from.as_ptr(),
                 to.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
             )
             .ok(&*self)
         }

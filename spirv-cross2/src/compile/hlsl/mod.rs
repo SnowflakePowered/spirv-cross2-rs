@@ -292,7 +292,7 @@ impl Compiler<Hlsl> {
         };
 
         let hlsl_resource_binding = HlslResourceBinding {
-            stage: SpvExecutionModel(stage as u32 as i32),
+            stage: SpvExecutionModel(stage as u32),
             desc_set: binding.descriptor_set(),
             binding: binding.binding(),
             cbv: bind_target.cbv.map_or(DEFAULT_BINDING, From::from),
@@ -431,7 +431,7 @@ impl Compiler<Hlsl> {
         unsafe {
             sys::spvc_compiler_mask_stage_output_by_builtin(
                 self.ptr.as_ptr(),
-                SpvBuiltIn(builtin as u32 as i32),
+                SpvBuiltIn(builtin as u32),
             )
             .ok(&*self)
         }
@@ -445,7 +445,7 @@ impl CompiledArtifact<Hlsl> {
         unsafe {
             sys::spvc_compiler_hlsl_is_resource_used(
                 self.compiler.ptr.as_ptr(),
-                SpvExecutionModel(model as u32 as i32),
+                SpvExecutionModel(model as u32),
                 binding.descriptor_set(),
                 binding.binding(),
             )

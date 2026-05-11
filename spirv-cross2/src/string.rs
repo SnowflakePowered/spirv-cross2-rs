@@ -39,12 +39,19 @@ pub struct CompilerStr<'a> {
     cow: Cow<'a, str>,
 }
 
-// SAFETY: SpirvCrossContext is Send.
+// SAFETY: 
+// SpirvCrossContext is Send.
 // Once created, the ContextStr is immutable, so it is also sync.
 // cloning the string doesn't affect the memory, as long as it
 // is alive for 'a.
 //
-// There is no interior mutability of a
+// * The pointed-to C string is immutable for the lifetime `'a` (enforced
+//   by the `from_ptr` contract and by tying `'a` to the immutable borrow
+//   of the `Compiler`, or by the drop-guard for `'static` strings).
+// * `AllocationDropGuard` only exposes `Clone` and `Drop` over the inner
+//   `Arc`; it never hands out a `&CrossAllocationCellInner`, so the
+//   context's interior mutability is never reached through a shared
+//   reference. 
 unsafe impl Send for CompilerStr<'_> {}
 unsafe impl Sync for CompilerStr<'_> {}
 

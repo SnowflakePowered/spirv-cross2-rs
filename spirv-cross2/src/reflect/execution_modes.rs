@@ -60,7 +60,7 @@ impl<T> Compiler<T> {
             let Some(arguments) = arguments else {
                 return sys::spvc_compiler_unset_execution_mode(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                 );
             };
 
@@ -68,7 +68,7 @@ impl<T> Compiler<T> {
 
             sys::spvc_compiler_set_execution_mode_with_arguments(
                 self.ptr.as_ptr(),
-                SpvExecutionMode(mode as u32 as i32),
+                SpvExecutionMode(mode as u32),
                 x,
                 y,
                 z,
@@ -108,17 +108,17 @@ impl<T> Compiler<T> {
             spirv::ExecutionMode::LocalSize => unsafe {
                 let x = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                     0,
                 );
                 let y = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                     1,
                 );
                 let z = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                     2,
                 );
 
@@ -131,17 +131,17 @@ impl<T> Compiler<T> {
             spirv::ExecutionMode::LocalSizeId => unsafe {
                 let x = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                     0,
                 );
                 let y = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                     1,
                 );
                 let z = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                     2,
                 );
 
@@ -165,7 +165,7 @@ impl<T> Compiler<T> {
 
                 let x = sys::spvc_compiler_get_execution_mode_argument_by_index(
                     self.ptr.as_ptr(),
-                    SpvExecutionMode(mode as u32 as i32),
+                    SpvExecutionMode(mode as u32),
                     0,
                 );
                 Some(ExecutionModeArguments::Literal(x))

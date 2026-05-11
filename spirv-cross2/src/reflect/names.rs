@@ -120,6 +120,12 @@ impl<T> Compiler<T> {
             let name =
                 sys::spvc_compiler_get_remapped_declared_block_name(self.ptr.as_ptr(), handle);
 
+            // The C wrapper returns nullptr if the inner C++ call throws (e.g. OOM
+            // in allocate_name). `CompilerStr::from_ptr` requires a non-null pointer.
+            if name.is_null() {
+                return Ok(None);
+            }
+
             // SAFETY: 'ctx is sound here
             // https://github.com/KhronosGroup/SPIRV-Cross/blob/main/spirv_cross_c.cpp#L2773
             let name = CompilerStr::from_ptr(name, self.ctx.drop_guard());

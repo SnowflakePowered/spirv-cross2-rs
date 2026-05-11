@@ -1,6 +1,6 @@
 [package]
 name = "spirv-cross-sys"
-version = "0.7.0+68413a9"
+version = "0.7.1+68413a9"
 edition = "2021"
 
 

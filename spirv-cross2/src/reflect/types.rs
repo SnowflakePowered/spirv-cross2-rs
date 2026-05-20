@@ -502,27 +502,35 @@ impl<T> Compiler<T> {
                 sys::spvc_compiler_type_struct_member_offset(self.ptr.as_ptr(), ty, i, &mut offset)
                     .ok(self)?;
 
-                let mut matrix_stride = 0;
-                let matrix_stride = sys::spvc_compiler_type_struct_member_matrix_stride(
-                    self.ptr.as_ptr(),
-                    ty,
-                    i,
-                    &mut matrix_stride,
-                )
-                .ok(self)
-                .ok()
-                .map(|_| matrix_stride);
+                let member_ty = sys::spvc_compiler_get_type_handle(self.ptr.as_ptr(), id);
 
-                let mut array_stride = 0;
-                let array_stride = sys::spvc_compiler_type_struct_member_array_stride(
-                    self.ptr.as_ptr(),
-                    ty,
-                    i,
-                    &mut array_stride,
-                )
-                .ok(self)
-                .ok()
-                .map(|_| array_stride);
+                let matrix_stride = if sys::spvc_type_get_columns(member_ty) > 1 {
+                    let mut matrix_stride = 0;
+                    let _ = sys::spvc_compiler_type_struct_member_matrix_stride(
+                        self.ptr.as_ptr(),
+                        ty,
+                        i,
+                        &mut matrix_stride,
+                    )
+                    .ok(self);
+                    Some(matrix_stride)
+                } else {
+                   None
+                };
+
+                let array_stride = if sys::spvc_type_get_num_array_dimensions(member_ty) > 0 {
+                    let mut array_stride = 0;
+                    let _ = sys::spvc_compiler_type_struct_member_array_stride(
+                        self.ptr.as_ptr(),
+                        ty,
+                        i,
+                        &mut array_stride,
+                    )
+                    .ok(self);
+                    Some(array_stride)
+                } else {
+                   None
+                };
 
                 members.push(StructMember {
                     name,

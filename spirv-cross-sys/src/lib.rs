@@ -14,9 +14,6 @@
 
 mod bindings;
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-mod wasm_stubs;
-
 // Because SPIRV-Cross's C API is C89, we don't have stdint,
 // but the C++ API uses sized int types.
 //

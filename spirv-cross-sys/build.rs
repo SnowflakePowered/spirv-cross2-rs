@@ -20,6 +20,7 @@ pub fn main() {
     println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_parser.cpp");
     println!("cargo:rerun-if-changed=native/SPIRV-Cross/spirv_reflect.cpp");
     println!("cargo:rerun-if-changed=native/spirv_cross_c_ext_rs.cpp");
+    println!("cargo:rerun-if-changed=native/wasi_stubs.cpp");
 
     let mut spvc_build = cc::Build::new();
     spvc_build
@@ -63,6 +64,8 @@ pub fn main() {
 
     if is_wasm_unknown() {
         configure_wasm(&mut spvc_build);
+        // wasi-libc's WASI imports are satisfied by weak stubs, as there is no host to import from.
+        spvc_build.file("native/wasi_stubs.cpp");
     }
 
     spvc_build.compile("spirv-cross");

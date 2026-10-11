@@ -1,4 +1,5 @@
 use std::env;
+use std::path::PathBuf;
 
 pub fn main() {
     if env::var("DOCS_RS").is_ok() {
@@ -60,6 +61,56 @@ pub fn main() {
         spvc_build.define("SPIRV_CROSS_C_API_REFLECT", "1");
     }
 
+    if is_wasm_unknown() {
+        configure_wasm(&mut spvc_build);
+    }
+
     spvc_build.compile("spirv-cross");
     println!("cargo:rustc-link-lib=static=spirv-cross");
+
+    if is_wasm_unknown() {
+        link_wasm_sysroot();
+    }
+}
+
+fn is_wasm_unknown() -> bool {
+    env::var("CARGO_CFG_TARGET_ARCH").as_deref() == Ok("wasm32")
+        && env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("unknown")
+}
+
+fn wasi_sysroot() -> PathBuf {
+    println!("cargo:rerun-if-env-changed=WASI_SDK_PATH");
+    let sdk = env::var("WASI_SDK_PATH")
+        .expect("WASI_SDK_PATH must point to a wasi-sdk install to build for wasm32-unknown-unknown");
+    PathBuf::from(sdk).join("share").join("wasi-sysroot")
+}
+
+/// wasm32-unknown-unknown has no libc or libc++, so build against wasi-sdk's sysroot.
+fn configure_wasm(build: &mut cc::Build) {
+    let sysroot = wasi_sysroot();
+    let sdk = sysroot.parent().unwrap().parent().unwrap();
+    let exe = if cfg!(windows) { ".exe" } else { "" };
+    build
+        .cpp_link_stdlib(None)
+        .compiler(sdk.join("bin").join(format!("clang++{exe}")))
+        .archiver(sdk.join("bin").join(format!("llvm-ar{exe}")))
+        .flag("--target=wasm32-wasip1")
+        .flag(&format!("--sysroot={}", sysroot.display()))
+        .flag("-fwasm-exceptions")
+        .flag("-fno-rtti")
+        .flag("-mno-atomics")
+        .define("_LIBCPP_HAS_NO_THREADS", None)
+        .define("_WASI_EMULATED_SIGNAL", None)
+        .include(sysroot.join("include").join("wasm32-wasip1"))
+        .include(sysroot.join("include").join("c++").join("v1"));
+}
+
+fn link_wasm_sysroot() {
+    let lib = wasi_sysroot().join("lib").join("wasm32-wasip1");
+    println!("cargo:rustc-link-search=native={}", lib.join("eh").display());
+    println!("cargo:rustc-link-search=native={}", lib.display());
+    println!("cargo:rustc-link-lib=static=c++");
+    println!("cargo:rustc-link-lib=static=c++abi");
+    println!("cargo:rustc-link-lib=static=unwind");
+    println!("cargo:rustc-link-lib=static=c");
 }

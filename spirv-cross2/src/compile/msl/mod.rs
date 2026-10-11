@@ -41,7 +41,7 @@ pub use spirv_cross_sys::MslShaderVariableFormat as ShaderVariableFormat;
 pub use spirv_cross_sys::MslShaderVariableRate as ShaderVariableRate;
 
 /// Maximum number of argument buffers supported.
-pub const MAX_ARGUMENT_BUFFERS: u32 = 8;
+pub const MAX_ARGUMENT_BUFFERS: u32 = 16;
 
 use crate::error::ToContextError;
 use crate::handle::{Handle, VariableId};

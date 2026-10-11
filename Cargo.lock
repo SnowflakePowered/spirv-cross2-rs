@@ -365,7 +365,7 @@ dependencies = [
 
 [[package]]
 name = "spirv-cross-sys"
-version = "0.7.2+38681a3"
+version = "0.7.3+aa217ae"
 dependencies = [
  "bytemuck",
  "cc",
@@ -375,7 +375,7 @@ dependencies = [
 
 [[package]]
 name = "spirv-cross2"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "bitflags",
  "bytemuck",
